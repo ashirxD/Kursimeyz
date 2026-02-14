@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+
+  --color-forest-moss: #3a4d39;
+  --color-forest-moss-light: #4f6f52;
+  --color-sage-leaf: #8a9a5b;
+  --color-sage-soft: #e8ecd7;
+  --color-oatmeal: #f2ece0;
+  --color-bark: #4b3621;
+  --color-bark-hover: #3d2b1a;
+  --color-clay: #d27d53;
+  --color-clay-soft: #f5e8e1;
+
+  --color-status-delivered-bg: #eaf2ea;
+  --color-status-delivered-text: #3a4d39;
+  --color-status-transit-bg: #e6f0f5;
+  --color-status-transit-text: #54b1a4;
+  --color-status-processing-bg: #fef4ed;
+  --color-status-processing-text: #e07841;
+
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.5rem;
+
+  --shadow-soft: 0 10px 25px -5px rgba(58, 77, 57, 0.05), 0 8px 10px -6px rgba(58, 77, 57, 0.03);
+  --shadow-medium: 0 20px 25px -5px rgba(58, 77, 57, 0.1), 0 10px 10px -5px rgba(58, 77, 57, 0.04);
+}
+
+@layer base {
+  body {
+    @apply bg-oatmeal text-forest-moss antialiased;
+    font-family: var(--font-sans);
+  }
+}
+
+/* Custom scrollbar to match the clean design */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d4cdc3;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #bfb7ac;
+}
