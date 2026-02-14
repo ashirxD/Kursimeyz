@@ -1,4 +1,4 @@
-import Header from "@/components/layout/Header";
+import Header from "@/components/admin-layout/Header";
 
 const recentOrders = [
     { id: "#KM-8821", name: "Benjamin T.", initials: "BT", color: "#7ab89a", product: "Nordic Oak Chair", status: "delivered" },

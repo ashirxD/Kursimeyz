@@ -4,7 +4,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 // Lazy load components
 const Login = lazy(() => import('../pages/auth/login'));
 const Signup = lazy(() => import('../pages/auth/signup'));
-const AdminLogin = lazy(() => import('../pages/admin/login'));
+const AdminLogin = lazy(() => import('../pages/auth/adminLogin'));
 
 export const publicRoutes = [
     {

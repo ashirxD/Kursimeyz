@@ -1,11 +1,15 @@
+import { Link, useLocation } from 'react-router-dom';
+
 export default function Sidebar() {
+    const location = useLocation();
+
     const navItems = [
-        { name: "Dashboard", icon: "dashboard", active: true },
-        { name: "Chairs", icon: "chair", active: false },
-        { name: "Tables", icon: "table_bar", active: false },
-        { name: "Orders", icon: "shopping_basket", active: false },
-        { name: "Customers", icon: "group", active: false },
-        { name: "Settings", icon: "settings", active: false },
+        { name: "Dashboard", icon: "dashboard", path: "/admin/dashboard" },
+        { name: "Chairs", icon: "chair", path: "/admin/chairs" },
+        { name: "Tables", icon: "table_bar", path: "/admin/tables" },
+        { name: "Orders", icon: "shopping_basket", path: "/admin/orders" },
+        { name: "Customers", icon: "group", path: "/admin/customers" },
+        { name: "Settings", icon: "settings", path: "/admin/settings" },
     ];
 
     return (
@@ -26,21 +30,24 @@ export default function Sidebar() {
 
                 {/* Navigation */}
                 <nav className="flex flex-col gap-1.5">
-                    {navItems.map((item) => (
-                        <a
-                            key={item.name}
-                            href="#"
-                            className={`flex items-center gap-3.5 px-4 py-3 rounded-full transition-all group ${item.active
+                    {navItems.map((item) => {
+                        const isActive = location.pathname === item.path || (item.path === '/admin/dashboard' && location.pathname === '/admin');
+                        return (
+                            <Link
+                                key={item.name}
+                                to={item.path}
+                                className={`flex items-center gap-3.5 px-4 py-3 rounded-full transition-all group ${isActive
                                     ? "bg-oatmeal text-forest-moss font-bold shadow-soft"
                                     : "text-white/70 hover:text-white hover:bg-white/5 font-medium"
-                                }`}
-                        >
-                            <span className={`material-symbols-outlined !text-xl ${item.active ? "" : "text-white/50 group-hover:text-white"}`}>
-                                {item.icon}
-                            </span>
-                            <span className="text-[13px] tracking-wide">{item.name}</span>
-                        </a>
-                    ))}
+                                    }`}
+                            >
+                                <span className={`material-symbols-outlined !text-xl ${isActive ? "" : "text-white/50 group-hover:text-white"}`}>
+                                    {item.icon}
+                                </span>
+                                <span className="text-[13px] tracking-wide">{item.name}</span>
+                            </Link>
+                        );
+                    })}
                 </nav>
             </div>
 

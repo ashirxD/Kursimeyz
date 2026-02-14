@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const apiRoutes = require('./routes/apis');
@@ -14,6 +15,9 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // CORS
 app.use(cors({
