@@ -4,12 +4,41 @@ export default function Sidebar() {
     const location = useLocation();
 
     const navItems = [
-        { name: "Dashboard", icon: "dashboard", path: "/admin/dashboard" },
-        { name: "Chairs", icon: "chair", path: "/admin/chairs" },
-        { name: "Tables", icon: "table_bar", path: "/admin/tables" },
-        { name: "Orders", icon: "shopping_basket", path: "/admin/orders" },
-        { name: "Customers", icon: "group", path: "/admin/customers" },
-        { name: "Settings", icon: "settings", path: "/admin/settings" },
+        {
+            name: "Dashboard",
+            icon: "dashboard",
+            path: "/admin/dashboard"
+        },
+        {
+            name: "Chairs",
+            icon: "chair",
+            path: "/admin/chairs"
+        },
+        {
+            name: "Tables",
+            icon: "table_bar",
+            path: "/admin/tables"
+        },
+        {
+            name: "Orders",
+            icon: "shopping_basket",
+            path: "/admin/orders"
+        },
+        {
+            name: "Transactions",
+            icon: "payments",
+            path: "/admin/transactions"
+        },
+        {
+            name: "Customers",
+            icon: "group",
+            path: "/admin/customers"
+        },
+        {
+            name: "Settings",
+            icon: "settings",
+            path: "/admin/settings"
+        },
     ];
 
     return (

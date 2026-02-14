@@ -5,6 +5,8 @@ import AdminLayout from '../pages/admin/index';
 const AdminDashboard = lazy(() => import('../pages/admin/dashboard/index'));
 const AdminChairs = lazy(() => import('../pages/admin/chairs/index'));
 const AdminTables = lazy(() => import('../pages/admin/tables/index'));
+const AdminOrders = lazy(() => import('../pages/admin/orders/index'));
+const AdminTransactions = lazy(() => import('../pages/admin/transactions/index'));
 
 export const adminRoutes = [
     {
@@ -32,6 +34,22 @@ export const adminRoutes = [
                 element: (
                     <Suspense fallback={<LoadingSpinner />}>
                         <AdminTables />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'orders',
+                element: (
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <AdminOrders />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'transactions',
+                element: (
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <AdminTransactions />
                     </Suspense>
                 ),
             },
