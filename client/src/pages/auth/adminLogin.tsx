@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
 const AdminLogin = () => {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
@@ -16,72 +15,80 @@ const AdminLogin = () => {
     };
 
     return (
-        <div className="h-screen w-full flex flex-col md:flex-row bg-[#fdfcf8] font-body text-[#101b0e] overflow-hidden">
+        <div className="h-screen w-full flex flex-col md:flex-row bg-[#fdfcf8] font-sans text-[#101b0e] overflow-hidden">
             {/* Left Side: Image Section */}
             <div
-                className="hidden md:flex w-full md:w-1/2 relative h-full bg-cover bg-center"
+                className="hidden md:flex w-full md:w-1/2 relative h-full bg-cover bg-center transition-all duration-700 hover:scale-[1.01]"
                 style={{
-                    backgroundImage: `url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2069&ixlib=rb-4.0.3")`,
+                    backgroundImage: `url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000")`,
                 }}
             >
                 {/* Overlay Gradient */}
-                <div className="absolute inset-0 bg-black/40"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/40 to-transparent"></div>
 
-                <div className="relative z-10 flex flex-col justify-between h-full px-12 py-16 text-white">
+                <div className="relative z-10 flex flex-col justify-between h-full px-16 py-20 text-white">
                     {/* Logo */}
-                    <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-3xl text-[#4fe830]">grid_view</span>
-                        <h1 className="text-2xl font-bold tracking-tight font-display">Earthly Admin</h1>
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
+                            <span className="material-symbols-outlined text-white font-bold text-2xl">grid_view</span>
+                        </div>
+                        <h1 className="text-3xl font-black tracking-tight uppercase">Earthly Admin</h1>
                     </div>
 
-                    {/* Quote */}
-                    <div className="max-w-lg mb-8">
-                        <blockquote className="text-4xl font-bold leading-tight mb-4 font-display">
-                            "Efficiency is doing better what is already being done."
+                    {/* Content */}
+                    <div className="max-w-md">
+                        <div className="w-10 h-1 bg-[#5ef037] mb-6 rounded-full"></div>
+                        <blockquote className="text-[36px] lg:text-[40px] font-black leading-[1.1] mb-5 tracking-tight">
+                            Efficiency is doing better what is <span className="text-[#5ef037]">already</span> being done.
                         </blockquote>
-                        <p className="text-white/90 text-lg">Manage with clarity and control.</p>
+                        <p className="text-white/70 text-base font-medium">Manage your sustainable empire with precision and style.</p>
                     </div>
                 </div>
             </div>
 
             {/* Right Side: Login Form */}
-            <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 lg:p-20 bg-[#fdfcf8] h-full overflow-y-auto">
-                <div className="w-full max-w-[440px] flex flex-col gap-8">
+            <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 lg:p-12 bg-[#fdfcf8] h-full relative">
+                {/* Decorative background circle */}
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#5ef037]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] pointer-events-none" />
+
+                <div className="w-full max-w-[400px] flex flex-col gap-6 lg:gap-8 relative z-10 overflow-y-auto lg:overflow-visible max-h-full py-4 px-2 custom-scrollbar">
                     {/* Mobile Logo */}
-                    <div className="flex md:hidden items-center gap-2 mb-4 text-[#101b0e]">
-                        <span className="material-symbols-outlined text-3xl text-[#4fe830]">grid_view</span>
-                        <h1 className="text-2xl font-bold tracking-tight font-display">Earthly Admin</h1>
+                    <div className="flex md:hidden items-center gap-3 mb-2">
+                        <div className="size-9 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
+                            <span className="material-symbols-outlined text-white font-bold text-xl">grid_view</span>
+                        </div>
+                        <h1 className="text-xl font-black tracking-tight uppercase text-[#1a2f1a]">Earthly Admin</h1>
                     </div>
 
                     {/* Header */}
-                    <div className="flex flex-col gap-2">
-                        <h1 className="text-4xl font-bold text-[#101b0e] tracking-tight font-display">
-                            Admin Login
+                    <div className="flex flex-col gap-1.5">
+                        <h1 className="text-3xl lg:text-4xl font-black text-[#1a2f1a] tracking-tight leading-tight">
+                            Admin Portal
                         </h1>
-                        <p className="text-[#3bc723] text-lg">
-                            Please enter your credentials to access the dashboard.
+                        <p className="text-slate-500 text-sm lg:text-[15px] font-medium">
+                            Enter your credentials to access the command center.
                         </p>
                     </div>
 
                     {/* Form */}
-                    <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+                    <form className="flex flex-col gap-4 lg:gap-5" onSubmit={handleSubmit}>
                         {/* Email */}
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="email" className="text-[#101b0e] text-sm font-semibold ml-1">Email</label>
+                        <div className="flex flex-col gap-1.5">
+                            <label htmlFor="email" className="text-[#1a2f1a] text-[11px] font-black uppercase tracking-widest ml-1 opacity-60">Admin Email</label>
                             <input
                                 id="email"
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-[#101b0e] placeholder:text-slate-400 focus:border-[#4fe830] focus:ring-2 focus:ring-[#4fe830]/20 transition-all duration-200 outline-none"
+                                className="w-full h-11 lg:h-12 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#5ef037] focus:ring-4 focus:ring-[#5ef037]/10 transition-all duration-300 outline-none shadow-sm"
                                 placeholder="admin@earthly.com"
                             />
                         </div>
 
                         {/* Password */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-center ml-1">
-                                <label htmlFor="password" className="text-[#101b0e] text-sm font-semibold">Password</label>
+                                <label htmlFor="password" className="text-[#1a2f1a] text-[11px] font-black uppercase tracking-widest opacity-60">Security Key</label>
                             </div>
                             <div className="relative w-full">
                                 <input
@@ -89,13 +96,13 @@ const AdminLogin = () => {
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full h-12 px-4 pr-12 rounded-xl border border-slate-200 bg-white text-[#101b0e] placeholder:text-slate-400 focus:border-[#4fe830] focus:ring-2 focus:ring-[#4fe830]/20 transition-all duration-200 outline-none"
+                                    className="w-full h-11 lg:h-12 px-4 pr-14 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#5ef037] focus:ring-4 focus:ring-[#5ef037]/10 transition-all duration-300 outline-none shadow-sm"
                                     placeholder="••••••••"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#101b0e] transition-colors cursor-pointer"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#1a2f1a] transition-colors cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined text-xl">
                                         {showPassword ? 'visibility' : 'visibility_off'}
@@ -107,11 +114,18 @@ const AdminLogin = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="mt-2 w-full h-12 bg-[#2c4c2c] hover:bg-[#1a2f1a] text-white font-bold rounded-full transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                            className="mt-2 w-full h-12 lg:h-13 bg-[#1a2f1a] hover:bg-black text-white font-black text-base lg:text-lg rounded-[18px] transition-all duration-500 shadow-xl shadow-[#1a2f1a]/20 hover:shadow-black/30 hover:-translate-y-0.5 flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.98]"
                         >
-                            Log In
+                            Authorize Access
+                            <span className="material-symbols-outlined font-black text-xl">lock</span>
                         </button>
                     </form>
+
+                    <div className="text-center mt-1">
+                        <p className="text-slate-300 text-[11px] font-bold uppercase tracking-widest">
+                            Secure Encrypted Environment
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

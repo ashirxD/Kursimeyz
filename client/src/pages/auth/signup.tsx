@@ -28,110 +28,87 @@ const Signup = () => {
     };
 
     return (
-        <div className="h-screen w-full flex flex-col md:flex-row bg-[#fdfcf8] font-body text-[#101b0e] overflow-hidden">
+        <div className="h-screen w-full flex flex-col md:flex-row bg-[#fdfcf8] font-sans text-[#101b0e] overflow-hidden">
             {/* Left Side: Visual Hero */}
             <div
-                className="hidden md:flex w-full md:w-1/2 relative h-full bg-cover bg-center"
+                className="hidden md:flex w-full md:w-1/2 relative h-full bg-cover bg-center transition-all duration-700 hover:scale-[1.01]"
                 style={{
-                    backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuAupkvt7CEm5Wxmfm88hHllK5HKtbfSB5QUtH5FXhthzukOgrbxfZmFmRRApr2bqqLcyyiRqtl-x0fSAymdEJ7j2LZNA4XZEU4rIZ9ibnTBo3qYshNOx8bRsvB5EXmT_BYD-QS-EJW8uvFlmG5XeZ4EowwtSKgk_YQV9fC-vaHENWwzuYCaLd6bnJUbLgvjkre_0eAKRZ263GpPNgLBAV7IPnDknePdpE_CqLTIJcyMotxzEh90U8gDOVFK_8kTusXFjJm1bxUKWd8')`,
+                    backgroundImage: `url('https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&q=80&w=2000')`,
                 }}
             >
-                {/* Dark Overlay for text legibility */}
-                <div className="absolute inset-0 bg-black/20 z-0"></div>
+                {/* Deep Overlay for premium feel */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/30 to-transparent"></div>
 
-                <div className="relative z-10 flex flex-col justify-between h-full px-12 py-16 text-white">
+                <div className="relative z-10 flex flex-col justify-between h-full px-16 py-20 text-white">
                     {/* Logo */}
-                    <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-3xl text-[#4fe830]">chair</span>
-                        <span className="text-2xl font-bold tracking-tight font-display">Earthly</span>
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
+                            <span className="material-symbols-outlined text-white font-bold text-2xl">chair</span>
+                        </div>
+                        <span className="text-3xl font-black tracking-tight uppercase">Earthly</span>
                     </div>
 
-                    {/* Quote/Text */}
-                    <div className="max-w-lg mb-8">
-                        <h2 className="text-4xl font-bold leading-tight mb-4 font-display">
-                            Crafted from nature, designed for comfort.
+                    {/* Content */}
+                    <div className="max-w-md">
+                        <div className="w-10 h-1 bg-[#5ef037] mb-6 rounded-full"></div>
+                        <h2 className="text-[36px] lg:text-[40px] font-black leading-[1.1] mb-5 tracking-tight">
+                            Crafted from nature, designed for <span className="text-[#5ef037]">comfort</span>.
                         </h2>
-                        <p className="text-white/90 text-lg">
-                            Join our community of over 50,000 sustainable living enthusiasts.
+                        <p className="text-white/70 text-base font-medium">
+                            Join over 50,000 enthusiasts building a more sustainable and cozy future, one piece at a time.
                         </p>
                     </div>
                 </div>
             </div>
 
             {/* Right Side: Registration Form */}
-            <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 lg:p-20 bg-[#fdfcf8] h-full overflow-y-auto relative">
-                {/* Joyful Background Shapes (kept subtle) */}
-                <div
-                    className="absolute w-64 h-64 bg-[#4fe830]/10 top-[-50px] right-[-50px] rounded-full z-0 pointer-events-none"
-                    style={{ filter: 'blur(80px)' }}
-                ></div>
-                <div
-                    className="absolute w-96 h-96 bg-[#9caf88]/10 bottom-[-100px] left-[-100px] rounded-full z-0 pointer-events-none"
-                    style={{ filter: 'blur(80px)' }}
-                ></div>
+            <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 lg:p-12 bg-[#fdfcf8] h-full relative">
+                {/* Decorative background shapes */}
+                <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-[#5ef037]/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-[120px] pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#1a2f1a]/5 rounded-full translate-x-1/4 translate-y-1/4 blur-[100px] pointer-events-none" />
 
-                <div className="w-full max-w-[440px] z-10 flex flex-col gap-6">
+                <div className="w-full max-w-[400px] z-10 flex flex-col gap-4 lg:gap-6 relative overflow-y-auto lg:overflow-visible max-h-full py-4 px-2 custom-scrollbar">
                     {/* Mobile Logo */}
-                    <div className="flex md:hidden items-center gap-2 mb-4 text-[#101b0e]">
-                        <span className="material-symbols-outlined text-3xl text-[#4fe830]">chair</span>
-                        <span className="text-xl font-bold font-display">Earthly</span>
+                    <div className="flex md:hidden items-center gap-3 mb-2">
+                        <div className="size-9 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
+                            <span className="material-symbols-outlined text-white font-bold text-xl">chair</span>
+                        </div>
+                        <span className="text-xl font-black tracking-tight uppercase text-[#1a2f1a]">Earthly</span>
                     </div>
 
                     {/* Header */}
-                    <div className="text-center sm:text-left">
-                        <h1 className="text-3xl sm:text-4xl font-bold text-[#101b0e] mb-2 tracking-tight font-display">
-                            Join the Comfort Club
+                    <div className="flex flex-col gap-1.5">
+                        <h1 className="text-3xl lg:text-4xl font-black text-[#1a2f1a] tracking-tight leading-tight">
+                            Create Account
                         </h1>
-                        <p className="text-slate-500 text-base">
-                            Discover the joy of sustainable seating today.
+                        <p className="text-slate-500 text-sm lg:text-[15px] font-medium">
+                            Start your journey towards a more sustainable home.
                         </p>
                     </div>
 
-                    {/* Error Message Display */}
+                    {/* Error Message */}
                     {error && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-2 border border-red-200">
+                        <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-[14px] font-bold border border-red-100 animate-in fade-in slide-in-from-top-2">
                             {errorMessage}
                         </div>
                     )}
 
-                    {/* Google Button */}
-                    <button
-                        type="button"
-                        className="w-full h-12 bg-white border border-slate-200 hover:bg-slate-50 text-[#101b0e] font-semibold rounded-full transition-colors flex items-center justify-center gap-3 cursor-pointer"
-                    >
-                        <img
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuJx-LOxh25GRsfLn49ulldOa6LYWe8nYCYD9yedj4nR6uq5XEzOLa70if_RLn93kr0DvJgI41XmnC8OSFEOIkPY0I9OyihEIqylPjO-GouWGFoGL6-Aum7Ptpd5mV9e53ESkU5ovEhV7TSUtzRqA0GRomCA2BT-yX4XNtPOl2HV1o5-1pRiDukCHO3Ose9QWEJD_tS5nnmdmbQvkwDHwbJBltAgzEeS8P76T0LfiAbz2Ys1TXcUDy3naw0KLd5z_9ngrplwk_R1g"
-                            alt="Google"
-                            className="w-5 h-5"
-                        />
-                        Continue with Google
-                    </button>
-
-                    {/* Divider */}
-                    <div className="relative flex py-2 items-center">
-                        <div className="flex-grow border-t border-slate-200"></div>
-                        <span className="flex-shrink-0 mx-4 text-slate-400 text-sm font-medium">
-                            Or sign up with email
-                        </span>
-                        <div className="flex-grow border-t border-slate-200"></div>
-                    </div>
-
                     {/* Form Fields */}
-                    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+                    <form className="flex flex-col gap-3 lg:gap-4" onSubmit={handleSubmit}>
                         {/* Name */}
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-semibold text-[#101b0e] ml-1" htmlFor="name">Full Name</label>
+                            <label className="text-[#1a2f1a] text-[11px] font-black uppercase tracking-widest ml-1 opacity-60" htmlFor="name">Full Name</label>
                             <div className="relative">
                                 <input
                                     type="text"
                                     id="name"
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
-                                    className="w-full bg-white border border-slate-200 rounded-xl h-12 px-4 outline-none focus:ring-2 focus:ring-[#4fe830]/20 focus:border-[#4fe830] transition-all text-[#101b0e] placeholder:text-slate-400 disabled:opacity-50"
+                                    className="w-full h-11 lg:h-12 px-4 pr-12 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#5ef037] focus:ring-4 focus:ring-[#5ef037]/10 transition-all duration-300 outline-none shadow-sm"
                                     placeholder="e.g. Oliver Tree"
                                     disabled={isLoading}
                                 />
-                                <span className="material-symbols-outlined absolute right-4 top-3 text-slate-400 text-[20px]">
+                                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none !text-xl">
                                     person
                                 </span>
                             </div>
@@ -139,18 +116,18 @@ const Signup = () => {
 
                         {/* Email */}
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-semibold text-[#101b0e] ml-1" htmlFor="email">Email Address</label>
+                            <label className="text-[#1a2f1a] text-[11px] font-black uppercase tracking-widest ml-1 opacity-60" htmlFor="email">Email Address</label>
                             <div className="relative">
                                 <input
                                     type="email"
                                     id="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-white border border-slate-200 rounded-xl h-12 px-4 outline-none focus:ring-2 focus:ring-[#4fe830]/20 focus:border-[#4fe830] transition-all text-[#101b0e] placeholder:text-slate-400 disabled:opacity-50"
+                                    className="w-full h-11 lg:h-12 px-4 pr-12 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#5ef037] focus:ring-4 focus:ring-[#5ef037]/10 transition-all duration-300 outline-none shadow-sm"
                                     placeholder="name@example.com"
                                     disabled={isLoading}
                                 />
-                                <span className="material-symbols-outlined absolute right-4 top-3 text-slate-400 text-[20px]">
+                                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none !text-xl">
                                     mail
                                 </span>
                             </div>
@@ -158,25 +135,25 @@ const Signup = () => {
 
                         {/* Password */}
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-semibold text-[#101b0e] ml-1" htmlFor="password">Password</label>
+                            <label className="text-[#1a2f1a] text-[11px] font-black uppercase tracking-widest ml-1 opacity-60" htmlFor="password">Password</label>
                             <div className="relative">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     id="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-white border border-slate-200 rounded-xl h-12 px-4 outline-none focus:ring-2 focus:ring-[#4fe830]/20 focus:border-[#4fe830] transition-all text-[#101b0e] placeholder:text-slate-400 disabled:opacity-50"
+                                    className="w-full h-11 lg:h-12 px-4 pr-14 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#5ef037] focus:ring-4 focus:ring-[#5ef037]/10 transition-all duration-300 outline-none shadow-sm"
                                     placeholder="Min. 8 characters"
                                     disabled={isLoading}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-3 text-slate-400 hover:text-[#101b0e] cursor-pointer"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-[#1a2f1a] transition-colors cursor-pointer"
                                     disabled={isLoading}
                                 >
-                                    <span className="material-symbols-outlined text-[20px]">
-                                        {showPassword ? 'visibility_off' : 'visibility'}
+                                    <span className="material-symbols-outlined text-xl">
+                                        {showPassword ? 'visibility' : 'visibility_off'}
                                     </span>
                                 </button>
                             </div>
@@ -185,47 +162,59 @@ const Signup = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="mt-4 w-full bg-[#3bc723] hover:brightness-110 text-white font-bold rounded-full h-12 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98] cursor-pointer shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="mt-2 w-full h-12 lg:h-14 bg-[#1a2f1a] hover:bg-black text-white font-black text-base lg:text-lg rounded-[18px] transition-all duration-500 shadow-xl shadow-[#1a2f1a]/20 hover:shadow-black/30 hover:-translate-y-0.5 flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:translate-y-0 flex-shrink-0"
                             disabled={isLoading}
                         >
                             {isLoading ? (
-                                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                <div className="size-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                             ) : (
                                 <>
-                                    <span>Create Account</span>
-                                    <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                                    <span>Get Started</span>
+                                    <span className="material-symbols-outlined font-black">bolt</span>
                                 </>
                             )}
                         </button>
                     </form>
 
-                    {/* Footer Links */}
-                    <div className="text-center mt-2">
-                        <p className="text-slate-500 text-sm">
+                    {/* Divider */}
+                    <div className="relative flex items-center py-2 lg:py-4">
+                        <div className="flex-grow border-t border-slate-100"></div>
+                        <span className="flex-shrink-0 mx-4 text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">Or use social</span>
+                        <div className="flex-grow border-t border-slate-100"></div>
+                    </div>
+
+                    {/* Google Button */}
+                    <button
+                        type="button"
+                        className="w-full h-13 lg:h-14 bg-white border border-slate-100 hover:border-[#5ef037] hover:bg-slate-50 text-[#1a2f1a] font-black rounded-[18px] transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer shadow-sm flex-shrink-0"
+                    >
+                        <svg className="w-5 h-5 lg:w-6 lg:h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                            <path d="M12 4.6c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.09 14.97 0 12 0 7.7 0 3.99 2.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                        </svg>
+                        Google
+                    </button>
+
+                    <div className="text-center mt-0.5">
+                        <p className="text-slate-400 font-semibold text-[14px]">
                             Already have an account?{' '}
                             <Link
                                 to="/login"
-                                className="text-[#e07a5f] hover:text-orange-700 font-bold transition-colors"
+                                className="text-[#5ef037] font-black hover:underline underline-offset-4"
                             >
                                 Log In
                             </Link>
                         </p>
                     </div>
-                </div>
 
-                {/* Terms Footer */}
-                <div className="absolute bottom-6 w-full text-center px-6">
-                    <p className="text-xs text-slate-400">
-                        By signing up, you agree to our{' '}
-                        <a href="#" className="underline hover:text-slate-600">
-                            Terms of Service
-                        </a>{' '}
-                        and{' '}
-                        <a href="#" className="underline hover:text-slate-600">
-                            Privacy Policy
-                        </a>
-                        .
-                    </p>
+                    {/* Terms Footer */}
+                    <div className="text-center">
+                        <p className="text-[11px] text-slate-300 font-bold max-w-[300px] mx-auto leading-relaxed mt-1">
+                            By signing up, you agree to our <a href="#" className="text-slate-400 hover:text-[#5ef037]">Terms</a> and <a href="#" className="text-slate-400 hover:text-[#5ef037]">Privacy</a>.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
