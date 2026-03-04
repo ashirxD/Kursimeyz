@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Header from "@/components/admin-layout/Header";
+import Header from "@/pages/admin/layout/Header";
 import TableCard from "./cards";
 import AddTableModal from "./add";
 import { useProducts } from "@/hooks/useProducts";

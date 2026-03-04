@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Header from "@/components/admin-layout/Header";
+import Header from "@/pages/admin/layout/Header";
 import ChairCard from "./cards";
 import AddChairModal from "./add";
 import { useProducts } from "@/hooks/useProducts";

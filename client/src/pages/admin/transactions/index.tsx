@@ -1,4 +1,4 @@
-import Header from "@/components/admin-layout/Header";
+import Header from "@/pages/admin/layout/Header";
 import TransactionsTable, { type Transaction } from "./table";
 
 const staticTransactions: Transaction[] = [

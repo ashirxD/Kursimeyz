@@ -1,4 +1,4 @@
-import Header from "@/components/admin-layout/Header";
+import Header from "@/pages/admin/layout/Header";
 import OrdersTable, { type Order } from "./table";
 
 const staticOrders: Order[] = [
