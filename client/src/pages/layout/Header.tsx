@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useCart } from "@/hooks/useCart";
 
 const shopCategories = [
   { label: "Chairs", icon: "chair", route: "/shop/chairs" },
@@ -9,6 +10,7 @@ const shopCategories = [
 
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { totalItems } = useCart();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md">
@@ -111,14 +113,18 @@ export default function Header() {
             </span>
           </button>
 
-          <button className="h-10 px-5 bg-[#1a2f1a] hover:bg-black text-white rounded-full flex items-center gap-2.5 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-black/10">
+          <Link
+            to="/cart"
+            onClick={() => console.log("Navigating to /cart")}
+            className="h-10 px-5 bg-[#1a2f1a] hover:bg-black text-white rounded-full flex items-center gap-2.5 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-black/10"
+          >
             <span className="material-symbols-outlined text-[18px]">
               shopping_bag
             </span>
             <span className="text-[12px] font-black uppercase tracking-widest">
-              Cart (0)
+              Cart ({totalItems})
             </span>
-          </button>
+          </Link>
         </div>
       </div>
     </header>

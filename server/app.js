@@ -21,7 +21,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // CORS
 app.use(cors({
-    origin: 'http://localhost:1800', // Client URL
+    origin: ['http://localhost:1800', 'http://127.0.0.1:1800'],
     credentials: true,
 }));
 
