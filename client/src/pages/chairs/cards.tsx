@@ -92,7 +92,7 @@ export default function ChairProductCard({
           </p>
         </div>
         <span className="text-[15px] font-bold text-[#1a2f1a] whitespace-nowrap">
-          ${chair.price}
+          Rs. {chair.price}
         </span>
       </div>
     </div>

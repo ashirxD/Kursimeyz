@@ -89,7 +89,7 @@ export default function SofaProductCard({ sofa, badge }: SofaProductCardProps) {
           </p>
         </div>
         <span className="text-[15px] font-bold text-[#1a2f1a] whitespace-nowrap">
-          ${sofa.price}
+          Rs. {sofa.price}
         </span>
       </div>
     </div>

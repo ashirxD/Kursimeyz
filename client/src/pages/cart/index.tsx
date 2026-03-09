@@ -83,7 +83,7 @@ export default function CartPage() {
                       </p>
                     </div>
                     <p className="text-lg font-black text-[#1a2f1a]">
-                      ${item.product?.price || 0}
+                      Rs. {item.product?.price || 0}
                     </p>
                   </div>
 
@@ -139,15 +139,15 @@ export default function CartPage() {
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between text-[#white]/60 font-medium">
                   <span>Subtotal</span>
-                  <span>${subtotal}</span>
+                  <span>Rs. {subtotal}</span>
                 </div>
                 <div className="flex justify-between text-[#white]/60 font-medium">
                   <span>Shipping</span>
-                  <span>${shipping}</span>
+                  <span>Rs. {shipping}</span>
                 </div>
                 <div className="pt-4 border-t border-white/10 flex justify-between text-xl font-black">
                   <span>Total</span>
-                  <span>${total}</span>
+                  <span>Rs. {total}</span>
                 </div>
               </div>
 

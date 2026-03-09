@@ -92,7 +92,7 @@ export default function TableProductCard({
           </p>
         </div>
         <span className="text-[15px] font-bold text-[#1a2f1a] whitespace-nowrap">
-          ${table.price}
+          Rs. {table.price}
         </span>
       </div>
     </div>

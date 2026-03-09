@@ -102,8 +102,8 @@ export default function SofasPage() {
               className="w-full accent-[#5ef037] cursor-pointer"
             />
             <div className="flex justify-between mt-2 text-[12px] font-bold text-[#1a2f1a]/50">
-              <span>${priceRange[0]}</span>
-              <span>${priceRange[1]}+</span>
+              <span>Rs. {priceRange[0]}</span>
+              <span>Rs. {priceRange[1]}+</span>
             </div>
           </div>
 

@@ -296,7 +296,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <p className="font-black text-[#1a2f1a] text-sm">
-                    ${item.product?.price * item.quantity}
+                    Rs. {item.product?.price * item.quantity}
                   </p>
                 </div>
               ))}
@@ -305,15 +305,15 @@ export default function CheckoutPage() {
             <div className="space-y-4 pt-8 border-t border-[#1a2f1a]/5 mb-10">
               <div className="flex justify-between text-[#1a2f1a]/60 font-medium">
                 <span>Subtotal</span>
-                <span>${subtotal}</span>
+                <span>Rs. {subtotal}</span>
               </div>
               <div className="flex justify-between text-[#1a2f1a]/60 font-medium">
                 <span>Shipping</span>
-                <span>${shipping}</span>
+                <span>Rs. {shipping}</span>
               </div>
               <div className="pt-4 flex justify-between text-2xl font-black text-[#1a2f1a]">
                 <span>Total</span>
-                <span>${total}</span>
+                <span>Rs. {total}</span>
               </div>
             </div>
 

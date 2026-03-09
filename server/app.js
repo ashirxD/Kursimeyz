@@ -28,18 +28,52 @@ app.use(cors({
 // Routes
 app.use('/api', apiRoutes);
 
+const mongoose = require('mongoose');
+
 const PORT = process.env.PORT || 5000;
+let server;
 
 // Connect to DB and start server
 if (process.env.MONGO_URI) {
     connectDB().then(() => {
-        app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
+        server = app.listen(PORT, () => {
+            console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
         });
     });
 } else {
-    console.log('MONGO_URI not found in environment variables. Server not started.');
+    console.error('CRITICAL: MONGO_URI not found in environment variables. Server cannot start.');
+    process.exit(1);
 }
 
+// Graceful shutdown
+const gracefulShutdown = (signal) => {
+    console.log(`${signal} received. Shutting down gracefully...`);
+
+    if (server) {
+        server.close(async () => {
+            console.log('HTTP server closed.');
+
+            try {
+                await mongoose.connection.close();
+                console.log('MongoDB connection closed.');
+                process.exit(0);
+            } catch (err) {
+                console.error('Error during MongoDB connection close:', err);
+                process.exit(1);
+            }
+        });
+    } else {
+        process.exit(0);
+    }
+
+    // Force shutdown after 10 seconds if not closed gracefully
+    setTimeout(() => {
+        console.error('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+    }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 module.exports = app;
