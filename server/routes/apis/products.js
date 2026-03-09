@@ -6,6 +6,8 @@ const authMiddleware = require('../../middleware/auth');
 // Public routes (though for an admin dashboard, we might want them protected)
 // For now, let's keep GET public but POST/DELETE protected if we have auth logic
 router.get('/', productsController.getAllProducts);
+router.get('/grouped', productsController.getGroupedProducts);
+router.get('/:id', productsController.getProductById);
 
 // Admin-only routes (assuming middleware handles role check)
 router.post('/', productsController.createProduct);

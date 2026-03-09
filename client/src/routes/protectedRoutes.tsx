@@ -12,6 +12,9 @@ const SofasPage = lazy(() => import("../pages/sofas"));
 const CartPage = lazy(() => import("../pages/cart"));
 const CheckoutPage = lazy(() => import("../pages/checkout"));
 const OrderSuccessPage = lazy(() => import("@/pages/checkout/Success"));
+const OrderHistoryPage = lazy(() => import("../pages/OrderHistory"));
+const TopPicksPage = lazy(() => import("../pages/topPicks"));
+const ProductDetailPage = lazy(() => import("../pages/topPicks/detail"));
 
 export const protectedRoutes = [
   {
@@ -55,6 +58,30 @@ export const protectedRoutes = [
             element: (
               <Suspense fallback={<LoadingSpinner />}>
                 <OrderSuccessPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "orders",
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <OrderHistoryPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "top-picks",
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <TopPicksPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "product/:id",
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ProductDetailPage />
               </Suspense>
             ),
           },

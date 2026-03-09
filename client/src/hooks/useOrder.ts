@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/utils/Axios";
 import { useNavigate } from "react-router-dom";
 
@@ -43,9 +43,20 @@ export const useOrder = () => {
     },
   });
 
+  const myOrdersQuery = useQuery({
+    queryKey: ["orders", "me"],
+    queryFn: async () => {
+      const response = await api.get("/order/myorders");
+      return response.data.data;
+    },
+  });
+
   return {
     createOrder: createOrderMutation.mutate,
     isCreating: createOrderMutation.isPending,
-    error: createOrderMutation.error,
+    createError: createOrderMutation.error,
+    myOrders: myOrdersQuery.data || [],
+    ordersLoading: myOrdersQuery.isLoading,
+    ordersError: myOrdersQuery.error,
   };
 };

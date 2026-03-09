@@ -39,6 +39,15 @@ export default function Header() {
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5ef037] transition-all group-hover:w-full"></span>
           </Link>
 
+          {/* Top Picks */}
+          <Link
+            to="/top-picks"
+            className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
+          >
+            Top Picks
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5ef037] transition-all group-hover:w-full"></span>
+          </Link>
+
           {/* Shop with dropdown */}
           <div
             className="relative"
@@ -101,6 +110,15 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             Contact
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5ef037] transition-all group-hover:w-full"></span>
+          </Link>
+
+          {/* My Orders */}
+          <Link
+            to="/orders"
+            className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
+          >
+            My Orders
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5ef037] transition-all group-hover:w-full"></span>
           </Link>
         </nav>
