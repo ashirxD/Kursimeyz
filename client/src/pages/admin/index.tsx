@@ -1,9 +1,9 @@
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "@/pages/admin/layout/Sidebar";
-import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
+import { useSidebarStore } from "@/stores";
 
-function AdminLayoutContent() {
-  const { isSidebarOpen, closeSidebar } = useSidebar();
+export default function AdminLayout() {
+  const { isSidebarOpen, closeSidebar } = useSidebarStore();
 
   return (
     <div className="flex h-screen bg-oatmeal font-sans overflow-hidden p-0 md:p-3 gap-0 md:gap-3 relative">
@@ -23,13 +23,5 @@ function AdminLayoutContent() {
         </div>
       </main>
     </div>
-  );
-}
-
-export default function AdminLayout() {
-  return (
-    <SidebarProvider>
-      <AdminLayoutContent />
-    </SidebarProvider>
   );
 }

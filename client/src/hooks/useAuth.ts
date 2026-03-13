@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import api from "../utils/Axios";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores";
 
 interface RegisterPayload {
   email: string;
@@ -21,6 +22,7 @@ interface RegisterResponse {
 
 export const useAuth = () => {
   const navigate = useNavigate();
+  const { login: storeLogin, setError } = useAuthStore();
 
   const loginMutation = useMutation({
     mutationFn: async (data: { email: string; password: string }) => {
@@ -28,14 +30,13 @@ export const useAuth = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
+      storeLogin(data.user, data.token);
       navigate("/dashboard");
     },
     onError: (error: any) => {
-      console.error(
-        "Login failed:",
-        error.response?.data?.message || error.message,
-      );
+      const message = error.response?.data?.message || error.message;
+      setError(message);
+      console.error("Login failed:", message);
     },
   });
 
@@ -45,14 +46,13 @@ export const useAuth = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
+      storeLogin(data.user, data.token);
       navigate("/dashboard");
     },
     onError: (error: any) => {
-      console.error(
-        "Registration failed:",
-        error.response?.data?.message || error.message,
-      );
+      const message = error.response?.data?.message || error.message;
+      setError(message);
+      console.error("Registration failed:", message);
     },
   });
 

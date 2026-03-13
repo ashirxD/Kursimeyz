@@ -131,3 +131,17 @@ exports.currentUser = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
+// @desc    Logout user
+// @route   POST /api/v1/auth/logout
+exports.logout = async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            message: 'Logged out successfully'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};

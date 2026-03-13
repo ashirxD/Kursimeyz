@@ -1,7 +1,7 @@
-import { useSidebar } from "@/contexts/SidebarContext";
+import { useSidebarStore } from "@/stores";
 
 export default function Header() {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar } = useSidebarStore();
 
   return (
     <header className="flex justify-between items-center py-4 px-2">

@@ -1,10 +1,10 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useSidebar } from "@/contexts/SidebarContext";
+import { useSidebarStore } from "@/stores";
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isSidebarOpen, closeSidebar } = useSidebar();
+  const { isSidebarOpen, closeSidebar } = useSidebarStore();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
