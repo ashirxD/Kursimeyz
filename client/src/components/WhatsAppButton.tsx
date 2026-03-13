@@ -1,6 +1,33 @@
+import { useState, useEffect } from "react";
+import api from "@/utils/Axios";
+
 export default function WhatsAppButton() {
-  const phoneNumber = "923024379999";
+  const [phoneNumber, setPhoneNumber] = useState<string>("923024379999");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchWhatsAppNumber();
+  }, []);
+
+  const fetchWhatsAppNumber = async () => {
+    try {
+      const response = await api.get("/user/whatsapp");
+      if (response.data.success && response.data.whatsappNumber) {
+        setPhoneNumber(response.data.whatsappNumber);
+      }
+    } catch (error) {
+      console.error("Error fetching WhatsApp number:", error);
+      // Keep default number on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const whatsappUrl = `https://wa.me/${phoneNumber}`;
+
+  if (loading) {
+    return null; // Don't show button while loading
+  }
 
   return (
     <a

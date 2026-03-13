@@ -37,6 +37,11 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
+
+  whatsappNumber: {
+    type: Number,
+    trim: true,
+  },
 });
 
 module.exports = mongoose.model('User', UserSchema);
