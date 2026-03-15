@@ -1,16 +1,33 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { GoogleLoginButton } from "@/components/GoogleLoginButton";
+import type { CredentialResponse } from "@react-oauth/google";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { login, isLoggingIn, loginError } = useAuth();
+  const { login, isLoggingIn, loginError, googleAuth, isGoogleAuthing, googleAuthError } = useAuth();
+  
   const errorMessage = loginError
     ? (loginError as any).response?.data?.message || "Login failed"
+    : googleAuthError
+    ? (googleAuthError as any).response?.data?.message || "Google authentication failed"
     : null;
+
+  // Handle Google login success
+  const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
+    if (credentialResponse.credential) {
+      googleAuth(credentialResponse);
+    }
+  };
+
+  // Handle Google login error
+  const handleGoogleError = () => {
+    console.error("Google login failed");
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,35 +194,12 @@ const Login = () => {
             <div className="flex-grow border-t border-slate-100"></div>
           </div>
 
-          {/* Social Login */}
-          <button
-            type="button"
-            className="w-full h-13 lg:h-14 bg-white border border-slate-100 hover:border-[#5ef037] hover:bg-slate-50 text-[#1a2f1a] font-black rounded-[18px] transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer shadow-sm flex-shrink-0"
-          >
-            <svg
-              className="w-5 h-5 lg:w-6 lg:h-6"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 4.6c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.09 14.97 0 12 0 7.7 0 3.99 2.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                fill="#EA4335"
-              />
-            </svg>
-            Google
-          </button>
+          {/* Google OAuth Login Button */}
+          <GoogleLoginButton
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            disabled={isGoogleAuthing}
+          />
 
           {/* Footer */}
           <p className="text-center text-[14px] lg:text-[15px] text-slate-400 font-semibold mb-2 lg:mb-4">

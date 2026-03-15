@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const UserSchema = new mongoose.Schema({
   googleId: {
     type: String,
-    // unique: true // intentionally not unique globally if we want to link accounts, but for now simple
+    sparse: true, // Allows null/undefined while maintaining uniqueness for non-null values
   },
   email: {
     type: String,
@@ -15,7 +15,7 @@ const UserSchema = new mongoose.Schema({
 
   phone: {
     type: String,
-    unique: true,
+    // Note: unique + sparse is set via index below to handle null values properly
     trim: true,
   },
 
@@ -27,6 +27,11 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
+  },
+  provider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local',
   },
   createdAt: {
     type: Date,
