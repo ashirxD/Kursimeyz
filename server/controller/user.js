@@ -22,7 +22,7 @@ const getWhatsAppNumber = async (req, res) => {
 
         res.json({
             success: true,
-            whatsappNumber: admin.whatsappNumber.toString(),
+            whatsappNumber: admin.whatsappNumber,
             isDefault: false
         });
     } catch (err) {
@@ -38,12 +38,20 @@ const getWhatsAppNumber = async (req, res) => {
 // @route   GET /api/v1/user/admin/whatsapp
 const getAdminWhatsAppNumber = async (req, res) => {
     try {
+        // Check if user is admin
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admin users can access this endpoint'
+            });
+        }
+
         // Return the current admin's WhatsApp number
         const user = await User.findById(req.user.id);
 
         res.json({
             success: true,
-            whatsappNumber: user.whatsappNumber ? user.whatsappNumber.toString() : ''
+            whatsappNumber: user.whatsappNumber || ''
         });
     } catch (err) {
         console.error('Error fetching admin WhatsApp number:', err);
@@ -60,6 +68,14 @@ const updateWhatsAppNumber = async (req, res) => {
     try {
         const { whatsappNumber } = req.body;
 
+        // Check if user is admin
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admin users can update WhatsApp number'
+            });
+        }
+
         // Validate input
         if (!whatsappNumber) {
             return res.status(400).json({
@@ -75,6 +91,13 @@ const updateWhatsAppNumber = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Please provide a valid WhatsApp number with at least 10 digits'
+            });
+        }
+
+        if (cleanedNumber.length > 15) {
+            return res.status(400).json({
+                success: false,
+                message: 'WhatsApp number must not exceed 15 digits'
             });
         }
 
@@ -95,7 +118,7 @@ const updateWhatsAppNumber = async (req, res) => {
         res.json({
             success: true,
             message: 'WhatsApp number updated successfully',
-            whatsappNumber: user.whatsappNumber.toString()
+            whatsappNumber: user.whatsappNumber
         });
     } catch (err) {
         console.error('Error updating WhatsApp number:', err);

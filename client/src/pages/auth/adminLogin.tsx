@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 const AdminLogin = () => {
-    const navigate = useNavigate();
+    const { login, isLoggingIn, loginError } = useAdminAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle login logic here
-        console.log('Admin Login submitted', { email, password });
-        navigate('/admin/dashboard');
+        login({ email, password });
     };
 
     return (
@@ -24,7 +22,7 @@ const AdminLogin = () => {
                 }}
             >
                 {/* Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/40 to-transparent"></div>
+                <div className="absolute inset-0 bg-linear-to-br from-black/80 via-black/40 to-transparent"></div>
 
                 <div className="relative z-10 flex flex-col justify-between h-full px-16 py-20 text-white">
                     {/* Logo */}
@@ -70,6 +68,13 @@ const AdminLogin = () => {
                         </p>
                     </div>
 
+                    {/* Error Message */}
+                    {loginError && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-bold">
+                            {loginError}
+                        </div>
+                    )}
+
                     {/* Form */}
                     <form className="flex flex-col gap-4 lg:gap-5" onSubmit={handleSubmit}>
                         {/* Email */}
@@ -114,10 +119,20 @@ const AdminLogin = () => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="mt-2 w-full h-12 lg:h-13 bg-[#1a2f1a] hover:bg-black text-white font-black text-base lg:text-lg rounded-[18px] transition-all duration-500 shadow-xl shadow-[#1a2f1a]/20 hover:shadow-black/30 hover:-translate-y-0.5 flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.98]"
+                            disabled={isLoggingIn}
+                            className="mt-2 w-full h-12 lg:h-13 bg-[#1a2f1a] hover:bg-black text-white font-black text-base lg:text-lg rounded-[18px] transition-all duration-500 shadow-xl shadow-[#1a2f1a]/20 hover:shadow-black/30 hover:-translate-y-0.5 flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Authorize Access
-                            <span className="material-symbols-outlined font-black text-xl">lock</span>
+                            {isLoggingIn ? (
+                                <>
+                                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                                    Authenticating...
+                                </>
+                            ) : (
+                                <>
+                                    Authorize Access
+                                    <span className="material-symbols-outlined font-black text-xl">lock</span>
+                                </>
+                            )}
                         </button>
                     </form>
 

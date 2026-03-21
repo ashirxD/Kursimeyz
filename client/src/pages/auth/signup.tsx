@@ -39,7 +39,7 @@ const Signup = () => {
         }}
       >
         {/* Deep Overlay for premium feel */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/30 to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-tr from-black/70 via-black/30 to-transparent"></div>
 
         <div className="relative z-10 flex flex-col justify-between h-full px-16 py-20 text-white">
           {/* Logo */}
@@ -128,7 +128,7 @@ const Signup = () => {
                   placeholder="e.g. Oliver Tree"
                   disabled={isRegistering}
                 />
-                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none !text-xl">
+                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none text-xl!">
                   person
                 </span>
               </div>
@@ -152,7 +152,7 @@ const Signup = () => {
                   placeholder="name@example.com"
                   disabled={isRegistering}
                 />
-                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none !text-xl">
+                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none text-xl!">
                   mail
                 </span>
               </div>
@@ -192,7 +192,7 @@ const Signup = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="mt-2 w-full h-12 lg:h-14 bg-[#1a2f1a] hover:bg-black text-white font-black text-base lg:text-lg rounded-[18px] transition-all duration-500 shadow-xl shadow-[#1a2f1a]/20 hover:shadow-black/30 hover:-translate-y-0.5 flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:translate-y-0 flex-shrink-0"
+              className="mt-2 w-full h-12 lg:h-14 bg-[#1a2f1a] hover:bg-black text-white font-black text-base lg:text-lg rounded-[18px] transition-all duration-500 shadow-xl shadow-[#1a2f1a]/20 hover:shadow-black/30 hover:-translate-y-0.5 flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:translate-y-0 shrink-0"
               disabled={isRegistering}
             >
               {isRegistering ? (
@@ -210,17 +210,17 @@ const Signup = () => {
 
           {/* Divider */}
           <div className="relative flex items-center py-2 lg:py-4">
-            <div className="flex-grow border-t border-slate-100"></div>
-            <span className="flex-shrink-0 mx-4 text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">
+            <div className="grow border-t border-slate-100"></div>
+            <span className="shrink-0 mx-4 text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">
               Or use social
             </span>
-            <div className="flex-grow border-t border-slate-100"></div>
+            <div className="grow border-t border-slate-100"></div>
           </div>
 
           {/* Google Button */}
           <button
             type="button"
-            className="w-full h-13 lg:h-14 bg-white border border-slate-100 hover:border-[#5ef037] hover:bg-slate-50 text-[#1a2f1a] font-black rounded-[18px] transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer shadow-sm flex-shrink-0"
+            className="w-full h-13 lg:h-14 bg-white border border-slate-100 hover:border-[#5ef037] hover:bg-slate-50 text-[#1a2f1a] font-black rounded-[18px] transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer shadow-sm shrink-0"
           >
             <svg
               className="w-5 h-5 lg:w-6 lg:h-6"

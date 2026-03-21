@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AdminLayout from '../pages/admin/index';
+import AdminGuard from '../components/AdminGuard';
 
 const AdminDashboard = lazy(() => import('../pages/admin/dashboard/index'));
 const AdminChairs = lazy(() => import('../pages/admin/chairs/index'));
@@ -12,7 +13,7 @@ const AdminSettings = lazy(() => import('../pages/admin/settings/index'));
 export const adminRoutes = [
     {
         path: '/admin',
-        element: <AdminLayout />,
+        element: <AdminGuard><AdminLayout /></AdminGuard>,
         children: [
             {
                 path: 'dashboard',

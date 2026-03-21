@@ -1,7 +1,7 @@
 const Product = require('../models/Product');
 
 // Get all products (optionally filtered by category)
-exports.getAllProducts = async (req, res) => {
+const getAllProducts = async (req, res) => {
   try {
     const { category } = req.query;
     const filter = category ? { category } : {};
@@ -13,7 +13,7 @@ exports.getAllProducts = async (req, res) => {
 };
 
 // Create a new product
-exports.createProduct = async (req, res) => {
+const createProduct = async (req, res) => {
   try {
     const { name, price, image, description, color, category } = req.body;
     const newProduct = new Product({
@@ -32,7 +32,7 @@ exports.createProduct = async (req, res) => {
 };
 
 // Get a single product by ID
-exports.getProductById = async (req, res) => {
+const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
@@ -45,7 +45,7 @@ exports.getProductById = async (req, res) => {
 };
 
 // Get products grouped by category for Top Picks
-exports.getGroupedProducts = async (req, res) => {
+const getGroupedProducts = async (req, res) => {
   try {
     const categories = ['chair', 'table', 'sofa'];
     const grouped = {};
@@ -61,7 +61,7 @@ exports.getGroupedProducts = async (req, res) => {
 };
 
 // Delete a product by ID
-exports.deleteProduct = async (req, res) => {
+const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedProduct = await Product.findByIdAndDelete(id);
@@ -72,4 +72,12 @@ exports.deleteProduct = async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: 'Error deleting product', error: error.message });
   }
+};
+
+module.exports = {
+  getAllProducts,
+  createProduct,
+  getProductById,
+  getGroupedProducts,
+  deleteProduct
 };

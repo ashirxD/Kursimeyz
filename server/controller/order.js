@@ -4,7 +4,7 @@ const Cart = require('../models/Cart');
 // @desc    Create new order
 // @route   POST /api/order
 // @access  Private
-exports.createOrder = async (req, res) => {
+const createOrder = async (req, res) => {
     const {
         items,
         shippingAddress,
@@ -63,7 +63,7 @@ exports.createOrder = async (req, res) => {
 // @desc    Get logged in user orders
 // @route   GET /api/order/myorders
 // @access  Private
-exports.getMyOrders = async (req, res) => {
+const getMyOrders = async (req, res) => {
     try {
         const orders = await Order.find({ user: req.user.id || req.user._id }).sort('-createdAt');
         res.status(200).json({
@@ -82,7 +82,7 @@ exports.getMyOrders = async (req, res) => {
 // @desc    Get order by ID
 // @route   GET /api/order/:id
 // @access  Private
-exports.getOrderById = async (req, res) => {
+const getOrderById = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id).populate('user', 'username email');
 
@@ -104,4 +104,10 @@ exports.getOrderById = async (req, res) => {
             error: err.message,
         });
     }
+};
+
+module.exports = {
+    createOrder,
+    getMyOrders,
+    getOrderById
 };

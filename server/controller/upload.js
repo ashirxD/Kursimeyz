@@ -1,4 +1,4 @@
-exports.uploadImage = async (req, res) => {
+const uploadImage = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -12,4 +12,8 @@ exports.uploadImage = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error uploading file', error: error.message });
   }
+};
+
+module.exports = {
+  uploadImage
 };

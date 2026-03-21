@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "@/pages/admin/layout/Header";
 import api from "@/utils/Axios";
+import DebugAuth from "@/components/DebugAuth";
 
 export default function SettingsPage() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
@@ -78,8 +79,10 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col gap-4 px-0 md:px-2 pb-6">
-      <Header />
+    <>
+      <DebugAuth />
+      <div className="flex-1 flex flex-col gap-4 px-0 md:px-2 pb-6">
+        <Header />
 
       <div className="flex flex-col gap-6 px-4 md:px-2">
         {/* Page Title */}
@@ -183,7 +186,7 @@ export default function SettingsPage() {
                     </>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined !text-lg">
+                      <span className="material-symbols-outlined text-lg!">
                         save
                       </span>
                       Save Changes
@@ -198,7 +201,7 @@ export default function SettingsPage() {
           <div className="bg-white rounded-3xl shadow-soft p-6 md:p-8 border border-white/50">
             <div className="flex items-center gap-4 mb-6">
               <div className="size-14 rounded-2xl bg-forest-moss/5 flex items-center justify-center">
-                <span className="material-symbols-outlined !text-2xl text-forest-moss">
+                <span className="material-symbols-outlined text-2xl! text-forest-moss">
                   info
                 </span>
               </div>
@@ -280,5 +283,6 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

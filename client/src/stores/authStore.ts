@@ -1,10 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface User {
+export interface User {
   id: string;
   username: string;
   email: string;
+  role?: string;
+  image?: string;
+  provider?: string;
 }
 
 interface AuthState {
@@ -73,3 +76,4 @@ export const useIsAuthenticated = () =>
   useAuthStore((state) => state.isAuthenticated);
 export const useAuthLoading = () => useAuthStore((state) => state.isLoading);
 export const useAuthError = () => useAuthStore((state) => state.error);
+export const useIsAdmin = () => useAuthStore((state) => state.user?.role === 'admin');

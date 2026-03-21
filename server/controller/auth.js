@@ -2,7 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const googleAuthService = require('../services/googleAuth.service');
-const emailService = require('../utils/emailService');
+const emailService = require('../services/emailService');
 
 // Helper to sign JWT
 const signToken = (id) => {
@@ -27,7 +27,7 @@ const setTokenCookie = (res, token) => {
 
 // @desc    Register new user
 // @route   POST /api/v1/auth/register
-exports.register = async (req, res, next) => {
+const register = async (req, res, next) => {
     try {
         const { email, password, username, phone } = req.body; // Accepting mostly email/password/username
 
@@ -86,7 +86,8 @@ exports.register = async (req, res, next) => {
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
 
@@ -98,7 +99,7 @@ exports.register = async (req, res, next) => {
 
 // @desc    Login user
 // @route   POST /api/v1/auth/login
-exports.login = async (req, res, next) => {
+const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -128,7 +129,8 @@ exports.login = async (req, res, next) => {
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
 
@@ -140,7 +142,7 @@ exports.login = async (req, res, next) => {
 
 // @desc    Get current logged in user
 // @route   GET /api/v1/auth/current_user
-exports.currentUser = async (req, res) => {
+const currentUser = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         res.json({
@@ -149,7 +151,8 @@ exports.currentUser = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                image: user.image
+                image: user.image,
+                role: user.role
             }
         });
     } catch (err) {
@@ -160,7 +163,7 @@ exports.currentUser = async (req, res) => {
 
 // @desc    Logout user
 // @route   POST /api/v1/auth/logout
-exports.logout = async (req, res) => {
+const logout = async (req, res) => {
     try {
         // Clear the JWT cookie
         res.cookie('jwt', '', {
@@ -182,7 +185,7 @@ exports.logout = async (req, res) => {
 
 // @desc    Google OAuth login/signup
 // @route   POST /api/v1/auth/google
-exports.googleAuth = async (req, res) => {
+const googleAuth = async (req, res) => {
     try {
         const { token } = req.body;
 
@@ -284,4 +287,13 @@ exports.googleAuth = async (req, res) => {
             message: 'Server error during authentication' 
         });
     }
+};
+
+
+module.exports = {
+    googleAuth,
+    register,
+    login,
+    currentUser,
+    logout
 };

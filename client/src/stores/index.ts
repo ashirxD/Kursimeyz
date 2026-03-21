@@ -9,6 +9,7 @@ export {
   useIsAuthenticated,
   useAuthLoading,
   useAuthError,
+  useIsAdmin,
 } from "./authStore";
 export type { User } from "./authStore";
 

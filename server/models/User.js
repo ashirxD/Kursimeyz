@@ -44,7 +44,7 @@ const UserSchema = new mongoose.Schema({
   },
 
   whatsappNumber: {
-    type: Number,
+    type: String,
     trim: true,
   },
 });
