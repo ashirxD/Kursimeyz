@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const googleAuthService = require('../services/googleAuth.service');
+const emailService = require('../utils/emailService');
 
 // Helper to sign JWT
 const signToken = (id) => {
@@ -43,9 +44,6 @@ exports.register = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Please provide your username' });
         }
 
-        if (!phone) {
-            return res.status(400).json({ success: false, message: 'Please provide your phone number' });
-        }
 
         // Check if user exists
         let user = await User.findOne({ email });
@@ -65,6 +63,19 @@ exports.register = async (req, res, next) => {
             phone,
             // image: gravatar? or default
         });
+
+        // Send welcome email
+        try {
+            await emailService.sendWelcomeEmail(
+                user.email,
+                user.username,
+                `${process.env.CLIENT_URL || 'http://localhost:3000'}/login`
+            );
+            console.log(`Welcome email sent to ${user.email}`);
+        } catch (emailError) {
+            console.error('Failed to send welcome email:', emailError);
+            // Continue with registration even if email fails
+        }
 
         // Send token
         const token = signToken(user._id);
@@ -221,6 +232,19 @@ exports.googleAuth = async (req, res) => {
                 // No password for Google OAuth users
                 // They can only login via Google
             });
+
+            // Send welcome email for new Google users
+            try {
+                await emailService.sendWelcomeEmail(
+                    user.email,
+                    user.username,
+                    `${process.env.CLIENT_URL || 'http://localhost:3000'}/login`
+                );
+                console.log(`Welcome email sent to Google user ${user.email}`);
+            } catch (emailError) {
+                console.error('Failed to send welcome email to Google user:', emailError);
+                // Continue with registration even if email fails
+            }
         }
 
         // Step 4: Generate our own JWT session token
