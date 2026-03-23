@@ -72,7 +72,7 @@ export default function OrderHistory() {
       </div>
 
       {myOrders.length === 0 ? (
-        <div className="bg-[#f4f5f0] rounded-[2.5rem] py-20 flex flex-col items-center justify-center text-center">
+        <div className="bg-[#f4f5f0] rounded-5xl py-20 flex flex-col items-center justify-center text-center">
           <div className="size-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm">
             <span className="material-symbols-outlined text-[40px] text-[#1a2f1a]/10">
               history
@@ -97,7 +97,7 @@ export default function OrderHistory() {
           {myOrders.map((order: any) => (
             <div
               key={order._id}
-              className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group"
+              className="bg-white rounded-5xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group"
             >
               {/* Order Header */}
               <div className="bg-slate-50/50 px-8 py-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-6">
@@ -163,7 +163,7 @@ export default function OrderHistory() {
                         key={idx}
                         className="flex items-center gap-6 pb-6 border-b border-slate-50 last:border-0 last:pb-0"
                       >
-                        <div className="size-20 bg-[#f4f5f0] rounded-2xl flex-shrink-0 flex items-center justify-center p-3">
+                        <div className="size-20 bg-[#f4f5f0] rounded-2xl shrink-0 flex items-center justify-center p-3">
                           <img
                             src={item.product?.image}
                             alt={item.product?.name}
@@ -193,7 +193,7 @@ export default function OrderHistory() {
 
                   <div className="space-y-8">
                     {/* Shipping Address */}
-                    <div className="bg-[#f4f5f0]/50 rounded-[2rem] p-6">
+                    <div className="bg-[#f4f5f0]/50 rounded-4xl p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <span className="material-symbols-outlined text-[#1a2f1a]/20 text-xl">
                           local_shipping

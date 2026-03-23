@@ -1,47 +1,36 @@
 import Header from "@/pages/admin/layout/Header";
-
-const recentOrders = [
-  {
-    id: "#KM-8821",
-    name: "Benjamin T.",
-    initials: "BT",
-    color: "#7ab89a",
-    product: "Nordic Oak Chair",
-    status: "delivered",
-  },
-  {
-    id: "#KM-8822",
-    name: "Mila Woods",
-    initials: "MW",
-    color: "#d4824a",
-    product: "Sunset Coffee Table",
-    status: "transit",
-  },
-  {
-    id: "#KM-8823",
-    name: "Soren K.",
-    initials: "SK",
-    color: "#9a7ab8",
-    product: "Terracotta Lounge",
-    status: "delivered",
-  },
-  {
-    id: "#KM-8824",
-    name: "Jack Harper",
-    initials: "JH",
-    color: "#4a7c4a",
-    product: "Bubbly Stool",
-    status: "processing",
-  },
-];
-
-const statusStyles = {
-  delivered: "bg-status-delivered-bg text-status-delivered-text",
-  transit: "bg-status-transit-bg text-status-transit-text",
-  processing: "bg-status-processing-bg text-status-processing-text",
-};
+import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import RecentOrders from "./recentOrders";
 
 export default function Dashboard() {
+  const { stats, isLoading, error } = useAdminDashboard();
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-forest-moss"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-red-500">Error loading dashboard data</div>
+      </div>
+    );
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  
   return (
     <div className="flex-1 flex flex-col gap-4 px-0 md:px-2 pb-6">
       <Header />
@@ -55,7 +44,7 @@ export default function Dashboard() {
             {/* Total Sales */}
             <div className="bg-white p-6 rounded-3xl shadow-soft relative overflow-hidden group hover:scale-[1.01] transition-transform border border-white/50">
               <div className="absolute -right-2 -bottom-2 text-forest-moss/5 group-hover:text-forest-moss/10 transition-colors pointer-events-none">
-                <span className="material-symbols-outlined !text-[100px]">
+                <span className="material-symbols-outlined text-[100px]!">
                   chair_alt
                 </span>
               </div>
@@ -64,7 +53,7 @@ export default function Dashboard() {
                   Total Sales
                 </p>
                 <h3 className="text-3xl md:text-4xl font-black text-forest-moss tracking-tighter">
-                  $12,450
+                  {formatCurrency(stats?.totalSales || 0)}
                 </h3>
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-forest-moss-light font-black text-[10px] px-3 py-1 bg-sage-soft rounded-full flex items-center gap-1 shadow-inner">
@@ -84,7 +73,7 @@ export default function Dashboard() {
                   Active Orders
                 </p>
                 <h3 className="text-3xl md:text-4xl font-black text-forest-moss tracking-tighter">
-                  48
+                  {stats?.activeOrders || 0}
                 </h3>
               </div>
               <div className="mt-4 space-y-2">
@@ -93,13 +82,13 @@ export default function Dashboard() {
                     Progress
                   </span>
                   <span className="text-xs font-black text-forest-moss">
-                    75%
+                    {stats?.totalOrders ? Math.round(((stats?.activeOrders || 0) / stats?.totalOrders) * 100) : 0}%
                   </span>
                 </div>
                 <div className="h-4 w-full bg-oatmeal rounded-full p-0.5 shadow-inner overflow-hidden">
                   <div
                     className="h-full bg-forest-moss-light rounded-full transition-all duration-1000"
-                    style={{ width: "75%" }}
+                    style={{ width: `${stats?.totalOrders ? Math.round(((stats?.activeOrders || 0) / stats?.totalOrders) * 100) : 0}%` }}
                   />
                 </div>
               </div>
@@ -109,10 +98,10 @@ export default function Dashboard() {
             <div className="bg-white p-6 rounded-3xl shadow-soft flex flex-col justify-between hover:scale-[1.01] transition-transform border border-white/50">
               <div className="space-y-0.5">
                 <p className="text-forest-moss-light font-bold uppercase tracking-widest text-[10px]">
-                  New Customers
+                  Total Orders
                 </p>
                 <h3 className="text-3xl md:text-4xl font-black text-forest-moss tracking-tighter">
-                  124
+                  {stats?.totalOrders || 0}
                 </h3>
               </div>
               <div className="mt-4 flex items-end gap-1.5 h-12 pointer-events-none">
@@ -128,73 +117,7 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Orders Table */}
-          <div className="bg-white rounded-3xl shadow-soft p-4 md:p-8 border border-white/50 flex-1 overflow-hidden">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black text-forest-moss tracking-tight">
-                Recent Orders
-              </h3>
-              <button className="text-clay font-extrabold text-[11px] flex items-center gap-1.5 hover:underline tracking-wide group">
-                View all
-                <span className="material-symbols-outlined !text-base group-hover:translate-x-1 transition-transform">
-                  arrow_right_alt
-                </span>
-              </button>
-            </div>
-
-            <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0 custom-scrollbar">
-              <table className="w-full text-left border-separate border-spacing-y-2 min-w-[600px]">
-                <thead>
-                  <tr className="text-forest-moss-light/50 font-black text-[9px] uppercase tracking-[0.15em]">
-                    <th className="pb-3 pl-3">Order ID</th>
-                    <th className="pb-3 px-3">Customer</th>
-                    <th className="pb-3 px-3">Product</th>
-                    <th className="pb-3 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="group cursor-pointer">
-                      <td className="py-3 pl-3 font-black text-forest-moss text-[14px] md:text-[15px] group-hover:text-clay transition-colors">
-                        {order.id}
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="size-8 rounded-full flex items-center justify-center font-black text-white text-[10px] border border-white shadow-soft"
-                            style={{ backgroundColor: order.color }}
-                          >
-                            {order.initials}
-                          </div>
-                          <span className="font-bold text-forest-moss text-[14px] md:text-[15px]">
-                            {order.name}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-3">
-                          <div className="size-8 md:size-9 rounded-xl bg-oatmeal flex items-center justify-center text-forest-moss-light group-hover:scale-110 transition-transform">
-                            <span className="material-symbols-outlined !text-lg">
-                              chair
-                            </span>
-                          </div>
-                          <span className="font-bold text-forest-moss text-[14px] md:text-[15px]">
-                            {order.product}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 text-center">
-                        <span
-                          className={`px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest inline-block shadow-sm ${statusStyles[order.status as keyof typeof statusStyles]}`}
-                        >
-                          {order.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <RecentOrders stats={stats} />
         </div>
 
         {/* Right Sidebar Column */}
@@ -202,7 +125,7 @@ export default function Dashboard() {
           {/* Goal Card */}
           <div className="bg-sage-leaf text-white p-8 rounded-3xl flex flex-col gap-4 shadow-medium relative overflow-hidden group border border-white/5">
             <div className="absolute -right-2 -top-2 text-white/10 group-hover:rotate-12 transition-transform pointer-events-none">
-              <span className="material-symbols-outlined !text-[100px]">
+              <span className="material-symbols-outlined text-[100px]!">
                 star
               </span>
             </div>

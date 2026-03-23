@@ -1,100 +1,32 @@
 import Header from "@/pages/admin/layout/Header";
-import OrdersTable, { type Order } from "./table";
-
-const staticOrders: Order[] = [
-  {
-    id: "29384",
-    customer: {
-      name: "Alexander Reed",
-      email: "alex.reed@email.com",
-      avatar:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-    },
-    product: {
-      name: "Nordic Oak Chair",
-      category: "Chair",
-      image:
-        "https://images.unsplash.com/photo-1592078615290-033ee584e267?w=500",
-    },
-    amount: 450,
-    status: "Delivered",
-    date: "Oct 24, 2023",
-  },
-  {
-    id: "29385",
-    customer: {
-      name: "Sarah Jenkins",
-      email: "sarah.j@email.com",
-      avatar:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
-    },
-    product: {
-      name: "Terracotta Lounge",
-      category: "Chair",
-      image:
-        "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500",
-    },
-    amount: 1100,
-    status: "In Transit",
-    date: "Oct 25, 2023",
-  },
-  {
-    id: "29386",
-    customer: {
-      name: "Michael Chen",
-      email: "m.chen@email.com",
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-    },
-    product: {
-      name: "Oak Dining Table",
-      category: "Table",
-      image:
-        "https://images.unsplash.com/photo-1577146333355-630f775370c8?w=800",
-    },
-    amount: 850,
-    status: "Processing",
-    date: "Oct 26, 2023",
-  },
-  {
-    id: "29387",
-    customer: {
-      name: "Emma Wilson",
-      email: "emma.w@email.com",
-      avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-    },
-    product: {
-      name: "Minimalist Stool",
-      category: "Chair",
-      image:
-        "https://images.unsplash.com/photo-1503602642458-232111445657?w=500",
-    },
-    amount: 220,
-    status: "Cancelled",
-    date: "Oct 27, 2023",
-  },
-  {
-    id: "29388",
-    customer: {
-      name: "James Miller",
-      email: "j.miller@email.com",
-      avatar:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-    },
-    product: {
-      name: "Rustic Bench",
-      category: "Table",
-      image:
-        "https://images.unsplash.com/photo-1517705008128-361805f42e86?w=800",
-    },
-    amount: 380,
-    status: "Delivered",
-    date: "Oct 28, 2023",
-  },
-];
+import OrdersTable from "./table";
+import { useAllOrders } from "@/hooks/useAdminOrders";
 
 export default function OrdersPage() {
+  const { orders, isLoading, error, refetch } = useAllOrders();
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-forest-moss"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-4">
+        <div className="text-red-500 font-bold">Error loading orders</div>
+        <button 
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-forest-moss text-white rounded-xl font-black hover:bg-forest-moss-light transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col gap-4 px-0 md:px-2 pb-6">
       <Header />
@@ -117,7 +49,7 @@ export default function OrdersPage() {
                 Total
               </span>
               <span className="text-lg md:text-xl font-black text-forest-moss leading-none">
-                1,284
+                {orders.length}
               </span>
             </div>
             <div className="flex-1 lg:flex-none bg-white px-6 py-3 rounded-3xl shadow-soft border border-white/50 flex flex-col items-center min-w-[100px] md:min-w-[120px]">
@@ -145,13 +77,13 @@ export default function OrdersPage() {
           </div>
           <div className="flex gap-3">
             <button className="flex-1 md:flex-none px-6 py-3 md:py-4 bg-white rounded-full border border-forest-moss/5 text-forest-moss font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-forest-moss hover:text-white transition-all shadow-sm">
-              <span className="material-symbols-outlined !text-xl">
+              <span className="material-symbols-outlined text-xl!">
                 filter_list
               </span>
               Filter
             </button>
             <button className="flex-1 md:flex-none px-6 py-3 md:py-4 bg-forest-moss text-white rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-forest-moss-light transition-all shadow-medium">
-              <span className="material-symbols-outlined !text-xl">
+              <span className="material-symbols-outlined text-xl!">
                 download
               </span>
               Export
@@ -161,7 +93,7 @@ export default function OrdersPage() {
 
         {/* Main Table */}
         <div className="px-4 md:px-2 overflow-x-auto custom-scrollbar">
-          <OrdersTable orders={staticOrders} />
+          <OrdersTable orders={orders} />
         </div>
 
         {/* Pagination */}
