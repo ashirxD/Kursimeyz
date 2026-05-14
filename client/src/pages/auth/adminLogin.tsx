@@ -30,7 +30,7 @@ const AdminLogin = () => {
                         <div className="size-10 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
                             <span className="material-symbols-outlined text-white font-bold text-2xl">grid_view</span>
                         </div>
-                        <h1 className="text-3xl font-black tracking-tight uppercase">Earthly Admin</h1>
+                        <h1 className="text-3xl font-black tracking-tight uppercase">Kursimeyz Admin</h1>
                     </div>
 
                     {/* Content */}
@@ -55,7 +55,7 @@ const AdminLogin = () => {
                         <div className="size-9 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
                             <span className="material-symbols-outlined text-white font-bold text-xl">grid_view</span>
                         </div>
-                        <h1 className="text-xl font-black tracking-tight uppercase text-[#1a2f1a]">Earthly Admin</h1>
+                        <h1 className="text-xl font-black tracking-tight uppercase text-[#1a2f1a]">Kursimyz Admin</h1>
                     </div>
 
                     {/* Header */}
@@ -70,10 +70,14 @@ const AdminLogin = () => {
 
                     {/* Error Message */}
                     {loginError && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-bold">
-                            {loginError}
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-bold animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-lg">error</span>
+                                {loginError}
+                            </div>
                         </div>
                     )}
+
 
                     {/* Form */}
                     <form className="flex flex-col gap-4 lg:gap-5" onSubmit={handleSubmit}>
@@ -86,7 +90,7 @@ const AdminLogin = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full h-11 lg:h-12 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#5ef037] focus:ring-4 focus:ring-[#5ef037]/10 transition-all duration-300 outline-none shadow-sm"
-                                placeholder="admin@earthly.com"
+                                placeholder="admin@kursimyz.com"
                             />
                         </div>
 

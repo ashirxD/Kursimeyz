@@ -39,8 +39,8 @@ export default function Header() {
             </span>
           </div>
           <h1 className="text-base font-black text-[#1a2f1a] tracking-tight flex flex-col leading-none">
-            <span>Relaxing</span>
-            <span className="text-[#5ef037]">Chair Shop</span>
+            <span>Kursimeyz</span>
+            <span className="text-[#5ef037]">Shop</span>
           </h1>
         </Link>
 

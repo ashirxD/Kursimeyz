@@ -4,20 +4,22 @@ import type { Chair as Product } from '@/pages/admin/chairs/cards';
 
 export interface ProductQueryOptions {
     category?: 'chair' | 'table' | 'sofa' | 'bed' | 'other';
+    minPrice?: number;
+    maxPrice?: number;
 }
 
 const PRODUCTS_QUERY_KEY = ['products'];
 
 export const useProducts = (options: ProductQueryOptions = {}) => {
     const queryClient = useQueryClient();
-    const { category } = options;
+    const { category, minPrice, maxPrice } = options;
 
-    // Fetch products (optionally filtered by category)
+    // Fetch products (optionally filtered by category and price)
     const { data: products = [], isLoading, error } = useQuery<Product[]>({
-        queryKey: [...PRODUCTS_QUERY_KEY, category],
+        queryKey: [...PRODUCTS_QUERY_KEY, category, minPrice, maxPrice],
         queryFn: async () => {
             const response = await api.get('/products', {
-                params: { category }
+                params: { category, minPrice, maxPrice }
             });
             return response.data.map((item: any) => ({
                 ...item,

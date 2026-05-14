@@ -50,7 +50,7 @@ const Signup = () => {
               </span>
             </div>
             <span className="text-3xl font-black tracking-tight uppercase">
-              Earthly
+              Kursimeyz
             </span>
           </div>
 
@@ -84,7 +84,7 @@ const Signup = () => {
               </span>
             </div>
             <span className="text-xl font-black tracking-tight uppercase text-[#1a2f1a]">
-              Earthly
+              Kursimyz
             </span>
           </div>
 

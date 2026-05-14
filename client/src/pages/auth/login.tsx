@@ -56,7 +56,7 @@ const Login = () => {
               </span>
             </div>
             <h1 className="text-3xl font-black tracking-tight uppercase">
-              Earthly
+              Kursimeyz
             </h1>
           </div>
 
@@ -88,7 +88,7 @@ const Login = () => {
               </span>
             </div>
             <h1 className="text-xl font-black tracking-tight uppercase text-[#1a2f1a]">
-              Earthly
+              Kursimyz
             </h1>
           </div>
 

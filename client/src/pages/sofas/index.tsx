@@ -3,23 +3,17 @@ import { Link } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
 import SofaProductCard from "./cards";
 
-const MATERIALS = ["Fabric", "Leather", "Velvet", "Linen"];
-const COLOR_SWATCHES = [
-  { name: "Beige", value: "#F5F5DC" },
-  { name: "Grey", value: "#808080" },
-  { name: "Navy", value: "#000080" },
-  { name: "Forest Green", value: "#228B22" },
-];
-
 const ITEMS_PER_PAGE = 6;
 
 export default function SofasPage() {
-  const { products: sofas, isLoading } = useProducts({ category: "sofa" });
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
+  const { products: sofas, isLoading } = useProducts({ 
+    category: "sofa",
+    minPrice: priceRange[0],
+    maxPrice: priceRange[1]
+  });
 
   // Filter state
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
-  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   useEffect(() => {
@@ -27,34 +21,12 @@ export default function SofasPage() {
   }, []);
 
 
-  // Toggle material filter
-  const toggleMaterial = (material: string) => {
-    setSelectedMaterials((prev) =>
-      prev.includes(material)
-        ? prev.filter((m) => m !== material)
-        : [...prev, material],
-    );
-  };
 
-  // Filtered products
+
+  // Filtered products (handled by server now)
   const filteredSofas = useMemo(() => {
-    return sofas.filter((sofa) => {
-      if (sofa.price < priceRange[0] || sofa.price > priceRange[1])
-        return false;
-      if (selectedMaterials.length > 0) {
-        const desc = (sofa.description || "").toLowerCase();
-        const matchesMaterial = selectedMaterials.some((m) =>
-          desc.includes(m.toLowerCase()),
-        );
-        if (!matchesMaterial) return false;
-      }
-      if (selectedColor) {
-        const sofaColor = (sofa.color || "").toLowerCase();
-        if (!sofaColor.includes(selectedColor.toLowerCase())) return false;
-      }
-      return true;
-    });
-  }, [sofas, priceRange, selectedMaterials, selectedColor]);
+    return sofas;
+  }, [sofas]);
 
   const visibleSofas = filteredSofas.slice(0, visibleCount);
   const hasMore = visibleCount < filteredSofas.length;
@@ -117,58 +89,7 @@ export default function SofasPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h3 className="text-sm font-bold text-[#1a2f1a] mb-4">Materials</h3>
-            <div className="space-y-3">
-              {MATERIALS.map((material) => (
-                <label
-                  key={material}
-                  className="flex items-center gap-3 cursor-pointer group"
-                >
-                  <div
-                    className={`size-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                      selectedMaterials.includes(material)
-                        ? "border-[#5ef037] bg-[#5ef037]"
-                        : "border-slate-200 group-hover:border-[#5ef037]/50"
-                    }`}
-                    onClick={() => toggleMaterial(material)}
-                  >
-                    {selectedMaterials.includes(material) && (
-                      <span className="material-symbols-outlined text-white text-[14px] font-bold">
-                        check
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[13px] font-medium text-[#1a2f1a]/70">
-                    {material}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h3 className="text-sm font-bold text-[#1a2f1a] mb-4">Colors</h3>
-            <div className="flex flex-wrap gap-2.5">
-              {COLOR_SWATCHES.map((swatch) => (
-                <button
-                  key={swatch.name}
-                  onClick={() =>
-                    setSelectedColor(
-                      selectedColor === swatch.name ? null : swatch.name,
-                    )
-                  }
-                  className={`size-8 rounded-full transition-all cursor-pointer ${
-                    selectedColor === swatch.name
-                      ? "ring-2 ring-[#5ef037] ring-offset-2 scale-110"
-                      : "hover:scale-110"
-                  }`}
-                  style={{ backgroundColor: swatch.value }}
-                  title={swatch.name}
-                />
-              ))}
-            </div>
-          </div>
         </aside>
 
         <div className="flex-1 min-w-0">

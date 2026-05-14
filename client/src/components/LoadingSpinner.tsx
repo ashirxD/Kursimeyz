@@ -22,7 +22,7 @@ const LoadingSpinner = () => (
         <div className="mt-8 text-center space-y-1">
             <div className="flex items-center justify-center gap-2">
                 <span className="h-px w-8 bg-forest-moss/10"></span>
-                <p className="text-forest-moss font-black text-xs uppercase tracking-[0.15em]">Kursimeyz</p>
+                <p className="text-forest-moss font-black text-xs uppercase tracking-[0.15em]">Kursimyz</p>
                 <span className="h-px w-8 bg-forest-moss/10"></span>
             </div>
             <p className="text-forest-moss-light/50 font-bold text-[9px] uppercase tracking-widest animate-pulse">

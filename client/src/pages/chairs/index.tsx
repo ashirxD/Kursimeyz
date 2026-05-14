@@ -3,30 +3,17 @@ import { Link } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
 import ChairProductCard from "./cards";
 
-const MATERIALS = [
-  "Solid Oak",
-  "Walnut Finish",
-  "Natural Rattan",
-  "Recycled Plastic",
-];
-const COLOR_SWATCHES = [
-  { name: "Brown", value: "#8B6914" },
-  { name: "Beige", value: "#C8B896" },
-  { name: "Dark Grey", value: "#4A4A4A" },
-  { name: "Green", value: "#6B8E5A" },
-  { name: "Dark Brown", value: "#5C4033" },
-  { name: "Light Blue", value: "#B0D4DB" },
-];
-
 const ITEMS_PER_PAGE = 6;
 
 export default function ChairsPage() {
-  const { products: chairs, isLoading } = useProducts({ category: "chair" });
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1500]);
+  const { products: chairs, isLoading } = useProducts({ 
+    category: "chair",
+    minPrice: priceRange[0],
+    maxPrice: priceRange[1]
+  });
 
   // Filter state
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1500]);
-  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   useEffect(() => {
@@ -34,37 +21,12 @@ export default function ChairsPage() {
   }, []);
 
 
-  // Toggle material filter
-  const toggleMaterial = (material: string) => {
-    setSelectedMaterials((prev) =>
-      prev.includes(material)
-        ? prev.filter((m) => m !== material)
-        : [...prev, material],
-    );
-  };
 
-  // Filtered products
+
+  // Filtered products (handled by server now, but keeping memo for pagination logic)
   const filteredChairs = useMemo(() => {
-    return chairs.filter((chair) => {
-      // Price
-      if (chair.price < priceRange[0] || chair.price > priceRange[1])
-        return false;
-      // Materials
-      if (selectedMaterials.length > 0) {
-        const desc = (chair.description || "").toLowerCase();
-        const matchesMaterial = selectedMaterials.some((m) =>
-          desc.includes(m.toLowerCase()),
-        );
-        if (!matchesMaterial) return false;
-      }
-      // Color
-      if (selectedColor) {
-        const chairColor = (chair.color || "").toLowerCase();
-        if (!chairColor.includes(selectedColor.toLowerCase())) return false;
-      }
-      return true;
-    });
-  }, [chairs, priceRange, selectedMaterials, selectedColor]);
+    return chairs;
+  }, [chairs]);
 
   const visibleChairs = filteredChairs.slice(0, visibleCount);
   const hasMore = visibleCount < filteredChairs.length;
@@ -136,60 +98,7 @@ export default function ChairsPage() {
             </div>
           </div>
 
-          {/* Materials */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h3 className="text-sm font-bold text-[#1a2f1a] mb-4">Materials</h3>
-            <div className="space-y-3">
-              {MATERIALS.map((material) => (
-                <label
-                  key={material}
-                  className="flex items-center gap-3 cursor-pointer group"
-                >
-                  <div
-                    className={`size-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                      selectedMaterials.includes(material)
-                        ? "border-[#5ef037] bg-[#5ef037]"
-                        : "border-slate-200 group-hover:border-[#5ef037]/50"
-                    }`}
-                    onClick={() => toggleMaterial(material)}
-                  >
-                    {selectedMaterials.includes(material) && (
-                      <span className="material-symbols-outlined text-white text-[14px] font-bold">
-                        check
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[13px] font-medium text-[#1a2f1a]/70">
-                    {material}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
 
-          {/* Colors */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h3 className="text-sm font-bold text-[#1a2f1a] mb-4">Colors</h3>
-            <div className="flex flex-wrap gap-2.5">
-              {COLOR_SWATCHES.map((swatch) => (
-                <button
-                  key={swatch.name}
-                  onClick={() =>
-                    setSelectedColor(
-                      selectedColor === swatch.name ? null : swatch.name,
-                    )
-                  }
-                  className={`size-8 rounded-full transition-all cursor-pointer ${
-                    selectedColor === swatch.name
-                      ? "ring-2 ring-[#5ef037] ring-offset-2 scale-110"
-                      : "hover:scale-110"
-                  }`}
-                  style={{ backgroundColor: swatch.value }}
-                  title={swatch.name}
-                />
-              ))}
-            </div>
-          </div>
         </aside>
 
         {/* ─── Product Grid ─── */}

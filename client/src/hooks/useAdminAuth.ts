@@ -98,15 +98,20 @@ export const useAdminAuth = () => {
     },
   });
 
+  const getErrorMessage = (error: any) => {
+    return error?.response?.data?.message || error?.message || null;
+  };
+
   return {
     login: loginMutation.mutate,
     isLoggingIn: loginMutation.isPending,
-    loginError: loginMutation.error,
+    loginError: getErrorMessage(loginMutation.error),
     register: registerMutation.mutate,
     isRegistering: registerMutation.isPending,
-    registerError: registerMutation.error,
+    registerError: getErrorMessage(registerMutation.error),
     googleAuth: googleAuthMutation.mutate,
     isGoogleAuthing: googleAuthMutation.isPending,
-    googleAuthError: googleAuthMutation.error,
+    googleAuthError: getErrorMessage(googleAuthMutation.error),
   };
+
 };
