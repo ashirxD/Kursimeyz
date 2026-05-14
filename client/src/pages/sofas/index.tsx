@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
 import SofaProductCard from "./cards";
@@ -21,6 +21,11 @@ export default function SofasPage() {
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
 
   // Toggle material filter
   const toggleMaterial = (material: string) => {
@@ -70,7 +75,12 @@ export default function SofasPage() {
           Home
         </Link>
         <span>/</span>
-        <span className="text-[#1a2f1a]/40">Shop</span>
+        <Link
+          to="/dashboard#find-your-space"
+          className="hover:text-[#1a2f1a] transition-colors"
+        >
+          Shop
+        </Link>
         <span>/</span>
         <span className="text-[#1a2f1a]">Sofas</span>
       </nav>
@@ -217,6 +227,48 @@ export default function SofasPage() {
           )}
         </div>
       </div>
+
+
+      {/* Explore Other Collections */}
+      <section className="mt-24 pt-16 border-t border-slate-100">
+        <h2 className="text-[24px] font-black text-[#1a2f1a] mb-10 text-center uppercase tracking-widest">
+          Explore Other Collections
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[900px] mx-auto">
+          {[
+            {
+              name: "Chairs",
+              url: "/shop/chairs",
+              img: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&q=80&w=800",
+            },
+            {
+              name: "Tables",
+              url: "/shop/tables",
+              img: "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?auto=format&fit=crop&q=80&w=800",
+            },
+          ].map((cat) => (
+            <Link
+              key={cat.name}
+              to={cat.url}
+              className="group relative h-[250px] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500"
+            >
+              <img
+                src={cat.img}
+                alt={cat.name}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500 flex flex-col items-center justify-center">
+                <h3 className="text-white text-2xl font-black uppercase tracking-widest transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                  {cat.name}
+                </h3>
+                <div className="mt-4 px-6 py-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-full text-white text-[12px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  View Collection
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

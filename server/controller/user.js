@@ -129,8 +129,30 @@ const updateWhatsAppNumber = async (req, res) => {
     }
 };
 
+// @desc    Get all non-admin customers (admin only)
+// @route   GET /api/v1/user/admin/all
+const getAllCustomers = async (req, res) => {
+    try {
+        const customers = await User.find({ role: { $ne: 'admin' } })
+            .select('_id username email phone image createdAt role')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            data: customers
+        });
+    } catch (err) {
+        console.error('Error fetching customers:', err);
+        res.status(500).json({ 
+            success: false,
+            message: 'Server error' 
+        });
+    }
+};
+
 module.exports = {
     getWhatsAppNumber,
     getAdminWhatsAppNumber,
-    updateWhatsAppNumber
+    updateWhatsAppNumber,
+    getAllCustomers
 }

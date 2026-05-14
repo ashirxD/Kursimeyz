@@ -8,6 +8,12 @@ const About = lazy(() => import("../pages/about"));
 const Login = lazy(() => import("../pages/auth/login"));
 const Signup = lazy(() => import("../pages/auth/signup"));
 const AdminLogin = lazy(() => import("../pages/auth/adminLogin"));
+const ChairsPage = lazy(() => import("../pages/chairs"));
+const TablesPage = lazy(() => import("../pages/tables"));
+const SofasPage = lazy(() => import("../pages/sofas"));
+const TopPicksPage = lazy(() => import("../pages/topPicks"));
+const ProductDetailPage = lazy(() => import("../pages/topPicks/detail"));
+
 
 export const publicRoutes = [
   {
@@ -35,6 +41,46 @@ export const publicRoutes = [
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <About />
+          </Suspense>
+        ),
+      },
+      {
+        path: "top-picks",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <TopPicksPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "product/:id",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ProductDetailPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "shop/chairs",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ChairsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "shop/tables",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <TablesPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "shop/sofas",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <SofasPage />
           </Suspense>
         ),
       },

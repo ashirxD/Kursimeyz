@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { getWhatsAppNumber, getAdminWhatsAppNumber, updateWhatsAppNumber } = require('../../controller/user');
-const { protect } = require('../../middleware/auth');
+const { getWhatsAppNumber, getAdminWhatsAppNumber, updateWhatsAppNumber, getAllCustomers } = require('../../controller/user');
+const { protect, admin } = require('../../middleware/auth');
 
 // @desc    Get WhatsApp number (public - for frontend button)
 // @route   GET /user/whatsapp
@@ -10,6 +10,10 @@ router.get('/whatsapp', getWhatsAppNumber);
 // @desc    Get WhatsApp number for admin (protected)
 // @route   GET /user/admin/whatsapp
 router.get('/admin/whatsapp', protect, getAdminWhatsAppNumber);
+
+// @desc    Get all non-admin customers (admin only)
+// @route   GET /user/admin/all
+router.get('/admin/all', protect, admin, getAllCustomers);
 
 // @desc    Update WhatsApp number (admin only)
 // @route   PUT /user/whatsapp

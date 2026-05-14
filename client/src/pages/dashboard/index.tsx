@@ -1,7 +1,14 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import TopPicks from "../topPicks";
 
 export default function Dashboard() {
+  const findYourSpaceRef = useRef<HTMLDivElement>(null);
+
+  const scrollToCollection = () => {
+    findYourSpaceRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="pt-16 pb-12">
       {/* Hero Section */}
@@ -29,7 +36,10 @@ export default function Dashboard() {
           </p>
 
           <div className="flex flex-wrap items-center gap-5 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
-            <button className="h-14 px-8 bg-[#5ef037] hover:bg-[#4ad12d] text-white font-black text-base rounded-full flex items-center gap-2.5 transition-all transform hover:scale-[1.05] active:scale-95 shadow-xl shadow-[#5ef037]/20 cursor-pointer">
+            <button
+              onClick={scrollToCollection}
+              className="h-14 px-8 bg-[#5ef037] hover:bg-[#4ad12d] text-white font-black text-base rounded-full flex items-center gap-2.5 transition-all transform hover:scale-[1.05] active:scale-95 shadow-xl shadow-[#5ef037]/20 cursor-pointer"
+            >
               Shop Collection
               <span className="material-symbols-outlined font-black text-xl">
                 arrow_forward
@@ -75,7 +85,7 @@ export default function Dashboard() {
       <TopPicks limit={5} isDashboard={true} />
 
       {/* Find Your Space Section */}
-      <section className="py-16 border-t border-slate-50">
+      <section ref={findYourSpaceRef} id="find-your-space" className="py-16 border-t border-slate-50">
         <div className="flex items-end justify-between mb-12 px-4">
           <div className="max-w-md">
             <h2 className="text-[36px] font-black text-[#1a2f1a] tracking-tight leading-tight mb-3">
@@ -124,6 +134,7 @@ export default function Dashboard() {
             <Link
               to={category.url}
               key={idx}
+              id={category.name.toLowerCase()}
               className="group cursor-pointer flex flex-col items-center text-center"
             >
               <div className="relative aspect-[4/5] w-full rounded-[32px] overflow-hidden mb-6 transition-all duration-700 hover:-translate-y-2 shadow-sm hover:shadow-2xl hover:shadow-black/10">

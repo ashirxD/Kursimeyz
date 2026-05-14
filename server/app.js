@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const apiRoutes = require('./routes/apis');
 const connectDB = require('./config/db');
+const mongoose = require("mongoose");
 
 // Load config
 dotenv.config();
@@ -30,10 +31,15 @@ app.use(cors({
 // Routes
 app.use('/api', apiRoutes);
 
-const mongoose = require('mongoose');
+
 
 const PORT = process.env.PORT || 5000;
 let server;
+
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("CONNECTED"))
+  .catch(err => console.log("ERROR:", err.message));
 
 // Connect to DB and start server
 if (process.env.MONGO_URI) {
