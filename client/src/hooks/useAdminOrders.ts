@@ -48,3 +48,25 @@ export const useUpdateOrderStatus = () => {
     error: updateStatusMutation.error,
   };
 };
+
+export const useConfirmPayment = () => {
+  const queryClient = useQueryClient();
+
+  const confirmPaymentMutation = useMutation({
+    mutationFn: async ({ orderId, payload }: { orderId: string; payload: { paymentId?: string; receipt?: string; paymentDate?: string } }) => {
+      const response = await api.put(`/order/admin/${orderId}/pay`, payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'all-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard-stats'] });
+    },
+  });
+
+  return {
+    confirmPayment: confirmPaymentMutation.mutateAsync,
+    isPending: confirmPaymentMutation.isPending,
+    error: confirmPaymentMutation.error,
+  };
+};
+

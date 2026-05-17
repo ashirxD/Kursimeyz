@@ -1,8 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/utils/Axios";
+import { useAuthStore } from "@/stores/authStore";
 
 export const useCart = () => {
   const queryClient = useQueryClient();
+  const { isAuthenticated, setQuickAuthModalOpen } = useAuthStore();
 
   // Fetch cart
   const {
@@ -16,7 +18,7 @@ export const useCart = () => {
       return response.data.data;
     },
     // Only enable if user is logged in
-    enabled: !!localStorage.getItem("token"),
+    enabled: isAuthenticated,
   });
 
   // Add to cart
@@ -28,6 +30,10 @@ export const useCart = () => {
       productId: string;
       quantity?: number;
     }) => {
+      if (!isAuthenticated) {
+        setQuickAuthModalOpen(true);
+        throw new Error("Auth required");
+      }
       console.log("Sending Add to Cart request:", { productId, quantity });
       const response = await api.post("/cart/add", { productId, quantity });
       console.log("Add to Cart response:", response.data);
@@ -38,7 +44,9 @@ export const useCart = () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
     onError: (err: any) => {
-      console.error("Add to cart error:", err.response?.data || err.message);
+      if (err.message !== "Auth required") {
+        console.error("Add to cart error:", err.response?.data || err.message);
+      }
     },
   });
 

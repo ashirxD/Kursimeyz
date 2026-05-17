@@ -92,7 +92,7 @@ export default function TransactionsPage() {
                 Revenue
               </span>
               <span className="text-xl font-black text-forest-moss leading-none">
-                $24,850.00
+                Rs 24,850.00
               </span>
               <span className="text-[9px] font-black text-emerald-500 uppercase mt-2 tracking-tighter">
                 +8.2% vs last month
@@ -103,7 +103,7 @@ export default function TransactionsPage() {
                 Failed
               </span>
               <span className="text-xl font-black text-red-500 leading-none">
-                $1,420.00
+                Rs 1,420.00
               </span>
               <span className="text-[9px] font-black text-red-300 uppercase mt-2 tracking-tighter">
                 5 rejected
@@ -114,7 +114,7 @@ export default function TransactionsPage() {
                 Pending
               </span>
               <span className="text-xl font-black text-white leading-none">
-                $3,105.00
+                Rs 3,105.00
               </span>
               <span className="text-[9px] font-black text-white/30 uppercase mt-2 tracking-tighter">
                 12 orders

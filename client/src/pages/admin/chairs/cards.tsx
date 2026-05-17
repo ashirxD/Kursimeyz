@@ -30,7 +30,7 @@ export default function ChairCard({ chair, onDelete }: ChairCardProps) {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full shadow-soft">
-                    <span className="text-forest-moss font-black text-sm">${chair.price}</span>
+                    <span className="text-forest-moss font-black text-sm">Rs {chair.price}</span>
                 </div>
             </div>
             <div className="p-6 space-y-3">

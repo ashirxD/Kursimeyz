@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, currentUser, logout, googleAuth } = require('../../controller/auth');
+const { register, login, currentUser, logout, googleAuth, sendOTP, verifyOTP } = require('../../controller/auth');
 const { protect } = require('../../middleware/auth');
 
 // @desc    Register user
@@ -22,5 +22,9 @@ router.get('/current_user', protect, currentUser);
 // @desc    Logout user
 // @route   POST /auth/logout
 router.post('/logout', protect, logout);
+
+// @desc    OTP routes
+router.post('/send-otp', sendOTP);
+router.post('/verify-otp', verifyOTP);
 
 module.exports = router;

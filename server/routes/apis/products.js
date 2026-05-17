@@ -11,6 +11,7 @@ router.get('/:id', productsController.getProductById);
 
 // Admin-only routes (assuming middleware handles role check)
 router.post('/', productsController.createProduct);
+router.put('/:id', productsController.updateProduct);
 router.delete('/:id', productsController.deleteProduct);
 
 module.exports = router;

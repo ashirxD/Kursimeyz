@@ -23,7 +23,7 @@ export default function TableCard({ table, onDelete }: TableCardProps) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-soft">
-                    <span className="text-forest-moss font-black text-sm">${table.price}</span>
+                    <span className="text-forest-moss font-black text-sm">Rs {table.price}</span>
                 </div>
             </div>
 

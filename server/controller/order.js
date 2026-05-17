@@ -245,11 +245,55 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
+// @desc    Confirm payment for an order (Admin only)
+// @route   PUT /api/order/admin/:id/pay
+// @access  Private/Admin
+const confirmPayment = async (req, res) => {
+    try {
+        const { paymentId, receipt, paymentDate } = req.body;
+        
+        const order = await Order.findById(req.params.id);
+        
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found',
+            });
+        }
+        
+        order.isPaid = true;
+        order.paidAt = paymentDate ? new Date(paymentDate) : Date.now();
+        
+        // Add optional payment metadata
+        order.paymentResult = {
+            id: paymentId || '',
+            status: 'Completed',
+            update_time: new Date().toISOString(),
+            receipt: receipt || '',
+            paymentDate: order.paidAt
+        };
+        
+        const updatedOrder = await order.save();
+        
+        res.status(200).json({
+            success: true,
+            data: updatedOrder,
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: 'Server Error',
+            error: err.message,
+        });
+    }
+};
+
 module.exports = {
     createOrder,
     getMyOrders,
     getOrderById,
     getAllOrders,
     getDashboardStats,
-    updateOrderStatus
+    updateOrderStatus,
+    confirmPayment
 };

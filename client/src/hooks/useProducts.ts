@@ -50,12 +50,25 @@ export const useProducts = (options: ProductQueryOptions = {}) => {
         },
     });
 
+    // Update a product
+    const updateProductMutation = useMutation({
+        mutationFn: async ({ id, ...updatedProduct }: Product) => {
+            const response = await api.put(`/products/${id}`, updatedProduct);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+        },
+    });
+
     return {
         products,
         isLoading,
         error,
         addProduct: addProductMutation.mutateAsync,
         isAdding: addProductMutation.isPending,
+        updateProduct: updateProductMutation.mutateAsync,
+        isUpdating: updateProductMutation.isPending,
         deleteProduct: deleteProductMutation.mutateAsync,
         isDeleting: deleteProductMutation.isPending,
     };

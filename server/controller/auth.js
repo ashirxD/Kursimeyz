@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const OTP = require('../models/OTP');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const googleAuthService = require('../services/googleAuth.service');
@@ -29,27 +30,27 @@ const setTokenCookie = (res, token) => {
 // @route   POST /api/v1/auth/register
 const register = async (req, res, next) => {
     try {
-        const { email, password, username, phone } = req.body; // Accepting mostly email/password/username
+        const { email, password, username: providedUsername, phone } = req.body;
 
-        // Validate basic fields (User model also validates)
-        if (!email) {
-            return res.status(400).json({ success: false, message: 'Please provide your email' });
+        // Validate basic fields
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: 'Please provide email and password' });
         }
 
-        if (!password) {
-            return res.status(400).json({ success: false, message: 'Please provide your password' });
+        // Check if OTP was verified
+        const otpRecord = await OTP.findOne({ email, verified: true });
+        if (!otpRecord) {
+            return res.status(400).json({ success: false, message: 'Email not verified. Please verify OTP first.' });
         }
-
-        if (!username) {
-            return res.status(400).json({ success: false, message: 'Please provide your username' });
-        }
-
 
         // Check if user exists
         let user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({ success: false, message: 'User already exists' });
         }
+
+        // Generate username if not provided
+        const username = providedUsername || email.split('@')[0] + Math.floor(100 + Math.random() * 900);
 
         // Hash password
         const salt = await bcrypt.genSalt(10);
@@ -61,8 +62,10 @@ const register = async (req, res, next) => {
             password: hashedPassword,
             username,
             phone,
-            // image: gravatar? or default
         });
+
+        // Delete OTP record after successful registration
+        await OTP.deleteOne({ email });
 
         // Send welcome email
         try {
@@ -290,10 +293,74 @@ const googleAuth = async (req, res) => {
 };
 
 
+// @desc    Send OTP to email
+// @route   POST /api/v1/auth/send-otp
+const sendOTP = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Please provide an email' });
+        }
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+        // Store OTP in DB (overwrite existing for this email)
+        await OTP.findOneAndUpdate(
+            { email },
+            { otp, expiresAt, verified: false },
+            { upsert: true, new: true }
+        );
+
+        // Send Email
+        try {
+            await emailService.sendCustomEmail(email, 'Your Verification Code', 'otp', { otp });
+            res.json({ success: true, message: 'OTP sent successfully' });
+        } catch (emailError) {
+            console.error('Failed to send OTP email:', emailError);
+            res.status(500).json({ success: false, message: 'Failed to send OTP email' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @desc    Verify OTP
+// @route   POST /api/v1/auth/verify-otp
+const verifyOTP = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: 'Please provide email and OTP' });
+        }
+
+        const otpRecord = await OTP.findOne({ email, otp });
+
+        if (!otpRecord) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+        }
+
+        // Mark as verified
+        otpRecord.verified = true;
+        await otpRecord.save();
+
+        res.json({ success: true, message: 'OTP verified successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
 module.exports = {
     googleAuth,
     register,
     login,
     currentUser,
-    logout
+    logout,
+    sendOTP,
+    verifyOTP
 };

@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import PaymentConfirmationModal from '@/components/paymentConfirmationModal';
+
 const statusStyles = {
   Pending: "bg-yellow-100 text-yellow-800",
   Processing: "bg-blue-100 text-blue-800", 
@@ -37,6 +40,9 @@ interface RecentOrdersProps {
 }
 
 const RecentOrders = ({ stats }: RecentOrdersProps) => {
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState('');
+
   return (
     <div className="bg-white rounded-3xl shadow-soft p-4 md:p-8 border border-white/50 flex-1 overflow-hidden">
       <div className="flex justify-between items-center mb-6">
@@ -59,6 +65,7 @@ const RecentOrders = ({ stats }: RecentOrdersProps) => {
               <th className="pb-3 px-3">Customer</th>
               <th className="pb-3 px-3">Product</th>
               <th className="pb-3 text-center">Status</th>
+              <th className="pb-3 text-center">Payment</th>
             </tr>
           </thead>
           <tbody>
@@ -99,11 +106,36 @@ const RecentOrders = ({ stats }: RecentOrdersProps) => {
                     {getStatusDisplay(order.status)}
                   </span>
                 </td>
+                <td className="py-3 text-center">
+                  {order.isPaid ? (
+                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 font-black text-[9px] uppercase tracking-widest inline-flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[12px]!">check_circle</span>
+                      Paid
+                    </span>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedOrderId(order._id);
+                        setPaymentModalOpen(true);
+                      }}
+                      className="px-3 py-1.5 rounded-full bg-clay text-white font-black text-[9px] uppercase tracking-widest hover:bg-clay/90 transition-colors shadow-soft"
+                    >
+                      Confirm
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      <PaymentConfirmationModal
+        isOpen={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        orderId={selectedOrderId}
+      />
     </div>
   );
 };

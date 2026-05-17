@@ -22,9 +22,7 @@ export default function Dashboard() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return 'Rs ' + new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -119,132 +117,6 @@ export default function Dashboard() {
           {/* Recent Orders Table */}
           <RecentOrders stats={stats} />
         </div>
-
-        {/* Right Sidebar Column */}
-        <aside className="w-full lg:w-[340px] flex flex-col gap-6">
-          {/* Goal Card */}
-          <div className="bg-sage-leaf text-white p-8 rounded-3xl flex flex-col gap-4 shadow-medium relative overflow-hidden group border border-white/5">
-            <div className="absolute -right-2 -top-2 text-white/10 group-hover:rotate-12 transition-transform pointer-events-none">
-              <span className="material-symbols-outlined text-[100px]!">
-                star
-              </span>
-            </div>
-            <h4 className="text-xl font-black leading-tight tracking-tight relative z-10 w-2/3">
-              Maker Goal ⭐
-            </h4>
-            <div className="flex items-end gap-2 relative z-10">
-              <span className="text-5xl md:text-6xl font-black tracking-tighter">
-                75%
-              </span>
-              <span className="font-black pb-2 text-sm opacity-80 tracking-widest uppercase">
-                reached
-              </span>
-            </div>
-            <div className="h-4 w-full bg-black/10 rounded-full p-1 shadow-inner">
-              <div
-                className="h-full bg-white rounded-full shadow-soft transition-all duration-1000"
-                style={{ width: "75%" }}
-              />
-            </div>
-            <p className="text-sm font-bold opacity-90 italic leading-relaxed tracking-tight">
-              "Keep carving, keep creating. You're almost there!"
-            </p>
-          </div>
-
-          {/* Stock Alerts */}
-          <div className="bg-white p-6 md:p-8 rounded-3xl shadow-soft flex flex-col gap-4 border border-white/50">
-            <h4 className="text-lg font-black text-forest-moss tracking-tight">
-              Stock Alerts
-            </h4>
-            <div className="flex flex-col gap-3">
-              {[
-                { title: "Walnut Stool", sub: "Only 2 left", type: "warning" },
-                {
-                  title: "Oak Varnish",
-                  sub: "Restocked today",
-                  type: "success",
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className={`flex items-center gap-4 p-4 rounded-2xl transition-transform hover:scale-[1.02] ${
-                    item.type === "warning"
-                      ? "bg-orange-50/50"
-                      : "bg-green-50/50"
-                  }`}
-                >
-                  <div
-                    className={`size-11 rounded-xl flex items-center justify-center ${
-                      item.type === "warning"
-                        ? "bg-orange-100 text-[#d27d53]"
-                        : "bg-green-100 text-forest-moss"
-                    }`}
-                  >
-                    <span className="material-symbols-outlined !text-2xl">
-                      {item.type === "warning" ? "warning" : "inventory_2"}
-                    </span>
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="font-black text-forest-moss text-[15px] tracking-tight">
-                      {item.title}
-                    </p>
-                    <p className="text-[10px] font-bold text-forest-moss-light/60 tracking-wide uppercase">
-                      {item.sub}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Chat */}
-          <div className="bg-white p-6 md:p-8 rounded-3xl shadow-soft flex-1 overflow-hidden border border-white/50 flex flex-col gap-6">
-            <h4 className="text-lg font-black text-forest-moss tracking-tight">
-              Quick Chat
-            </h4>
-            <div className="flex flex-col gap-6">
-              {/* Message Incoming */}
-              <div className="flex gap-3 items-start text-left">
-                <div className="size-9 rounded-full bg-oatmeal border border-white shadow-soft shrink-0">
-                  <img
-                    src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100"
-                    className="size-full rounded-full object-cover"
-                  />
-                </div>
-                <div className="space-y-1.5 max-w-[85%]">
-                  <p className="text-[9px] font-black text-forest-moss-light/50 tracking-widest uppercase ml-1">
-                    MARCUS L.
-                  </p>
-                  <div className="bg-oatmeal/50 p-4 rounded-2xl rounded-tl-none border border-black/5 shadow-sm">
-                    <p className="text-[13px] font-bold text-forest-moss leading-relaxed">
-                      Is the Nordic chair available in blue?
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Message Outgoing */}
-              <div className="flex gap-3 items-start flex-row-reverse text-right">
-                <div className="size-9 rounded-full bg-forest-moss-light border border-white shadow-soft shrink-0">
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100"
-                    className="size-full rounded-full object-cover"
-                  />
-                </div>
-                <div className="space-y-1.5 max-w-[85%] flex flex-col items-end">
-                  <p className="text-[9px] font-black text-forest-moss-light/50 tracking-widest uppercase mr-1">
-                    YOU
-                  </p>
-                  <div className="bg-sage-soft p-4 rounded-2xl rounded-tr-none border border-black/5 shadow-sm">
-                    <p className="text-[13px] font-bold text-forest-moss leading-relaxed">
-                      I'll check for you!
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
-import { useSidebarStore } from "@/stores";
+import { useSidebarStore, useUser } from "@/stores";
+import { Link } from "react-router-dom";
 
 export default function Header() {
   const { toggleSidebar } = useSidebarStore();
+  const user = useUser();
 
   return (
     <header className="flex justify-between items-center py-4 px-2">
@@ -35,14 +37,17 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="size-10 md:size-11 rounded-full bg-white shadow-soft flex items-center justify-center text-forest-moss hover:bg-sage-soft transition-all hover:scale-105 active:scale-95 border border-white/50">
-          <span className="material-symbols-outlined !text-xl">
-            notifications
-          </span>
-        </button>
-        <button className="size-10 md:size-11 rounded-full bg-white shadow-soft flex items-center justify-center text-forest-moss hover:bg-sage-soft transition-all hover:scale-105 active:scale-95 border border-white/50">
-          <span className="material-symbols-outlined !text-xl">search</span>
-        </button>
+        <Link 
+          to="/admin/profile" 
+          className="size-10 md:size-11 rounded-full bg-white shadow-soft flex items-center justify-center text-forest-moss hover:bg-sage-soft transition-all hover:scale-105 active:scale-95 border border-white/50 overflow-hidden shrink-0"
+          title="Profile Settings"
+        >
+          {user?.image ? (
+            <img src={user.image} alt={user.username} className="size-full object-cover" />
+          ) : (
+            <span className="material-symbols-outlined !text-xl">person</span>
+          )}
+        </Link>
       </div>
     </header>
   );

@@ -1,10 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useSidebarStore } from "@/stores";
+import { useSidebarStore, useUser } from "@/stores";
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isSidebarOpen, closeSidebar } = useSidebarStore();
+  const user = useUser();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -29,15 +30,20 @@ export default function Sidebar() {
       path: "/admin/tables",
     },
     {
+      name: "Sofas",
+      icon: "weekend",
+      path: "/admin/sofas",
+    },
+    {
       name: "Orders",
       icon: "shopping_basket",
       path: "/admin/orders",
     },
-    {
-      name: "Transactions",
-      icon: "payments",
-      path: "/admin/transactions",
-    },
+    // {
+    //   name: "Transactions",
+    //   icon: "payments",
+    //   path: "/admin/transactions",
+    // },
     {
       name: "Customers",
       icon: "group",
@@ -122,32 +128,34 @@ export default function Sidebar() {
 
       {/* Bottom section */}
       <div className="mt-auto space-y-6">
-        <button className="w-full bg-bark text-white py-3.5 rounded-full font-black text-[10px] flex items-center justify-center gap-2 hover:bg-bark-hover hover:scale-[1.02] active:scale-95 transition-all shadow-medium uppercase tracking-widest border border-white/5">
-          <span className="material-symbols-outlined !text-base">
-            add_circle
-          </span>
-          ADD NEW PRODUCT
-        </button>
-
         <div className="flex items-center justify-between px-1 pb-1">
-          <div className="flex items-center gap-2.5">
+          <Link
+            to="/admin/profile"
+            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity overflow-hidden"
+          >
             {/* Avatar */}
-            <div
-              className="size-9 rounded-full border-2 border-white/20 bg-cover bg-center shadow-soft shrink-0"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400')",
-              }}
-            ></div>
+            {user?.image ? (
+              <img
+                src={user.image}
+                alt={user.username}
+                className="size-9 rounded-full border-2 border-white/20 object-cover shadow-soft shrink-0"
+              />
+            ) : (
+              <div className="size-9 rounded-full border-2 border-white/20 bg-cover bg-center shadow-soft shrink-0 flex items-center justify-center bg-white/10 text-white">
+                <span className="material-symbols-outlined !text-lg">
+                  person
+                </span>
+              </div>
+            )}
             <div className="overflow-hidden">
               <p className="text-xs font-bold truncate leading-tight">
-                Maker Sophie
+                {user?.username || "Maker Sophie"}
               </p>
               <p className="text-[9px] text-white/50 font-semibold uppercase tracking-wider">
-                Shop Owner
+                {user?.role || "Shop Owner"}
               </p>
             </div>
-          </div>
+          </Link>
 
           <button
             onClick={handleLogout}

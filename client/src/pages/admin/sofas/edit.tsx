@@ -1,37 +1,55 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import api from '@/utils/Axios';
+import type { Chair as Product } from '../chairs/cards';
 
-interface AddChairModalProps {
+interface EditSofaModalProps {
     isOpen: boolean;
     onClose: () => void;
+    sofa: Product;
 }
 
-export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
-    const { addProduct, isAdding } = useProducts();
+export default function EditSofaModal({ isOpen, onClose, sofa }: EditSofaModalProps) {
+    const { updateProduct, isUpdating } = useProducts();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-    const [newChair, setNewChair] = useState({
-        name: '',
-        price: 0,
-        image: '',
-        description: '',
-        color: '#3a4d39',
+    const [editedSofa, setEditedSofa] = useState({
+        name: sofa.name,
+        price: sofa.price,
+        image: sofa.image,
+        description: sofa.description,
+        color: sofa.color,
     });
 
+    useEffect(() => {
+        setEditedSofa({
+            name: sofa.name,
+            price: sofa.price,
+            image: sofa.image,
+            description: sofa.description,
+            color: sofa.color,
+        });
+        setPreviewUrl(null);
+    }, [sofa, isOpen]);
+
     if (!isOpen) return null;
+
+    const getImageUrl = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
+        return `${baseUrl}${url}`;
+    };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Show preview
         const objectUrl = URL.createObjectURL(file);
         setPreviewUrl(objectUrl);
 
-        // Initial check for size/type
         if (file.size > 5 * 1024 * 1024) {
             alert('File is too large! Max 5MB.');
             return;
@@ -48,7 +66,7 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                 },
             });
 
-            setNewChair({ ...newChair, image: response.data.url });
+            setEditedSofa({ ...editedSofa, image: response.data.url });
         } catch (error) {
             console.error('Upload failed:', error);
             alert('Failed to upload image.');
@@ -59,17 +77,11 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newChair.image) {
-            alert('Please upload an image first!');
-            return;
-        }
         try {
-            await addProduct({ ...newChair, category: 'chair' });
-            setNewChair({ name: '', price: 0, image: '', description: '', color: '#3a4d39' });
-            setPreviewUrl(null);
+            await updateProduct({ ...sofa, ...editedSofa });
             onClose();
         } catch (error) {
-            console.error('Failed to add chair:', error);
+            console.error('Failed to update sofa:', error);
         }
     };
 
@@ -78,7 +90,7 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
             <div className="bg-oatmeal w-full max-w-lg rounded-[2.5rem] shadow-medium overflow-hidden border border-white/50 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
                 <div className="p-8 space-y-6">
                     <div className="flex justify-between items-center">
-                        <h3 className="text-2xl font-black text-forest-moss tracking-tight">Add New Chair</h3>
+                        <h3 className="text-2xl font-black text-forest-moss tracking-tight">Edit Sofa</h3>
                         <button
                             onClick={onClose}
                             className="size-10 rounded-full bg-white flex items-center justify-center text-forest-moss hover:bg-red-50 hover:text-red-500 transition-all shadow-soft"
@@ -88,16 +100,15 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Image Upload Area */}
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Chair Image</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Sofa Image</label>
                             <div
                                 onClick={() => fileInputRef.current?.click()}
                                 className="group relative aspect-video rounded-3xl border-2 border-dashed border-forest-moss/20 bg-white/50 flex flex-col items-center justify-center cursor-pointer hover:border-clay/50 transition-all overflow-hidden"
                             >
-                                {previewUrl ? (
+                                {(previewUrl || editedSofa.image) ? (
                                     <>
-                                        <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
+                                        <img src={previewUrl || getImageUrl(editedSofa.image)} className="w-full h-full object-cover" alt="Preview" />
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                             <span className="text-white font-black text-xs uppercase tracking-widest">Change Image</span>
                                         </div>
@@ -108,7 +119,6 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                                             <span className="material-symbols-outlined !text-3xl">add_photo_alternate</span>
                                         </div>
                                         <p className="text-[11px] font-bold text-forest-moss/40 uppercase tracking-widest">Click to upload photo</p>
-                                        <p className="text-[9px] font-medium text-forest-moss/30 mt-1">PNG, JPG up to 5MB</p>
                                     </>
                                 )}
                                 {isUploading && (
@@ -134,9 +144,9 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                                     required
                                     type="text"
                                     className="w-full bg-white px-5 py-3 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
-                                    placeholder="e.g. Nordic Oak"
-                                    value={newChair.name}
-                                    onChange={(e) => setNewChair({ ...newChair, name: e.target.value })}
+                                    placeholder="e.g. Velvet Cloud Sofa"
+                                    value={editedSofa.name}
+                                    onChange={(e) => setEditedSofa({ ...editedSofa, name: e.target.value })}
                                 />
                             </div>
                             <div className="space-y-1">
@@ -145,22 +155,22 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                                     required
                                     type="number"
                                     className="w-full bg-white px-5 py-3 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
-                                    placeholder="450"
-                                    value={newChair.price}
-                                    onChange={(e) => setNewChair({ ...newChair, price: Number(e.target.value) })}
+                                    placeholder="1200"
+                                    value={editedSofa.price}
+                                    onChange={(e) => setEditedSofa({ ...editedSofa, price: Number(e.target.value) })}
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Color</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Color Selection</label>
                             <div className="flex gap-2 p-1.5 bg-white rounded-full border border-forest-moss/10">
-                                {['#3a4d39', '#d27d53', '#8a9a5b', '#4b3621', '#f5f0e6'].map((c) => (
+                                {['#4b3621', '#2c3e50', '#8e44ad', '#c0392b', '#27ae60', '#f1c40f'].map((c) => (
                                     <button
                                         key={c}
                                         type="button"
-                                        onClick={() => setNewChair({ ...newChair, color: c })}
-                                        className={`size-8 rounded-full border-2 transition-all ${newChair.color === c ? 'border-clay scale-110 shadow-soft' : 'border-transparent'}`}
+                                        onClick={() => setEditedSofa({ ...editedSofa, color: c })}
+                                        className={`size-8 rounded-full border-2 transition-all ${editedSofa.color === c ? 'border-clay scale-110 shadow-soft' : 'border-transparent'}`}
                                         style={{ backgroundColor: c }}
                                     />
                                 ))}
@@ -173,18 +183,18 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                                 required
                                 rows={3}
                                 className="w-full bg-white px-5 py-4 rounded-3xl border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm resize-none"
-                                placeholder="Tell us about this masterpiece..."
-                                value={newChair.description}
-                                onChange={(e) => setNewChair({ ...newChair, description: e.target.value })}
+                                placeholder="Describe the sofa's comfort and style..."
+                                value={editedSofa.description}
+                                onChange={(e) => setEditedSofa({ ...editedSofa, description: e.target.value })}
                             />
                         </div>
 
                         <button
-                            disabled={isAdding || isUploading}
+                            disabled={isUpdating || isUploading}
                             type="submit"
                             className="w-full bg-forest-moss text-white py-4 rounded-full font-black text-sm hover:bg-forest-moss-light transition-all shadow-medium uppercase tracking-widest mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isAdding ? 'Creating...' : 'Create Product'}
+                            {isUpdating ? 'Updating...' : 'Update Sofa'}
                         </button>
                     </form>
                 </div>

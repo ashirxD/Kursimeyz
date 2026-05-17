@@ -136,7 +136,7 @@ export default function AddTableModal({ isOpen, onClose }: AddTableModalProps) {
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Price ($)</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Price (Rs)</label>
                                 <input
                                     required
                                     type="number"

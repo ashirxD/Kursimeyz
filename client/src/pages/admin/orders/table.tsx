@@ -66,6 +66,7 @@ const statusStyles = {
 import { useUpdateOrderStatus } from "@/hooks/useAdminOrders";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import PaymentConfirmationModal from "@/components/paymentConfirmationModal";
 
 interface OrdersTableProps {
     orders: Order[];
@@ -188,6 +189,8 @@ const StatusDropdown = ({ currentStatus, orderId, onStatusChange, isLoading }: {
 
 export default function OrdersTable({ orders }: OrdersTableProps) {
     const { updateStatus, isLoading } = useUpdateOrderStatus();
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [selectedOrderId, setSelectedOrderId] = useState('');
 
     const handleStatusChange = (orderId: string, newStatus: string) => {
         console.log('Table handleStatusChange called:', { orderId, newStatus });
@@ -203,9 +206,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
     };
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
+        return 'Rs ' + new Intl.NumberFormat('en-US', {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
         }).format(amount);
@@ -238,6 +239,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                             <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-forest-moss/40">Amount</th>
                             <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-forest-moss/40">Status</th>
                             <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-forest-moss/40">Date</th>
+                            <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-forest-moss/40 text-center">Payment</th>
                             <th className="px-8 py-6 text-right"></th>
                         </tr>
                     </thead>
@@ -289,6 +291,24 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                                 <td className="px-6 py-5">
                                     <span className="text-sm font-bold text-forest-moss-light/70">{formatDate(order.createdAt)}</span>
                                 </td>
+                                <td className="px-6 py-5 text-center">
+                                    {order.isPaid ? (
+                                        <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 font-black text-[9px] uppercase tracking-widest inline-flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[12px]!">check_circle</span>
+                                            Paid
+                                        </span>
+                                    ) : (
+                                        <button
+                                            onClick={() => {
+                                                setSelectedOrderId(order._id);
+                                                setPaymentModalOpen(true);
+                                            }}
+                                            className="px-3 py-1.5 rounded-full bg-clay text-white font-black text-[9px] uppercase tracking-widest hover:bg-clay/90 transition-colors shadow-soft"
+                                        >
+                                            Confirm
+                                        </button>
+                                    )}
+                                </td>
                                 <td className="px-8 py-5 text-right">
                                     <button className="size-10 rounded-full bg-white border border-forest-moss/5 flex items-center justify-center text-forest-moss-light hover:bg-forest-moss hover:text-white transition-all shadow-sm">
                                         <span className="material-symbols-outlined text-xl!">visibility</span>
@@ -299,6 +319,12 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                     </tbody>
                 </table>
             </div>
+
+            <PaymentConfirmationModal
+                isOpen={paymentModalOpen}
+                onClose={() => setPaymentModalOpen(false)}
+                orderId={selectedOrderId}
+            />
         </div>
     );
 }
