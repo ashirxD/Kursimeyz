@@ -1,9 +1,56 @@
+import { useState, useEffect } from "react";
 import Header from "@/pages/admin/layout/Header";
 import OrdersTable from "./table";
 import { useAllOrders } from "@/hooks/useAdminOrders";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function OrdersPage() {
-  const { orders, isLoading, error, refetch } = useAllOrders();
+  const [searchVal, setSearchVal] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchVal);
+    }, 350);
+    return () => clearTimeout(handler);
+  }, [searchVal]);
+
+  const { orders, isLoading, error, refetch } = useAllOrders(debouncedSearch);
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(20);
+    doc.setTextColor(43, 62, 53); // forest-moss
+    doc.text("Kursimeyz Orders Registry", 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    const tableData = orders.map((order: any) => [
+      order._id.substring(0, 8),
+      order.user?.username || "Guest",
+      order.user?.email || "N/A",
+      order.items.length.toString(),
+      `Rs ${order.totalPrice.toLocaleString()}`,
+      order.status,
+      order.isPaid ? "Paid" : "Unpaid",
+      new Date(order.createdAt).toLocaleDateString()
+    ]);
+
+    autoTable(doc, {
+      startY: 36,
+      head: [["Order ID", "Customer", "Email", "Items", "Amount", "Status", "Payment", "Date"]],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [43, 62, 53] },
+      styles: { fontSize: 8 },
+    });
+
+    doc.save("Kursimeyz-Orders-Registry.pdf");
+  };
 
   if (isLoading) {
     return (
@@ -17,7 +64,7 @@ export default function OrdersPage() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <div className="text-red-500 font-bold">Error loading orders</div>
-        <button 
+        <button
           onClick={() => refetch()}
           className="px-4 py-2 bg-forest-moss text-white rounded-xl font-black hover:bg-forest-moss-light transition-colors"
         >
@@ -52,14 +99,6 @@ export default function OrdersPage() {
                 {orders.length}
               </span>
             </div>
-            <div className="flex-1 lg:flex-none bg-white px-6 py-3 rounded-3xl shadow-soft border border-white/50 flex flex-col items-center min-w-[100px] md:min-w-[120px]">
-              <span className="text-[9px] md:text-[10px] font-black text-forest-moss/40 uppercase tracking-widest leading-none mb-1">
-                Growth
-              </span>
-              <span className="text-lg md:text-xl font-black text-clay leading-none">
-                +12.5%
-              </span>
-            </div>
           </div>
         </div>
 
@@ -72,6 +111,8 @@ export default function OrdersPage() {
             <input
               type="text"
               placeholder="Search orders, customers..."
+              value={searchVal}
+              onChange={(e) => setSearchVal(e.target.value)}
               className="w-full bg-white pl-14 pr-6 py-3 md:py-4 rounded-full border border-forest-moss/5 focus:outline-none focus:ring-2 focus:ring-clay/20 transition-all font-bold text-sm placeholder:text-forest-moss/20 shadow-sm"
             />
           </div>
@@ -82,7 +123,10 @@ export default function OrdersPage() {
               </span>
               Filter
             </button>
-            <button className="flex-1 md:flex-none px-6 py-3 md:py-4 bg-forest-moss text-white rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-forest-moss-light transition-all shadow-medium">
+            <button 
+              onClick={handleExportPDF}
+              className="flex-1 md:flex-none px-6 py-3 md:py-4 bg-forest-moss text-white rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-forest-moss-light transition-all shadow-medium"
+            >
               <span className="material-symbols-outlined text-xl!">
                 download
               </span>

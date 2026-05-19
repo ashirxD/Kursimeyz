@@ -1,19 +1,28 @@
 const Product = require('../models/Product');
 
+const parseNonNegativeNumber = (value) => {
+  if (value === undefined || value === null || value === '') return undefined;
+
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) && numberValue >= 0 ? numberValue : undefined;
+};
+
 // Get all products (optionally filtered by category)
 const getAllProducts = async (req, res) => {
   try {
     const { category, minPrice, maxPrice } = req.query;
+    const parsedMinPrice = parseNonNegativeNumber(minPrice);
+    const parsedMaxPrice = parseNonNegativeNumber(maxPrice);
     let filter = {};
     
     if (category) {
       filter.category = category;
     }
     
-    if (minPrice !== undefined || maxPrice !== undefined) {
+    if (parsedMinPrice !== undefined || parsedMaxPrice !== undefined) {
       filter.price = {};
-      if (minPrice !== undefined) filter.price.$gte = Number(minPrice);
-      if (maxPrice !== undefined) filter.price.$lte = Number(maxPrice);
+      if (parsedMinPrice !== undefined) filter.price.$gte = parsedMinPrice;
+      if (parsedMaxPrice !== undefined) filter.price.$lte = parsedMaxPrice;
     }
 
     const products = await Product.find(filter).sort({ createdAt: -1 });

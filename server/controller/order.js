@@ -1,5 +1,7 @@
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
+const User = require('../models/User');
 
 // @desc    Create new order
 // @route   POST /api/order
@@ -111,7 +113,34 @@ const getOrderById = async (req, res) => {
 // @access  Private/Admin
 const getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find({})
+        const { search } = req.query;
+        let query = {};
+
+        if (search) {
+            // First, find users matching the search query
+            const matchingUsers = await User.find({
+                $or: [
+                    { username: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } }
+                ]
+            }).select('_id');
+            const userIds = matchingUsers.map(u => u._id);
+
+            // Build order search conditions
+            query.$or = [
+                { user: { $in: userIds } },
+                { status: { $regex: search, $options: 'i' } },
+                { 'shippingAddress.city': { $regex: search, $options: 'i' } },
+                { 'shippingAddress.phone': { $regex: search, $options: 'i' } }
+            ];
+
+            // Only add _id matching if search is a valid ObjectId
+            if (mongoose.Types.ObjectId.isValid(search)) {
+                query.$or.push({ _id: search });
+            }
+        }
+
+        const orders = await Order.find(query)
             .populate('user', 'username email')
             .populate('items.product', 'name image')
             .sort('-createdAt');

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/Axios';
 import type { Chair as Product } from '@/pages/admin/chairs/cards';
 
@@ -18,14 +18,20 @@ export const useProducts = (options: ProductQueryOptions = {}) => {
     const { data: products = [], isLoading, error } = useQuery<Product[]>({
         queryKey: [...PRODUCTS_QUERY_KEY, category, minPrice, maxPrice],
         queryFn: async () => {
+            const params: ProductQueryOptions = {};
+            if (category !== undefined) params.category = category;
+            if (minPrice !== undefined) params.minPrice = minPrice;
+            if (maxPrice !== undefined) params.maxPrice = maxPrice;
+
             const response = await api.get('/products', {
-                params: { category, minPrice, maxPrice }
+                params
             });
             return response.data.map((item: any) => ({
                 ...item,
                 id: item._id || item.id
             }));
         },
+        placeholderData: keepPreviousData,
     });
 
     // Add a new product

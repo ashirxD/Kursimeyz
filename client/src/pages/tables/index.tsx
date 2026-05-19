@@ -1,17 +1,20 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProducts } from "@/hooks/useProducts";
 import TableProductCard from "./cards";
 
 const ITEMS_PER_PAGE = 6;
+const DEFAULT_MAX_PRICE = 2000;
 
 export default function TablesPage() {
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
-  const { products: tables, isLoading } = useProducts({ 
+  const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>();
+  const debouncedMaxPrice = useDebouncedValue(selectedMaxPrice, 1000);
+  const { products: tables, isLoading } = useProducts({
     category: "table",
-    minPrice: priceRange[0],
-    maxPrice: priceRange[1]
+    maxPrice: debouncedMaxPrice,
   });
+  const [priceCeiling, setPriceCeiling] = useState(DEFAULT_MAX_PRICE);
 
   // Filter state
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
@@ -20,16 +23,18 @@ export default function TablesPage() {
     window.scrollTo(0, 0);
   }, []);
 
-
-
-
-  // Filtered products (handled by server now)
-  const filteredTables = useMemo(() => {
-    return tables;
+  useEffect(() => {
+    const highestPrice = Math.max(DEFAULT_MAX_PRICE, ...tables.map((table) => table.price));
+    setPriceCeiling((currentCeiling) => Math.max(currentCeiling, highestPrice));
   }, [tables]);
 
-  const visibleTables = filteredTables.slice(0, visibleCount);
-  const hasMore = visibleCount < filteredTables.length;
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [debouncedMaxPrice]);
+
+  const sliderValue = selectedMaxPrice ?? priceCeiling;
+  const visibleTables = tables.slice(0, visibleCount);
+  const hasMore = visibleCount < tables.length;
 
   const getBadge = (index: number): "NEW" | "SALE" | undefined => {
     if (index === 0) return "NEW";
@@ -67,8 +72,8 @@ export default function TablesPage() {
         </p>
       </div>
 
-      <div className="flex gap-10">
-        <aside className="hidden lg:block w-[220px] flex-shrink-0 space-y-8">
+      <div className="flex flex-col lg:flex-row gap-10">
+        <aside className="w-full lg:w-[220px] flex-shrink-0 space-y-8">
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-[#1a2f1a]">Price Range</h3>
@@ -76,17 +81,28 @@ export default function TablesPage() {
             <input
               type="range"
               min={0}
-              max={2000}
-              value={priceRange[1]}
-              onChange={(e) =>
-                setPriceRange([priceRange[0], Number(e.target.value)])
-              }
+              max={priceCeiling}
+              value={Math.min(sliderValue, priceCeiling)}
+              onChange={(e) => setSelectedMaxPrice(Number(e.target.value))}
               className="w-full accent-[#5ef037] cursor-pointer"
             />
             <div className="flex justify-between mt-2 text-[12px] font-bold text-[#1a2f1a]/50">
-              <span>Rs. {priceRange[0]}</span>
-              <span>Rs. {priceRange[1]}+</span>
+              <span>Rs. 0</span>
+              <span>
+                {selectedMaxPrice === undefined
+                  ? "Any price"
+                  : `Up to Rs. ${Math.min(selectedMaxPrice, priceCeiling)}`}
+              </span>
             </div>
+            {selectedMaxPrice !== undefined && (
+              <button
+                type="button"
+                onClick={() => setSelectedMaxPrice(undefined)}
+                className="mt-4 text-[12px] font-bold text-[#1a2f1a]/50 hover:text-[#1a2f1a] transition-colors"
+              >
+                Clear
+              </button>
+            )}
           </div>
 
 
@@ -108,7 +124,7 @@ export default function TablesPage() {
                 </div>
               ))}
             </div>
-          ) : filteredTables.length === 0 ? (
+          ) : tables.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <span className="material-symbols-outlined text-[64px] text-[#1a2f1a]/10 mb-4">
                 table_restaurant

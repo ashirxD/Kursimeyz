@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/Axios';
 
-export const useAllOrders = () => {
+export const useAllOrders = (search?: string) => {
   const ordersQuery = useQuery({
-    queryKey: ['admin', 'all-orders'],
+    queryKey: ['admin', 'all-orders', search],
     queryFn: async () => {
-      const response = await api.get('/order/admin/all');
+      const response = await api.get('/order/admin/all', {
+        params: search ? { search } : {},
+      });
       return response.data;
     },
     refetchInterval: 30000, // Refresh every 30 seconds
