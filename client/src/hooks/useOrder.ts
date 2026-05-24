@@ -18,7 +18,7 @@ export interface ShippingAddress {
 export interface OrderPayload {
   items: OrderItem[];
   shippingAddress: ShippingAddress;
-  paymentMethod: "Cash" | "Card";
+  paymentMethod: "Cash" | "Card" | "Easypaisa" | "JazzCash";
   itemsPrice: number;
   shippingPrice: number;
   totalPrice: number;
@@ -36,7 +36,6 @@ export const useOrder = () => {
     onSuccess: () => {
       // Invalidate cart since it gets cleared on the server
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-      navigate("/order-success");
     },
     onError: (err: any) => {
       console.error("Order creation error:", err.response?.data || err.message);
@@ -52,7 +51,11 @@ export const useOrder = () => {
   });
 
   return {
-    createOrder: createOrderMutation.mutate,
+    createOrder: (orderData: OrderPayload) =>
+      createOrderMutation.mutate(orderData, {
+        onSuccess: () => navigate("/order-success"),
+      }),
+    createOrderAsync: createOrderMutation.mutateAsync,
     isCreating: createOrderMutation.isPending,
     createError: createOrderMutation.error,
     myOrders: myOrdersQuery.data || [],

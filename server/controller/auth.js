@@ -26,6 +26,31 @@ const setTokenCookie = (res, token) => {
     res.cookie('jwt', token, cookieOptions);
 };
 
+const normalizeEmail = (email) => email.toString().trim().toLowerCase();
+
+const buildUserResponse = (user) => ({
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    image: user.image,
+    provider: user.provider,
+    role: user.role,
+    emailVerified: user.emailVerified,
+});
+
+const createVerificationOTP = async (email) => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await OTP.findOneAndUpdate(
+        { email },
+        { otp, expiresAt, verified: false },
+        { upsert: true, new: true }
+    );
+
+    await emailService.sendCustomEmail(email, 'Your Verification Code', 'otp', { otp });
+};
+
 // @desc    Register new user
 // @route   POST /api/v1/auth/register
 const register = async (req, res, next) => {
@@ -37,61 +62,57 @@ const register = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Please provide email and password' });
         }
 
-        // Check if OTP was verified
-        const otpRecord = await OTP.findOne({ email, verified: true });
-        if (!otpRecord) {
-            return res.status(400).json({ success: false, message: 'Email not verified. Please verify OTP first.' });
-        }
+        const normalizedEmail = normalizeEmail(email);
 
         // Check if user exists
-        let user = await User.findOne({ email });
-        if (user) {
+        let user = await User.findOne({ email: normalizedEmail });
+        if (user && user.emailVerified) {
             return res.status(400).json({ success: false, message: 'User already exists' });
         }
 
+        if (user && user.provider !== 'local') {
+            return res.status(400).json({ success: false, message: 'This email is registered with Google. Please sign in with Google.' });
+        }
+
         // Generate username if not provided
-        const username = providedUsername || email.split('@')[0] + Math.floor(100 + Math.random() * 900);
+        const username = providedUsername || normalizedEmail.split('@')[0] + Math.floor(100 + Math.random() * 900);
 
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Create user
-        user = await User.create({
-            email,
-            password: hashedPassword,
-            username,
-            phone,
-        });
-
-        // Delete OTP record after successful registration
-        await OTP.deleteOne({ email });
-
-        // Send welcome email
-        try {
-            await emailService.sendWelcomeEmail(
-                user.email,
-                user.username,
-                `${process.env.CLIENT_URL || 'http://localhost:3000'}/login`
-            );
-            console.log(`Welcome email sent to ${user.email}`);
-        } catch (emailError) {
-            console.error('Failed to send welcome email:', emailError);
-            // Continue with registration even if email fails
+        if (user) {
+            user.password = hashedPassword;
+            user.username = username;
+            user.phone = phone;
+            user.emailVerified = false;
+            await user.save();
+        } else {
+            // Create user as pending until their email OTP is confirmed
+            user = await User.create({
+                email: normalizedEmail,
+                password: hashedPassword,
+                username,
+                phone,
+                emailVerified: false,
+            });
         }
 
-        // Send token
-        const token = signToken(user._id);
+        try {
+            await createVerificationOTP(user.email);
+        } catch (emailError) {
+            console.error('Failed to send verification email:', emailError);
+            return res.status(500).json({
+                success: false,
+                message: 'Account created, but failed to send OTP email. Please try resending the OTP.'
+            });
+        }
 
         res.status(201).json({
             success: true,
-            token,
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                role: user.role
-            }
+            requiresEmailVerification: true,
+            email: user.email,
+            message: 'Account created. Please verify the OTP sent to your email.'
         });
 
     } catch (err) {
@@ -111,10 +132,16 @@ const login = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Please provide email and password' });
         }
 
+        const normalizedEmail = normalizeEmail(email);
+
         // Check user
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: normalizedEmail });
         if (!user) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        if (!user.password) {
+            return res.status(401).json({ success: false, message: 'Please sign in with Google for this account' });
         }
 
         // Check password
@@ -123,18 +150,23 @@ const login = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
+        if (user.provider === 'local' && !user.emailVerified) {
+            return res.status(403).json({
+                success: false,
+                requiresEmailVerification: true,
+                email: user.email,
+                message: 'Please verify your email before logging in'
+            });
+        }
+
         // Send token
         const token = signToken(user._id);
+        setTokenCookie(res, token);
 
         res.json({
             success: true,
             token,
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                role: user.role
-            }
+            user: buildUserResponse(user)
         });
 
     } catch (err) {
@@ -150,13 +182,7 @@ const currentUser = async (req, res) => {
         const user = await User.findById(req.user.id);
         res.json({
             success: true,
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                image: user.image,
-                role: user.role
-            }
+            user: buildUserResponse(user)
         });
     } catch (err) {
         console.error(err);
@@ -223,6 +249,7 @@ const googleAuth = async (req, res) => {
                 // Link Google account to existing local account
                 user.googleId = googleUser.googleId;
                 user.image = user.image || googleUser.picture;
+                user.emailVerified = true;
                 await user.save();
             }
             // If user already has googleId, proceed with login
@@ -235,6 +262,7 @@ const googleAuth = async (req, res) => {
                 username: googleUser.name,
                 image: googleUser.picture,
                 provider: 'google',
+                emailVerified: true,
                 // No password for Google OAuth users
                 // They can only login via Google
             });
@@ -264,14 +292,7 @@ const googleAuth = async (req, res) => {
         res.status(200).json({
             success: true,
             token: jwtToken, // Also send in body for clients that need it
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                image: user.image,
-                provider: user.provider,
-                role: user.role,
-            }
+            user: buildUserResponse(user)
         });
 
     } catch (err) {
@@ -303,20 +324,20 @@ const sendOTP = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Please provide an email' });
         }
 
-        // Generate 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+        const normalizedEmail = normalizeEmail(email);
+        const user = await User.findOne({ email: normalizedEmail });
 
-        // Store OTP in DB (overwrite existing for this email)
-        await OTP.findOneAndUpdate(
-            { email },
-            { otp, expiresAt, verified: false },
-            { upsert: true, new: true }
-        );
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Please create an account before requesting an OTP' });
+        }
+
+        if (user.emailVerified) {
+            return res.status(400).json({ success: false, message: 'Email is already verified' });
+        }
 
         // Send Email
         try {
-            await emailService.sendCustomEmail(email, 'Your Verification Code', 'otp', { otp });
+            await createVerificationOTP(normalizedEmail);
             res.json({ success: true, message: 'OTP sent successfully' });
         } catch (emailError) {
             console.error('Failed to send OTP email:', emailError);
@@ -338,17 +359,48 @@ const verifyOTP = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Please provide email and OTP' });
         }
 
-        const otpRecord = await OTP.findOne({ email, otp });
+        const normalizedEmail = normalizeEmail(email);
+        const otpRecord = await OTP.findOne({
+            email: normalizedEmail,
+            otp,
+            expiresAt: { $gt: new Date() }
+        });
 
         if (!otpRecord) {
             return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
         }
 
-        // Mark as verified
-        otpRecord.verified = true;
-        await otpRecord.save();
+        const user = await User.findOne({ email: normalizedEmail });
 
-        res.json({ success: true, message: 'OTP verified successfully' });
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Account not found. Please sign up first.' });
+        }
+
+        user.emailVerified = true;
+        await user.save();
+        await OTP.deleteOne({ _id: otpRecord._id });
+
+        try {
+            await emailService.sendWelcomeEmail(
+                user.email,
+                user.username,
+                `${process.env.CLIENT_URL || 'http://localhost:1800'}/login`
+            );
+            console.log(`Welcome email sent to ${user.email}`);
+        } catch (emailError) {
+            console.error('Failed to send welcome email:', emailError);
+            // Continue verification even if welcome email fails
+        }
+
+        const token = signToken(user._id);
+        setTokenCookie(res, token);
+
+        res.json({
+            success: true,
+            message: 'Email verified successfully',
+            token,
+            user: buildUserResponse(user)
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Server error' });

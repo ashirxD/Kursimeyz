@@ -21,7 +21,15 @@ interface AuthResponse {
     image?: string;
     provider?: string;
     role?: string;
+    emailVerified?: boolean;
   };
+}
+
+interface RegisterResponse {
+  success: boolean;
+  requiresEmailVerification: boolean;
+  email: string;
+  message: string;
 }
 
 export const useAuth = () => {
@@ -37,7 +45,16 @@ export const useAuth = () => {
       storeLogin(data.user, data.token);
       navigate("/dashboard");
     },
-    onError: (error: any) => {
+    onError: (error: any, variables) => {
+      if (error.response?.data?.requiresEmailVerification) {
+        navigate("/verify-otp", {
+          state: {
+            email: error.response.data.email || variables.email,
+          },
+        });
+        return;
+      }
+
       const message = error.response?.data?.message || error.message;
       setError(message);
       console.error("Login failed:", message);
@@ -46,12 +63,15 @@ export const useAuth = () => {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterPayload) => {
-      const response = await api.post<AuthResponse>("/auth/register", data);
+      const response = await api.post<RegisterResponse>("/auth/register", data);
       return response.data;
     },
-    onSuccess: (data) => {
-      storeLogin(data.user, data.token);
-      navigate("/dashboard");
+    onSuccess: (data, variables) => {
+      navigate("/verify-otp", {
+        state: {
+          email: data.email || variables.email,
+        },
+      });
     },
     onError: (error: any) => {
       const message = error.response?.data?.message || error.message;

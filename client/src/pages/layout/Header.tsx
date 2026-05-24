@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useIsAuthenticated, useAuthStore } from "@/stores/authStore";
@@ -12,10 +12,15 @@ const shopCategories = [
 
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileShopOpen, setMobileShopOpen] = useState(false);
   const { totalItems } = useCart();
   const isAuthenticated = useIsAuthenticated();
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActivePath = (path: string) => location.pathname === path;
+  const isShopActive = location.pathname.startsWith("/shop");
 
   const handleLogout = async () => {
     try {
@@ -28,9 +33,15 @@ export default function Header() {
     }
   };
 
+  const mobileTabClass = (active: boolean) =>
+    `flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 h-14 transition-colors ${
+      active ? "text-[#1a2f1a]" : "text-[#1a2f1a]/50"
+    }`;
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md">
-      <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-16 lg:h-20 flex items-center justify-between">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-16 lg:h-20 flex items-center justify-between">
         {/* Logo */}
         <Link to="/dashboard" className="flex items-center gap-2 group">
           <div className="size-7 bg-[#5ef037] rounded-lg flex items-center justify-center shadow-lg shadow-[#5ef037]/20 group-hover:scale-110 transition-transform">
@@ -141,24 +152,21 @@ export default function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
-          <button className="size-11 flex items-center justify-center text-[#1a2f1a] hover:bg-slate-50 rounded-full transition-all">
-            <span className="material-symbols-outlined text-[26px]">
-              search
-            </span>
-          </button>
-
           {isAuthenticated ? (
             <>
               <Link
                 to="/cart"
                 onClick={() => console.log("Navigating to /cart")}
-                className="h-11 px-6 bg-[#1a2f1a] hover:bg-black text-white rounded-full flex items-center gap-3 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-black/10"
+                className="h-11 px-4 sm:px-6 bg-[#1a2f1a] hover:bg-black text-white rounded-full flex items-center gap-2 sm:gap-3 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-black/10"
               >
                 <span className="material-symbols-outlined text-[20px]">
                   shopping_bag
                 </span>
-                <span className="text-[13px] font-black uppercase tracking-widest">
+                <span className="hidden sm:inline text-[13px] font-black uppercase tracking-widest">
                   Cart ({totalItems})
+                </span>
+                <span className="sm:hidden text-[12px] font-black">
+                  {totalItems}
                 </span>
               </Link>
               <button
@@ -174,7 +182,7 @@ export default function Header() {
           ) : (
             <Link
               to="/login"
-              className="h-11 px-6 bg-[#5ef037] hover:bg-[#4ad12d] text-[#1a2f1a] rounded-full flex items-center gap-3 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#5ef037]/30 font-black text-[13px] uppercase tracking-widest"
+              className="h-11 px-4 sm:px-6 bg-[#5ef037] hover:bg-[#4ad12d] text-[#1a2f1a] rounded-full flex items-center gap-2 sm:gap-3 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#5ef037]/30 font-black text-[12px] sm:text-[13px] uppercase tracking-widest"
             >
               <span className="material-symbols-outlined text-[20px]">
                 login
@@ -183,7 +191,82 @@ export default function Header() {
             </Link>
           )}
         </div>
+        </div>
+      </header>
+
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] border-t border-slate-100 bg-white/95 shadow-[0_-12px_30px_rgba(15,23,42,0.08)]">
+        {mobileShopOpen && (
+          <div className="absolute bottom-16 left-0 right-0 border-t border-slate-100 bg-white px-4 py-3 shadow-lg shadow-black/5">
+            <div className="grid grid-cols-3 gap-2">
+              {shopCategories.map((cat) => (
+                <Link
+                  key={cat.label}
+                  to={cat.route}
+                  onClick={() => setMobileShopOpen(false)}
+                  className="flex flex-col items-center justify-center gap-1 h-16 rounded-2xl bg-[#f7f8f3] text-[#1a2f1a] transition-colors hover:bg-[#5ef037]/15"
+                >
+                  <span className="material-symbols-outlined text-[22px] text-[#5ef037]">
+                    {cat.icon}
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-wide">
+                    {cat.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <nav className="grid grid-cols-4 h-16 px-2">
+          <Link
+            to="/dashboard"
+            className={mobileTabClass(isActivePath("/dashboard") || isActivePath("/"))}
+            onClick={() => setMobileShopOpen(false)}
+          >
+            <span className="material-symbols-outlined text-[22px]">home</span>
+            <span className="text-[10px] font-black uppercase tracking-wide">
+              Home
+            </span>
+          </Link>
+
+          <button
+            type="button"
+            className={mobileTabClass(isShopActive)}
+            onClick={() => setMobileShopOpen((open) => !open)}
+          >
+            <span className="material-symbols-outlined text-[22px]">
+              storefront
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-wide">
+              Shop
+            </span>
+          </button>
+
+          <Link
+            to="/about"
+            className={mobileTabClass(isActivePath("/about"))}
+            onClick={() => setMobileShopOpen(false)}
+          >
+            <span className="material-symbols-outlined text-[22px]">info</span>
+            <span className="text-[10px] font-black uppercase tracking-wide">
+              About
+            </span>
+          </Link>
+
+          <Link
+            to="/orders"
+            className={mobileTabClass(isActivePath("/orders"))}
+            onClick={() => setMobileShopOpen(false)}
+          >
+            <span className="material-symbols-outlined text-[22px]">
+              receipt_long
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-wide">
+              My Orders
+            </span>
+          </Link>
+        </nav>
       </div>
-    </header>
+    </>
   );
 }

@@ -7,6 +7,7 @@ const Dashboard = lazy(() => import("../pages/dashboard"));
 const About = lazy(() => import("../pages/about"));
 const Login = lazy(() => import("../pages/auth/login"));
 const Signup = lazy(() => import("../pages/auth/signup"));
+const VerifyOtp = lazy(() => import("../pages/auth/verifyOtp"));
 const AdminLogin = lazy(() => import("../pages/auth/adminLogin"));
 const ChairsPage = lazy(() => import("../pages/chairs"));
 const TablesPage = lazy(() => import("../pages/tables"));
@@ -99,6 +100,14 @@ export const publicRoutes = [
     element: (
       <Suspense fallback={<LoadingSpinner />}>
         <Signup />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/verify-otp",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <VerifyOtp />
       </Suspense>
     ),
   },

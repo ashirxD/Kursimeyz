@@ -2,6 +2,16 @@ const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const User = require('../models/User');
+const PaymentConfirmation = require('../models/PaymentConfirmation');
+
+const adminOrderPopulate = [
+    { path: 'user', select: 'username email phone' },
+    { path: 'items.product', select: 'name image category price' },
+    {
+        path: 'paymentConfirmation',
+        populate: { path: 'confirmedBy', select: 'username' },
+    },
+];
 
 // @desc    Create new order
 // @route   POST /api/order
@@ -254,9 +264,14 @@ const updateOrderStatus = async (req, res) => {
         order.status = status;
         
         // If order is delivered, set paid status and date
-        if (status === 'Delivered' && !order.isPaid) {
-            order.isPaid = true;
-            order.paidAt = Date.now();
+        if (status === 'Delivered') {
+            if (!order.deliveredAt) {
+                order.deliveredAt = new Date();
+            }
+            if (!order.isPaid) {
+                order.isPaid = true;
+                order.paidAt = Date.now();
+            }
         }
         
         const updatedOrder = await order.save();
@@ -274,36 +289,75 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
-// @desc    Confirm payment for an order (Admin only)
-// @route   PUT /api/order/admin/:id/pay
+// @desc    Get single order by ID (Admin only)
+// @route   GET /api/order/admin/:id
 // @access  Private/Admin
-const confirmPayment = async (req, res) => {
+const getAdminOrderById = async (req, res) => {
     try {
-        const { paymentId, receipt, paymentDate } = req.body;
-        
-        const order = await Order.findById(req.params.id);
-        
+        const order = await Order.findById(req.params.id).populate(adminOrderPopulate);
+
         if (!order) {
             return res.status(404).json({
                 success: false,
                 message: 'Order not found',
             });
         }
-        
+
+        res.status(200).json({
+            success: true,
+            data: order,
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            message: 'Server Error',
+            error: err.message,
+        });
+    }
+};
+
+// @desc    Confirm payment for an order (Admin only)
+// @route   PUT /api/order/admin/:id/pay
+// @access  Private/Admin
+const confirmPayment = async (req, res) => {
+    try {
+        const { paymentId, receiptUrl, paymentDate } = req.body;
+
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found',
+            });
+        }
+
+        if (order.paymentConfirmation) {
+            return res.status(400).json({
+                success: false,
+                message: 'Payment has already been confirmed for this order',
+            });
+        }
+
+        const paidAt = paymentDate ? new Date(paymentDate) : new Date();
+
+        const paymentConfirmation = await PaymentConfirmation.create({
+            order: order._id,
+            transactionReference: paymentId || '',
+            paymentDate: paidAt,
+            receiptUrl: receiptUrl || '',
+            confirmedBy: req.user._id,
+            confirmedAt: new Date(),
+        });
+
         order.isPaid = true;
-        order.paidAt = paymentDate ? new Date(paymentDate) : Date.now();
-        
-        // Add optional payment metadata
-        order.paymentResult = {
-            id: paymentId || '',
-            status: 'Completed',
-            update_time: new Date().toISOString(),
-            receipt: receipt || '',
-            paymentDate: order.paidAt
-        };
-        
-        const updatedOrder = await order.save();
-        
+        order.paidAt = paidAt;
+        order.paymentConfirmation = paymentConfirmation._id;
+
+        await order.save();
+
+        const updatedOrder = await Order.findById(order._id).populate(adminOrderPopulate);
+
         res.status(200).json({
             success: true,
             data: updatedOrder,
@@ -324,5 +378,6 @@ module.exports = {
     getAllOrders,
     getDashboardStats,
     updateOrderStatus,
-    confirmPayment
+    getAdminOrderById,
+    confirmPayment,
 };

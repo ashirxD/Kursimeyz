@@ -31,6 +31,7 @@ export interface Order {
     isPaid: boolean;
     paidAt?: string;
     status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+    paymentConfirmation?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -66,6 +67,7 @@ const statusStyles = {
 import { useUpdateOrderStatus } from "@/hooks/useAdminOrders";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import PaymentConfirmationModal from "@/components/paymentConfirmationModal";
 
 interface OrdersTableProps {
@@ -188,6 +190,7 @@ const StatusDropdown = ({ currentStatus, orderId, onStatusChange, isLoading }: {
 };
 
 export default function OrdersTable({ orders }: OrdersTableProps) {
+    const navigate = useNavigate();
     const { updateStatus, isLoading } = useUpdateOrderStatus();
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState('');
@@ -310,7 +313,11 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                                     )}
                                 </td>
                                 <td className="px-8 py-5 text-right">
-                                    <button className="size-10 rounded-full bg-white border border-forest-moss/5 flex items-center justify-center text-forest-moss-light hover:bg-forest-moss hover:text-white transition-all shadow-sm">
+                                    <button
+                                        onClick={() => navigate(`/admin/orders/${order._id}`)}
+                                        className="size-10 rounded-full bg-white border border-forest-moss/5 flex items-center justify-center text-forest-moss-light hover:bg-forest-moss hover:text-white transition-all shadow-sm"
+                                        title="View order details"
+                                    >
                                         <span className="material-symbols-outlined text-xl!">visibility</span>
                                     </button>
                                 </td>

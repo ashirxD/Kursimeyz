@@ -1,4 +1,5 @@
 import type { Chair as Product } from '../chairs/cards';
+import { resolveImageUrl } from '@/utils/imageUrl';
 
 interface TableCardProps {
     table: Product;
@@ -6,19 +7,12 @@ interface TableCardProps {
 }
 
 export default function TableCard({ table, onDelete }: TableCardProps) {
-    const getImageUrl = (url: string) => {
-        if (!url) return 'https://images.unsplash.com/photo-1577146333355-630f775370c8?w=800';
-        if (url.startsWith('http')) return url;
-        const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
-        return `${baseUrl}${url}`;
-    };
-
     return (
         <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-soft border border-white/50 group hover:scale-[1.01] transition-all duration-300 flex flex-col md:flex-row col-span-1 md:col-span-2 min-h-[300px]">
             {/* Image Section - Wider Aspect for Tables */}
             <div className="md:w-1/2 relative overflow-hidden bg-oatmeal">
                 <img
-                    src={getImageUrl(table.image)}
+                    src={resolveImageUrl(table.image)}
                     alt={table.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />

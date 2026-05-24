@@ -1,19 +1,47 @@
+const { uploadImageBuffer } = require('../utils/s3Upload');
+
 const uploadImage = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    // Return the relative path to the uploaded file
-    const filePath = `/uploads/${req.file.filename}`;
-    res.json({ 
-      message: 'File uploaded successfully', 
-      url: filePath 
+
+    const url = await uploadImageBuffer({
+      buffer: req.file.buffer,
+      mimetype: req.file.mimetype,
+      originalname: req.file.originalname,
+    });
+
+    res.json({
+      message: 'File uploaded successfully',
+      url,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error uploading file', error: error.message });
+    if (
+      error.message === 'No file uploaded' ||
+      error.message.includes('Only jpg') ||
+      error.message.includes('extension')
+    ) {
+      return res.status(400).json({ message: error.message });
+    }
+
+    if (error.message.includes('AWS environment variables')) {
+      return res.status(500).json({ message: 'Image upload service is not configured' });
+    }
+
+    if (
+      error.message.includes('S3 access denied') ||
+      error.message.includes('S3 bucket not found') ||
+      error.message.includes('Invalid AWS credentials')
+    ) {
+      return res.status(500).json({ message: error.message });
+    }
+
+    console.error('Upload error:', error.message);
+    res.status(500).json({ message: 'Error uploading file' });
   }
 };
 
 module.exports = {
-  uploadImage
+  uploadImage,
 };

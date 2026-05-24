@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useProduct, type Product } from "@/hooks/useProduct";
 import { useCart } from "@/hooks/useCart";
 import { Link } from "react-router-dom";
+import ProductRating from "@/components/ProductRating";
+import { resolveImageUrl } from "@/utils/imageUrl";
 
 interface TopPicksProps {
   limit?: number;
@@ -36,14 +38,6 @@ export default function TopPicks({
   const displayProducts = limit
     ? randomizedProducts.slice(0, limit)
     : randomizedProducts;
-
-  const getImageUrl = (url: string) => {
-    if (!url)
-      return "https://images.unsplash.com/photo-1581412003502-97cc921d5421?w=500";
-    if (url.startsWith("http")) return url;
-    const baseUrl = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
-    return `${baseUrl}${url}`;
-  };
 
   return (
     <div
@@ -97,7 +91,7 @@ export default function TopPicks({
                 className="block w-full aspect-square overflow-hidden rounded-lg bg-gray-100 mb-3"
               >
                 <img
-                  src={getImageUrl(product.image)}
+                  src={resolveImageUrl(product.image)}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -120,6 +114,12 @@ export default function TopPicks({
                     >
                       {product.price} Rs
                     </span>
+                  </div>
+                  <div className="mt-1.5">
+                    <ProductRating
+                      averageRating={product.averageRating}
+                      ratingCount={product.ratingCount}
+                    />
                   </div>
                 </Link>
 

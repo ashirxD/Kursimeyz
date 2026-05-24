@@ -51,7 +51,7 @@ export default function QuickAuthModal() {
         try {
             setIsLoading(true);
             setLocalError(null);
-            await api.post('/auth/send-otp', { email });
+            await api.post('/auth/register', { email, password });
             setIsOtpSent(true);
         } catch (err: any) {
             setLocalError(err.response?.data?.message || 'Failed to send OTP');
@@ -64,8 +64,11 @@ export default function QuickAuthModal() {
         try {
             setIsLoading(true);
             setLocalError(null);
-            await api.post('/auth/verify-otp', { email, otp });
+            const response = await api.post('/auth/verify-otp', { email, otp });
+            const { user, token } = response.data;
             setIsOtpVerified(true);
+            storeLogin(user, token);
+            setQuickAuthModalOpen(false);
         } catch (err: any) {
             setLocalError(err.response?.data?.message || 'Invalid OTP');
         } finally {
@@ -75,18 +78,12 @@ export default function QuickAuthModal() {
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            setIsLoading(true);
-            setLocalError(null);
-            const response = await api.post('/auth/register', { email, password });
-            const { user, token } = response.data;
-            storeLogin(user, token);
-            setQuickAuthModalOpen(false);
-        } catch (err: any) {
-            setLocalError(err.response?.data?.message || 'Signup failed');
-        } finally {
-            setIsLoading(false);
+        if (!isOtpVerified) {
+            setLocalError('Please verify your OTP before continuing');
+            return;
         }
+
+        setQuickAuthModalOpen(false);
     };
 
     const handleLogin = async (e: React.FormEvent) => {

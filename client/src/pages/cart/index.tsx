@@ -1,19 +1,10 @@
 import { useCart } from "@/hooks/useCart";
 import { Link } from "react-router-dom";
+import { resolveImageUrl } from "@/utils/imageUrl";
 
 export default function CartPage() {
   const { cart, isLoading, updateQuantity, removeFromCart, itemsCount } =
     useCart();
-
-  const getImageUrl = (url: string) => {
-    if (!url)
-      return "https://images.unsplash.com/photo-1581412003502-97cc921d5421?w=500";
-    if (url.startsWith("http")) return url;
-    const baseUrl = import.meta.env.VITE_API_URL
-      ? import.meta.env.VITE_API_URL.replace("/api", "")
-      : "http://localhost:5000";
-    return `${baseUrl}${url}`;
-  };
 
   const subtotal =
     cart?.items?.reduce(
@@ -66,7 +57,7 @@ export default function CartPage() {
               >
                 <div className="size-32 bg-[#f4f5f0] rounded-3xl overflow-hidden flex items-center justify-center p-4">
                   <img
-                    src={getImageUrl(item.product?.image)}
+                    src={resolveImageUrl(item.product?.image)}
                     alt={item.product?.name || "Product"}
                     className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
                   />

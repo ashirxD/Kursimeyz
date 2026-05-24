@@ -3,6 +3,8 @@ import { useProduct } from "@/hooks/useProduct";
 import { useCart } from "@/hooks/useCart";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import ProductRating from "@/components/ProductRating";
+import { resolveImageUrl } from "@/utils/imageUrl";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -10,14 +12,6 @@ export default function ProductDetail() {
   const { addToCart, isAdding } = useCart();
   const [added, setAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
-
-  const getImageUrl = (url: string) => {
-    if (!url)
-      return "https://images.unsplash.com/photo-1581412003502-97cc921d5421?w=500";
-    if (url.startsWith("http")) return url;
-    const baseUrl = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
-    return `${baseUrl}${url}`;
-  };
 
   const handleAddToCart = () => {
     if (product?._id) {
@@ -89,7 +83,7 @@ export default function ProductDetail() {
         <div className="relative group">
           <div className="bg-[#f4f5f0] rounded-[3rem] aspect-[4/5] p-12 lg:p-20 overflow-hidden flex items-center justify-center transition-all duration-700 hover:shadow-2xl hover:shadow-black/5">
             <img
-              src={getImageUrl(product.image)}
+              src={resolveImageUrl(product.image)}
               alt={product.name}
               className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out"
             />
@@ -112,20 +106,19 @@ export default function ProductDetail() {
             <h1 className="text-[44px] lg:text-[64px] font-black text-[#1a2f1a] tracking-tight leading-[0.95] mb-6">
               {product.name}
             </h1>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center gap-6">
               <span className="bg-[#5ef037]/10 text-[#5ef037] px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
                 In Stock
               </span>
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <span
-                    key={i}
-                    className="material-symbols-outlined text-[18px] text-[#fbbf24] fill-[#fbbf24]"
-                  >
-                    star
-                  </span>
-                ))}
-              </div>
+              {product.ratingCount && product.ratingCount > 0 ? (
+                <ProductRating
+                  averageRating={product.averageRating}
+                  ratingCount={product.ratingCount}
+                  size="md"
+                />
+              ) : (
+                <span className="text-sm font-bold text-[#1a2f1a]/40">No reviews yet</span>
+              )}
             </div>
           </div>
 

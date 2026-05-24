@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Chair as Product } from '../chairs/cards';
 import EditSofaModal from './edit.tsx';
+import { resolveImageUrl } from '@/utils/imageUrl';
 
 interface SofaCardProps {
     sofa: Product;
@@ -10,20 +11,13 @@ interface SofaCardProps {
 export default function SofaCard({ sofa, onDelete }: SofaCardProps) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const getImageUrl = (url: string) => {
-        if (!url) return 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800';
-        if (url.startsWith('http')) return url;
-        const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
-        return `${baseUrl}${url}`;
-    };
-
     return (
         <>
             <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-soft border border-white/50 group hover:scale-[1.01] transition-all duration-300 flex flex-col md:flex-row col-span-1 md:col-span-2 min-h-[300px]">
                 {/* Image Section */}
                 <div className="md:w-1/2 relative overflow-hidden bg-oatmeal">
                     <img
-                        src={getImageUrl(sofa.image)}
+                        src={resolveImageUrl(sofa.image)}
                         alt={sofa.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { Chair } from "@/pages/admin/chairs/cards";
 import { useCart } from "@/hooks/useCart";
+import ProductRating from "@/components/ProductRating";
+import { resolveImageUrl } from "@/utils/imageUrl";
 
 interface ChairProductCardProps {
   chair: Chair;
@@ -31,16 +33,6 @@ export default function ChairProductCard({
         },
       },
     );
-  };
-
-  const getImageUrl = (url: string) => {
-    if (!url)
-      return "https://images.unsplash.com/photo-1581412003502-97cc921d5421?w=500";
-    if (url.startsWith("http")) return url;
-    const baseUrl = import.meta.env.VITE_API_URL
-      ? import.meta.env.VITE_API_URL.replace("/api", "")
-      : "http://localhost:5000";
-    return `${baseUrl}${url}`;
   };
 
   return (
@@ -75,7 +67,7 @@ export default function ChairProductCard({
 
         {/* Product Image */}
         <img
-          src={getImageUrl(chair.image)}
+          src={resolveImageUrl(chair.image)}
           alt={chair.name}
           className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
         />
@@ -90,6 +82,12 @@ export default function ChairProductCard({
           <p className="text-[12px] text-[#1a2f1a]/40 font-medium mt-0.5 truncate">
             {chair.description}
           </p>
+          <div className="mt-1">
+            <ProductRating
+              averageRating={chair.averageRating}
+              ratingCount={chair.ratingCount}
+            />
+          </div>
         </div>
         <span className="text-[15px] font-bold text-[#1a2f1a] whitespace-nowrap">
           Rs. {chair.price}

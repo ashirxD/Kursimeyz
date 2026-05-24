@@ -1,3 +1,5 @@
+import { resolveImageUrl } from '@/utils/imageUrl';
+
 export interface Chair {
     id: string;
     name: string;
@@ -6,6 +8,8 @@ export interface Chair {
     description: string;
     color: string;
     category?: 'chair' | 'table' | 'sofa' | 'bed' | 'other';
+    averageRating?: number;
+    ratingCount?: number;
 }
 
 interface ChairCardProps {
@@ -14,18 +18,11 @@ interface ChairCardProps {
 }
 
 export default function ChairCard({ chair, onDelete }: ChairCardProps) {
-    const getImageUrl = (url: string) => {
-        if (!url) return 'https://images.unsplash.com/photo-1581412003502-97cc921d5421?w=500';
-        if (url.startsWith('http')) return url;
-        const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
-        return `${baseUrl}${url}`;
-    };
-
     return (
         <div className="bg-white rounded-[2rem] overflow-hidden shadow-soft border border-white/50 group hover:scale-[1.02] transition-all duration-300">
             <div className="aspect-[4/5] overflow-hidden relative">
                 <img
-                    src={getImageUrl(chair.image)}
+                    src={resolveImageUrl(chair.image)}
                     alt={chair.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />

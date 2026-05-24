@@ -1,36 +1,102 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
+const DEFAULT_WHATSAPP_NUMBER = '923024379999';
+const DEFAULT_EASYPAISA_REDIRECT_URL = 'https://easypaisa.onelink.me/cw4d/q9y8ba5v';
+const DEFAULT_JAZZCASH_REDIRECT_URL = 'https://www.jazzcash.com.pk/jazzcash-app-aur-bhi-behtar/';
+
+const cleanNumber = (value) => (value || '').toString().replace(/\D/g, '');
+
+const validateOptionalNumber = (value, label) => {
+    const cleaned = cleanNumber(value);
+
+    if (!cleaned) {
+        return '';
+    }
+
+    if (cleaned.length < 10) {
+        throw new Error(`${label} must have at least 10 digits`);
+    }
+
+    if (cleaned.length > 15) {
+        throw new Error(`${label} must not exceed 15 digits`);
+    }
+
+    return cleaned;
+};
+
+const validateOptionalRedirectUrl = (value, label) => {
+    const url = (value || '').toString().trim();
+
+    if (!url) {
+        return '';
+    }
+
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) {
+        throw new Error(`${label} must be a valid URL`);
+    }
+
+    return url;
+};
+
+const buildPaymentSettings = (admin, isDefault = false) => ({
+    whatsappNumber: admin?.whatsappNumber || DEFAULT_WHATSAPP_NUMBER,
+    easypaisaAccountNumber: admin?.easypaisaAccountNumber || '',
+    easypaisaRedirectUrl: admin?.easypaisaRedirectUrl || DEFAULT_EASYPAISA_REDIRECT_URL,
+    jazzcashAccountNumber: admin?.jazzcashAccountNumber || '',
+    jazzcashRedirectUrl: admin?.jazzcashRedirectUrl || DEFAULT_JAZZCASH_REDIRECT_URL,
+    isDefault,
+});
+
+const findAdminWithPaymentSettings = async () => {
+    return User.findOne({
+        role: 'admin',
+        $or: [
+            { whatsappNumber: { $exists: true, $nin: [null, ''] } },
+            { easypaisaAccountNumber: { $exists: true, $nin: [null, ''] } },
+            { easypaisaRedirectUrl: { $exists: true, $nin: [null, ''] } },
+            { jazzcashAccountNumber: { $exists: true, $nin: [null, ''] } },
+            { jazzcashRedirectUrl: { $exists: true, $nin: [null, ''] } },
+        ]
+    });
+};
+
 // @desc    Get WhatsApp number (public - for frontend button)
 // @route   GET /api/v1/user/whatsapp
 const getWhatsAppNumber = async (req, res) => {
     try {
-        // Find the admin user who has the WhatsApp number set
-        // We look for any admin with a whatsappNumber field set
-        const admin = await User.findOne({ 
-            role: 'admin',
-            whatsappNumber: { $exists: true, $ne: null }
-        });
+        const admin = await findAdminWithPaymentSettings();
+        const settings = buildPaymentSettings(admin, !admin || !admin.whatsappNumber);
 
-        if (!admin || !admin.whatsappNumber) {
-            // Return a default number if none is set
-            return res.json({
-                success: true,
-                whatsappNumber: '923024379999', // Default fallback
-                isDefault: true
-            });
-        }
-
-        res.json({
+        return res.json({
             success: true,
-            whatsappNumber: admin.whatsappNumber,
-            isDefault: false
+            whatsappNumber: settings.whatsappNumber,
+            isDefault: settings.isDefault
         });
     } catch (err) {
         console.error('Error fetching WhatsApp number:', err);
         res.status(500).json({ 
             success: false, 
             message: 'Server error' 
+        });
+    }
+};
+
+// @desc    Get public payment settings for checkout
+// @route   GET /api/v1/user/payment-settings
+const getPaymentSettings = async (req, res) => {
+    try {
+        const admin = await findAdminWithPaymentSettings();
+
+        res.json({
+            success: true,
+            data: buildPaymentSettings(admin, !admin)
+        });
+    } catch (err) {
+        console.error('Error fetching payment settings:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
         });
     }
 };
@@ -59,6 +125,39 @@ const getAdminWhatsAppNumber = async (req, res) => {
         res.status(500).json({ 
             success: false, 
             message: 'Server error' 
+        });
+    }
+};
+
+// @desc    Get payment settings for admin (protected)
+// @route   GET /api/v1/user/admin/payment-settings
+const getAdminPaymentSettings = async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admin users can access this endpoint'
+            });
+        }
+
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: buildPaymentSettings(user, false)
+        });
+    } catch (err) {
+        console.error('Error fetching admin payment settings:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
         });
     }
 };
@@ -126,6 +225,69 @@ const updateWhatsAppNumber = async (req, res) => {
         res.status(500).json({ 
             success: false, 
             message: 'Server error' 
+        });
+    }
+};
+
+// @desc    Update payment settings (admin only)
+// @route   PUT /api/v1/user/admin/payment-settings
+const updatePaymentSettings = async (req, res) => {
+    try {
+        const {
+            whatsappNumber,
+            easypaisaAccountNumber,
+            easypaisaRedirectUrl,
+            jazzcashAccountNumber,
+            jazzcashRedirectUrl,
+        } = req.body;
+
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admin users can update payment settings'
+            });
+        }
+
+        let settings;
+
+        try {
+            settings = {
+                whatsappNumber: validateOptionalNumber(whatsappNumber, 'WhatsApp number'),
+                easypaisaAccountNumber: validateOptionalNumber(easypaisaAccountNumber, 'Easypaisa account number'),
+                easypaisaRedirectUrl: validateOptionalRedirectUrl(easypaisaRedirectUrl, 'Easypaisa redirect URL') || DEFAULT_EASYPAISA_REDIRECT_URL,
+                jazzcashAccountNumber: validateOptionalNumber(jazzcashAccountNumber, 'JazzCash account number'),
+                jazzcashRedirectUrl: validateOptionalRedirectUrl(jazzcashRedirectUrl, 'JazzCash redirect URL') || DEFAULT_JAZZCASH_REDIRECT_URL,
+            };
+        } catch (validationError) {
+            return res.status(400).json({
+                success: false,
+                message: validationError.message
+            });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            settings,
+            { new: true, runValidators: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Payment settings updated successfully',
+            data: buildPaymentSettings(user, false)
+        });
+    } catch (err) {
+        console.error('Error updating payment settings:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
         });
     }
 };
@@ -226,8 +388,11 @@ const updateAdminProfile = async (req, res) => {
 
 module.exports = {
     getWhatsAppNumber,
+    getPaymentSettings,
     getAdminWhatsAppNumber,
+    getAdminPaymentSettings,
     updateWhatsAppNumber,
+    updatePaymentSettings,
     getAllCustomers,
     updateAdminProfile
 }

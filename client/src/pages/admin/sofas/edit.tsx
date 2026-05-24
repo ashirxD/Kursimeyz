@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import api from '@/utils/Axios';
+import { resolveImageUrl } from '@/utils/imageUrl';
 import type { Chair as Product } from '../chairs/cards';
 
 interface EditSofaModalProps {
@@ -36,13 +37,6 @@ export default function EditSofaModal({ isOpen, onClose, sofa }: EditSofaModalPr
 
     if (!isOpen) return null;
 
-    const getImageUrl = (url: string) => {
-        if (!url) return '';
-        if (url.startsWith('http')) return url;
-        const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
-        return `${baseUrl}${url}`;
-    };
-
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -60,11 +54,7 @@ export default function EditSofaModal({ isOpen, onClose, sofa }: EditSofaModalPr
             const formData = new FormData();
             formData.append('image', file);
 
-            const response = await api.post('/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            const response = await api.post('/upload', formData);
 
             setEditedSofa({ ...editedSofa, image: response.data.url });
         } catch (error) {
@@ -108,7 +98,7 @@ export default function EditSofaModal({ isOpen, onClose, sofa }: EditSofaModalPr
                             >
                                 {(previewUrl || editedSofa.image) ? (
                                     <>
-                                        <img src={previewUrl || getImageUrl(editedSofa.image)} className="w-full h-full object-cover" alt="Preview" />
+                                        <img src={previewUrl || resolveImageUrl(editedSofa.image)} className="w-full h-full object-cover" alt="Preview" />
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                             <span className="text-white font-black text-xs uppercase tracking-widest">Change Image</span>
                                         </div>

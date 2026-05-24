@@ -21,7 +21,7 @@ interface CheckoutState {
   shippingAddress: ShippingAddress;
 
   // Payment
-  paymentMethod: "Cash" | "Card";
+  paymentMethod: "Cash" | "Card" | "Easypaisa" | "JazzCash";
   cardInfo: {
     number: string;
     expiry: string;
@@ -45,7 +45,7 @@ interface CheckoutState {
 
   // Actions
   setShippingAddress: (address: Partial<ShippingAddress>) => void;
-  setPaymentMethod: (method: "Cash" | "Card") => void;
+  setPaymentMethod: (method: "Cash" | "Card" | "Easypaisa" | "JazzCash") => void;
   setCardInfo: (info: Partial<CheckoutState["cardInfo"]>) => void;
   setOrderItems: (items: OrderItem[]) => void;
   setPrices: (itemsPrice: number, shippingPrice: number) => void;

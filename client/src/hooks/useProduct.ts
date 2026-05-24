@@ -9,6 +9,8 @@ export interface Product {
   description: string;
   color: string;
   category: string;
+  averageRating?: number;
+  ratingCount?: number;
 }
 
 export const useProduct = (id?: string) => {

@@ -1,8 +1,15 @@
 import { useOrder } from "@/hooks/useOrder";
 import { Link } from "react-router-dom";
+import { usePendingReviews } from "@/hooks/usePendingReviews";
+import { useReviewPrompt } from "@/components/ReviewPromptProvider";
+import { resolveImageUrl } from "@/utils/imageUrl";
 
 export default function OrderHistory() {
   const { myOrders, ordersLoading, ordersError } = useOrder();
+  const { pendingOrders } = usePendingReviews();
+  const { openReviewForOrder } = useReviewPrompt();
+
+  const pendingOrderIds = new Set(pendingOrders.map((o) => o.orderId));
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -132,7 +139,7 @@ export default function OrderHistory() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
                   <span
                     className={`px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider ${getStatusColor(order.status)}`}
                   >
@@ -142,6 +149,16 @@ export default function OrderHistory() {
                     <span className="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#5ef037]/10 text-[#5ef037]">
                       Paid
                     </span>
+                  )}
+                  {order.status === "Delivered" && pendingOrderIds.has(order._id) && (
+                    <button
+                      type="button"
+                      onClick={() => openReviewForOrder(order._id)}
+                      className="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors flex items-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">star</span>
+                      Rate Products
+                    </button>
                   )}
                 </div>
               </div>
@@ -165,7 +182,7 @@ export default function OrderHistory() {
                       >
                         <div className="size-20 bg-[#f4f5f0] rounded-2xl shrink-0 flex items-center justify-center p-3">
                           <img
-                            src={item.product?.image}
+                            src={resolveImageUrl(item.product?.image)}
                             alt={item.product?.name}
                             className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
                           />

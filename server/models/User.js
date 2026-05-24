@@ -33,6 +33,10 @@ const UserSchema = new mongoose.Schema({
     enum: ['local', 'google'],
     default: 'local',
   },
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -44,6 +48,22 @@ const UserSchema = new mongoose.Schema({
   },
 
   whatsappNumber: {
+    type: String,
+    trim: true,
+  },
+  easypaisaAccountNumber: {
+    type: String,
+    trim: true,
+  },
+  easypaisaRedirectUrl: {
+    type: String,
+    trim: true,
+  },
+  jazzcashAccountNumber: {
+    type: String,
+    trim: true,
+  },
+  jazzcashRedirectUrl: {
     type: String,
     trim: true,
   },

@@ -35,7 +35,7 @@ export default function Dashboard() {
             comfort that connects you back to nature.
           </p>
 
-          <div className="flex flex-wrap items-center gap-5 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
+          <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
             <button
               onClick={scrollToCollection}
               className="h-14 px-8 bg-[#5ef037] hover:bg-[#4ad12d] text-white font-black text-base rounded-full flex items-center gap-2.5 transition-all transform hover:scale-[1.05] active:scale-95 shadow-xl shadow-[#5ef037]/20 cursor-pointer"
@@ -44,13 +44,6 @@ export default function Dashboard() {
               <span className="material-symbols-outlined font-black text-xl">
                 arrow_forward
               </span>
-            </button>
-
-            <button className="h-14 px-8 border-2 border-slate-100 hover:border-[#1a2f1a] hover:bg-[#1a2f1a] hover:text-white text-[#1a2f1a] font-black text-base rounded-full flex items-center gap-2.5 transition-all transform cursor-pointer group">
-              <span className="material-symbols-outlined font-black group-hover:scale-110 transition-transform text-xl">
-                play_circle
-              </span>
-              Watch Film
             </button>
           </div>
         </div>
@@ -86,28 +79,13 @@ export default function Dashboard() {
 
       {/* Find Your Space Section */}
       <section ref={findYourSpaceRef} id="find-your-space" className="py-16 border-t border-slate-50">
-        <div className="flex items-end justify-between mb-12 px-4">
-          <div className="max-w-md">
-            <h2 className="text-[36px] font-black text-[#1a2f1a] tracking-tight leading-tight mb-3">
-              Find Your Space
-            </h2>
-            <p className="text-lg text-slate-400 font-medium">
-              Curated collections for every corner of your life.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button className="size-11 rounded-full border border-slate-100 flex items-center justify-center text-[#1a2f1a] hover:bg-slate-50 transition-all cursor-pointer">
-              <span className="material-symbols-outlined text-[24px]">
-                arrow_back
-              </span>
-            </button>
-            <button className="size-11 rounded-full bg-[#111c11] flex items-center justify-center text-white hover:bg-black shadow-lg shadow-black/10 transition-all cursor-pointer">
-              <span className="material-symbols-outlined text-[24px]">
-                arrow_forward
-              </span>
-            </button>
-          </div>
+        <div className="mb-12 px-4 max-w-md">
+          <h2 className="text-[36px] font-black text-[#1a2f1a] tracking-tight leading-tight mb-3">
+            Find Your Space
+          </h2>
+          <p className="text-lg text-slate-400 font-medium">
+            Curated collections for every corner of your life.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">

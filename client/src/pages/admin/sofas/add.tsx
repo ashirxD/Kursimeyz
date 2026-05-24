@@ -40,11 +40,7 @@ export default function AddSofaModal({ isOpen, onClose }: AddSofaModalProps) {
             const formData = new FormData();
             formData.append('image', file);
 
-            const response = await api.post('/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            const response = await api.post('/upload', formData);
 
             setNewSofa({ ...newSofa, image: response.data.url });
         } catch (error) {

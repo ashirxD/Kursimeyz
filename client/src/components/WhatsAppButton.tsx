@@ -124,6 +124,21 @@ export default function WhatsAppButton() {
           border: 6px solid transparent;
           border-left-color: #25D366;
         }
+        @media (max-width: 767px) {
+          .whatsapp-float-btn {
+            bottom: 92px;
+            right: 18px;
+            width: 56px;
+            height: 56px;
+          }
+          .whatsapp-float-btn svg {
+            width: 30px;
+            height: 30px;
+          }
+          .whatsapp-tooltip {
+            display: none;
+          }
+        }
       `}</style>
     </a>
   );

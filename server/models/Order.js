@@ -31,7 +31,7 @@ const OrderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['Cash', 'Card'],
+        enum: ['Cash', 'Card', 'Easypaisa', 'JazzCash'],
         required: true
     },
     paymentResult: {
@@ -39,8 +39,10 @@ const OrderSchema = new mongoose.Schema({
         status: { type: String },
         update_time: { type: String },
         email_address: { type: String },
-        receipt: { type: String },
-        paymentDate: { type: Date }
+    },
+    paymentConfirmation: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PaymentConfirmation',
     },
     itemsPrice: {
         type: Number,
@@ -69,7 +71,16 @@ const OrderSchema = new mongoose.Schema({
         type: String,
         enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
         default: 'Pending'
-    }
+    },
+    deliveredAt: {
+        type: Date,
+    },
+    reviewPromptSnoozedUntil: {
+        type: Date,
+    },
+    reviewsSkippedAt: {
+        type: Date,
+    },
 }, {
     timestamps: true
 });
