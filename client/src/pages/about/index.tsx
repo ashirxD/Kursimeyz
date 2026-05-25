@@ -148,7 +148,7 @@ export default function About() {
               className="flex items-center gap-3 bg-[#5ef037] hover:bg-[#4ad12d] text-[#1a2f1a] px-6 py-4 rounded-full transition-all"
             >
               <span className="material-symbols-outlined text-[24px]">phone</span>
-              <span className="text-[14px] font-bold">+92 300 123 4567</span>
+              <span className="text-[14px] font-bold">+92 321 1411478</span>
             </a>
           </div>
         </div>
