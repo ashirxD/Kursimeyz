@@ -40,11 +40,6 @@ app.use('/api', apiRoutes);
 const PORT = process.env.PORT || 5000;
 let server;
 
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("CONNECTED"))
-  .catch(err => console.log("ERROR:", err.message));
-
 // Connect to DB and start server
 if (process.env.MONGO_URI) {
     connectDB().then(() => {
