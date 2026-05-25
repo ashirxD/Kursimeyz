@@ -263,7 +263,7 @@ export default function SettingsPage() {
                         <span className="material-symbols-outlined text-lg!">
                           save
                         </span>
-                        Save Payment Settings
+                        Save Settings
                       </>
                     )}
                   </button>
