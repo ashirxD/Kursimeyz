@@ -144,7 +144,7 @@ export default function About() {
               <span className="text-[14px] font-bold">support@relaxingchairshop.com</span>
             </a>
             <a
-              href="tel:+923001234567"
+              href="tel:++92 321 1411478"
               className="flex items-center gap-3 bg-[#5ef037] hover:bg-[#4ad12d] text-[#1a2f1a] px-6 py-4 rounded-full transition-all"
             >
               <span className="material-symbols-outlined text-[24px]">phone</span>

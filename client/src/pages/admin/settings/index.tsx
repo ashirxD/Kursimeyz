@@ -178,7 +178,7 @@ export default function SettingsPage() {
                     icon="phone"
                     label="WhatsApp Number"
                     value={settings.whatsappNumber}
-                    placeholder="923024379999"
+                    placeholder="+92 321 1411478"
                     helper="Include country code without + or 00. Customers send payment screenshots here."
                     onChange={(value) => updateField("whatsappNumber", value)}
                   />

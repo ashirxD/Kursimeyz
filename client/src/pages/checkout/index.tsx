@@ -17,7 +17,7 @@ interface PaymentSettings {
 }
 
 const defaultPaymentSettings: PaymentSettings = {
-  whatsappNumber: "923024379999",
+  whatsappNumber: "+923211411478",
   easypaisaAccountNumber: "",
   easypaisaRedirectUrl: "https://easypaisa.onelink.me/cw4d/q9y8ba5v",
   jazzcashAccountNumber: "",

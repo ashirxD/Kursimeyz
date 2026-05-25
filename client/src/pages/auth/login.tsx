@@ -38,14 +38,6 @@ const Login = () => {
 
   return (
     <div className="h-screen w-full flex flex-col md:flex-row bg-[#fdfcf8] font-sans text-[#101b0e] overflow-hidden">
-      <Link
-        to="/"
-        className="absolute left-4 top-4 z-30 inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-black uppercase tracking-widest text-[#4b3621] shadow-lg shadow-black/10 backdrop-blur transition-all hover:bg-[#4b3621] hover:text-white"
-      >
-        <span className="material-symbols-outlined !text-lg">arrow_back</span>
-        Home
-      </Link>
-
       {/* Left Side: Image Section */}
       <div
         className="hidden md:flex w-full md:w-1/2 relative h-full bg-cover bg-center transition-all duration-700 hover:scale-[1.01]"
@@ -76,6 +68,14 @@ const Login = () => {
 
       {/* Right Side: Login Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 lg:p-12 bg-[#fdfcf8] h-full relative">
+        <Link
+          to="/"
+          className="absolute left-4 md:left-8 lg:left-12 top-4 md:top-8 z-30 inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-black uppercase tracking-widest text-[#4b3621] shadow-lg shadow-black/10 backdrop-blur transition-all hover:bg-[#4b3621] hover:text-white"
+        >
+          <span className="material-symbols-outlined !text-lg">arrow_back</span>
+          Home
+        </Link>
+
         {/* Decorative background circle */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#5ef037]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] pointer-events-none" />
 
