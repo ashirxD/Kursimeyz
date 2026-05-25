@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f5f1eb;
+      color: #2d3e2d;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+    }
+    .wrapper {
+      width: 100%;
+      padding: 32px 16px;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(58, 77, 57, 0.08);
+      box-shadow: 0 12px 30px rgba(58, 77, 57, 0.06);
+    }
+    .header {
+      background: #3a4d39;
+      color: #ffffff;
+      padding: 32px;
+      text-align: center;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+    .title {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+    .content {
+      padding: 32px;
+    }
+    .muted {
+      color: #6a7e69;
+      font-size: 14px;
+    }
+    .summary {
+      display: block;
+      background: #f7f9f6;
+      border-radius: 18px;
+      padding: 20px;
+      margin: 24px 0;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    .summary-row strong {
+      color: #3a4d39;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 14px;
+    }
+    th {
+      background: #f7f9f6;
+      color: #3a4d39;
+      text-align: left;
+      padding: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    td {
+      border-bottom: 1px solid #eef1ec;
+      padding: 12px;
+      color: #2d3e2d;
+    }
+    .center {
+      text-align: center;
+    }
+    .right {
+      text-align: right;
+    }
+    .totals {
+      margin-left: auto;
+      max-width: 280px;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eef1ec;
+      font-size: 14px;
+    }
+    .grand-total {
+      font-size: 18px;
+      font-weight: 900;
+      color: #3a4d39;
+      border-bottom: 0;
+    }
+    .address {
+      background: #fdfbfa;
+      border-left: 4px solid #d97d54;
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 24px;
+      font-size: 14px;
+    }
+    .footer {
+      padding: 24px 32px 32px;
+      text-align: center;
+      color: #6a7e69;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <div class="logo">Kursimeyz</div>
+        <h1 class="title">Your order is confirmed</h1>
+      </div>
+
+      <div class="content">
+        <p>Hello {{customerName}},</p>
+        <p class="muted">Thank you for your order. We have received it and will begin processing it soon.</p>
+
+        <div class="summary">
+          <div class="summary-row"><span>Order ID</span><strong>#{{shortOrderId}}</strong></div>
+          <div class="summary-row"><span>Order Date</span><strong>{{orderDate}}</strong></div>
+          <div class="summary-row"><span>Payment Method</span><strong>{{paymentMethod}}</strong></div>
+          <div class="summary-row"><span>Payment Status</span><strong>{{paymentStatus}}</strong></div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th class="center">Qty</th>
+              <th class="right">Price</th>
+              <th class="right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{orderItems}}
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <div class="total-row"><span>Subtotal</span><strong>{{itemsPrice}}</strong></div>
+          <div class="total-row"><span>Shipping</span><strong>{{shippingPrice}}</strong></div>
+          <div class="total-row grand-total"><span>Total</span><strong>{{totalPrice}}</strong></div>
+        </div>
+
+        <div class="address">
+          <strong>Shipping address</strong><br>
+          {{shippingAddress}}
+        </div>
+      </div>
+
+      <div class="footer">
+        &copy; 2026 Kursimeyz. This email was sent because an order was placed from your account.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

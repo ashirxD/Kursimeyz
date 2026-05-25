@@ -8,6 +8,81 @@ class EmailService {
     this.templatesDir = path.join(__dirname, '../emails');
   }
 
+  escapeHtml(value = '') {
+    return value
+      .toString()
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  formatCurrency(value = 0) {
+    return `Rs. ${Number(value || 0).toLocaleString('en-US')}`;
+  }
+
+  formatDate(value) {
+    return new Date(value || Date.now()).toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+
+  buildOrderItemsHtml(order) {
+    return (order.items || []).map((item) => {
+      const productName = item.product?.name || 'Product';
+      const quantity = Number(item.quantity || 0);
+      const price = Number(item.price || item.product?.price || 0);
+
+      return `
+        <tr>
+          <td>${this.escapeHtml(productName)}</td>
+          <td class="center">${quantity}</td>
+          <td class="right">${this.formatCurrency(price)}</td>
+          <td class="right">${this.formatCurrency(price * quantity)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  buildShippingAddressHtml(address = {}) {
+    return [
+      address.street,
+      [address.city, address.zipCode].filter(Boolean).join(', '),
+      address.phone ? `Phone: ${address.phone}` : '',
+    ]
+      .filter(Boolean)
+      .map((line) => this.escapeHtml(line))
+      .join('<br>');
+  }
+
+  getPaymentStatus(order) {
+    return order.isPaid ? 'Paid' : 'Pending payment';
+  }
+
+  getOrderVariables(user, order) {
+    const orderId = order._id?.toString() || '';
+
+    return {
+      customerName: this.escapeHtml(user?.username || 'Customer'),
+      customerEmail: this.escapeHtml(user?.email || ''),
+      customerPhone: this.escapeHtml(user?.phone || order.shippingAddress?.phone || ''),
+      orderId: this.escapeHtml(orderId),
+      shortOrderId: this.escapeHtml(orderId.slice(-8).toUpperCase()),
+      orderDate: this.formatDate(order.createdAt),
+      orderItems: this.buildOrderItemsHtml(order),
+      itemsPrice: this.formatCurrency(order.itemsPrice),
+      shippingPrice: this.formatCurrency(order.shippingPrice),
+      totalPrice: this.formatCurrency(order.totalPrice),
+      paymentMethod: this.escapeHtml(order.paymentMethod),
+      paymentStatus: this.escapeHtml(this.getPaymentStatus(order)),
+      shippingAddress: this.buildShippingAddressHtml(order.shippingAddress),
+      adminOrderUrl: `${process.env.CLIENT_URL || 'http://localhost:5173'}/admin/orders/${orderId}`,
+    };
+  }
+
   async loadTemplate(templateName, variables = {}) {
     try {
       const templatePath = path.join(this.templatesDir, `${templateName}.html`);
@@ -140,6 +215,40 @@ class EmailService {
     }
     
     return results;
+  }
+
+  async sendCustomerOrderConfirmation(user, order) {
+    if (!user?.email) {
+      throw new Error('Customer email is missing');
+    }
+
+    const variables = this.getOrderVariables(user, order);
+    const html = await this.loadTemplate('order-confirmation', variables);
+
+    return this.sendEmail({
+      to: user.email,
+      subject: `Kursimeyz Order Confirmation #${variables.shortOrderId}`,
+      html,
+    });
+  }
+
+  async sendAdminOrderNotification(adminEmails, user, order) {
+    const recipients = Array.isArray(adminEmails)
+      ? adminEmails.filter(Boolean)
+      : [adminEmails].filter(Boolean);
+
+    if (recipients.length === 0) {
+      throw new Error('Admin email recipient is missing');
+    }
+
+    const variables = this.getOrderVariables(user, order);
+    const html = await this.loadTemplate('admin-order-notification', variables);
+
+    return this.sendEmail({
+      to: recipients,
+      subject: `New Kursimeyz Order #${variables.shortOrderId}`,
+      html,
+    });
   }
 }
 

@@ -30,6 +30,32 @@ const getPublicUrl = (key) => {
   return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 };
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isPermanentS3Error = (err) => [
+  'AccessDenied',
+  'NoSuchBucket',
+  'InvalidAccessKeyId',
+  'SignatureDoesNotMatch',
+].includes(err.name);
+
+const isRetriableS3Error = (err) => {
+  if (isPermanentS3Error(err)) return false;
+  if (err.$retryable) return true;
+
+  return [
+    'TimeoutError',
+    'RequestTimeout',
+    'NetworkingError',
+    'ECONNRESET',
+    'ETIMEDOUT',
+    'EPIPE',
+    'ENOTFOUND',
+    'ServiceUnavailable',
+    'SlowDown',
+  ].includes(err.name || err.code);
+};
+
 const validateImageFile = ({ mimetype, originalname }) => {
   if (!mimetype || !ALLOWED_MIME_TYPES.has(mimetype)) {
     throw new Error('Only jpg, jpeg, png, and webp images are allowed');
@@ -56,14 +82,24 @@ const uploadImageBuffer = async ({ buffer, mimetype, originalname }) => {
   const key = buildObjectKey(originalname);
 
   try {
-    await getS3Client().send(
-      new PutObjectCommand({
-        Bucket: getBucketName(),
-        Key: key,
-        Body: buffer,
-        ContentType: mimetype,
-      })
-    );
+    const command = new PutObjectCommand({
+      Bucket: getBucketName(),
+      Key: key,
+      Body: buffer,
+      ContentType: mimetype,
+    });
+
+    try {
+      await getS3Client().send(command);
+    } catch (err) {
+      if (!isRetriableS3Error(err)) {
+        throw err;
+      }
+
+      console.warn('Retrying S3 upload after transient failure:', err.name, err.message);
+      await sleep(350);
+      await getS3Client().send(command);
+    }
   } catch (err) {
     console.error('S3 upload failed:', err.name, err.message);
 

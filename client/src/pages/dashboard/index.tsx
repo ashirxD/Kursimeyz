@@ -18,7 +18,7 @@ export default function Dashboard() {
           <div className="inline-flex items-center gap-1.5 mb-5 animate-in fade-in slide-in-from-left-4 duration-700">
             <span className="size-1 bg-[#5ef037] rounded-full"></span>
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#1a2f1a]/40">
-              New Collection 2024
+              New Collection 2026
             </span>
           </div>
 

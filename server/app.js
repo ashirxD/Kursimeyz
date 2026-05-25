@@ -19,8 +19,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Parse cookies for JWT extraction
 
 // CORS
+const allowedOrigins = [
+    process.env.CLIENT_URL,
+    'http://localhost:1800',
+    'http://127.0.0.1:1800',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+].filter(Boolean);
+
 app.use(cors({
-    origin: ['http://localhost:1800', 'http://127.0.0.1:1800'],
+    origin: allowedOrigins,
     credentials: true,
 }));
 

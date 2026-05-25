@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Order Notification</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f5f1eb;
+      color: #2d3e2d;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+    }
+    .wrapper {
+      width: 100%;
+      padding: 32px 16px;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(58, 77, 57, 0.08);
+      box-shadow: 0 12px 30px rgba(58, 77, 57, 0.06);
+    }
+    .header {
+      background: #3a4d39;
+      color: #ffffff;
+      padding: 32px;
+      text-align: center;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+    .title {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+    .content {
+      padding: 32px;
+    }
+    .alert {
+      background: #fdfbfa;
+      border-left: 4px solid #d97d54;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .grid {
+      display: block;
+      background: #f7f9f6;
+      border-radius: 18px;
+      padding: 20px;
+      margin: 24px 0;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    .row strong {
+      color: #3a4d39;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 14px;
+    }
+    th {
+      background: #f7f9f6;
+      color: #3a4d39;
+      text-align: left;
+      padding: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    td {
+      border-bottom: 1px solid #eef1ec;
+      padding: 12px;
+      color: #2d3e2d;
+    }
+    .center {
+      text-align: center;
+    }
+    .right {
+      text-align: right;
+    }
+    .totals {
+      margin-left: auto;
+      max-width: 280px;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eef1ec;
+      font-size: 14px;
+    }
+    .grand-total {
+      font-size: 18px;
+      font-weight: 900;
+      color: #3a4d39;
+      border-bottom: 0;
+    }
+    .button {
+      display: inline-block;
+      background: #3a4d39;
+      color: #ffffff;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 18px;
+    }
+    .footer {
+      padding: 24px 32px 32px;
+      text-align: center;
+      color: #6a7e69;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <div class="logo">Kursimeyz</div>
+        <h1 class="title">New order received</h1>
+      </div>
+
+      <div class="content">
+        <div class="alert">
+          A customer has placed a new order. Review the details below and move it forward in the admin panel.
+        </div>
+
+        <div class="grid">
+          <div class="row"><span>Order ID</span><strong>#{{shortOrderId}}</strong></div>
+          <div class="row"><span>Order Date</span><strong>{{orderDate}}</strong></div>
+          <div class="row"><span>Customer</span><strong>{{customerName}}</strong></div>
+          <div class="row"><span>Email</span><strong>{{customerEmail}}</strong></div>
+          <div class="row"><span>Phone</span><strong>{{customerPhone}}</strong></div>
+          <div class="row"><span>Payment Method</span><strong>{{paymentMethod}}</strong></div>
+          <div class="row"><span>Payment Status</span><strong>{{paymentStatus}}</strong></div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th class="center">Qty</th>
+              <th class="right">Price</th>
+              <th class="right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{orderItems}}
+          </tbody>
+        </table>
+
+        <div class="totals">
+          <div class="total-row"><span>Subtotal</span><strong>{{itemsPrice}}</strong></div>
+          <div class="total-row"><span>Shipping</span><strong>{{shippingPrice}}</strong></div>
+          <div class="total-row grand-total"><span>Total</span><strong>{{totalPrice}}</strong></div>
+        </div>
+
+        <div class="grid">
+          <strong>Shipping address</strong><br>
+          {{shippingAddress}}
+        </div>
+
+        <a class="button" href="{{adminOrderUrl}}">Open order in admin</a>
+      </div>
+
+      <div class="footer">
+        &copy; 2026 Kursimeyz. Internal order notification.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

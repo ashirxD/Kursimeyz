@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useProduct, type Product } from "@/hooks/useProduct";
 import { useCart } from "@/hooks/useCart";
 import { Link } from "react-router-dom";
@@ -18,6 +18,13 @@ export default function TopPicks({
   const { addToCart, isAdding } = useCart();
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
 
+  const displayProducts = useMemo(() => {
+    const allProducts = Object.values(groupedProducts).flat() as Product[];
+    const randomizedProducts = [...allProducts].sort(() => 0.5 - Math.random());
+
+    return limit ? randomizedProducts.slice(0, limit) : randomizedProducts;
+  }, [groupedProducts, limit]);
+
   if (isGroupedLoading) {
     return (
       <div
@@ -29,15 +36,6 @@ export default function TopPicks({
       </div>
     );
   }
-
-  // Flatten and shuffle products
-  const allProducts = Object.values(groupedProducts).flat() as Product[];
-  const randomizedProducts = [...allProducts].sort(() => 0.5 - Math.random());
-
-  // Apply limit if provided
-  const displayProducts = limit
-    ? randomizedProducts.slice(0, limit)
-    : randomizedProducts;
 
   return (
     <div

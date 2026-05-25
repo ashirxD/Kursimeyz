@@ -4,6 +4,8 @@ import Header from '@/pages/admin/layout/Header';
 import PaymentConfirmationModal from '@/components/paymentConfirmationModal';
 import { useAdminOrderDetail } from '@/hooks/useAdminOrders';
 import { resolveImageUrl } from '@/utils/imageUrl';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const statusStyles: Record<string, string> = {
   Pending: 'bg-yellow-100 text-yellow-800',
@@ -61,6 +63,109 @@ export default function AdminOrderDetailPage() {
   const confirmation = order.paymentConfirmation;
   const legacyReceipt = order.paymentResult?.receipt;
 
+  const handleExportPDF = () => {
+    const shortOrderId = order._id.slice(-6).toUpperCase();
+    const doc = new jsPDF();
+
+    doc.setFontSize(20);
+    doc.setTextColor(43, 62, 53);
+    doc.text(`Kursimeyz Order #${shortOrderId}`, 14, 20);
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+
+    autoTable(doc, {
+      startY: 36,
+      theme: 'grid',
+      headStyles: { fillColor: [43, 62, 53] },
+      styles: { fontSize: 9, cellPadding: 3 },
+      head: [['Order Summary', 'Details']],
+      body: [
+        ['Order ID', order._id],
+        ['Status', order.status],
+        ['Placed At', formatDate(order.createdAt)],
+        ['Updated At', formatDate(order.updatedAt)],
+      ],
+    });
+
+    autoTable(doc, {
+      startY: ((doc as any).lastAutoTable?.finalY || 36) + 8,
+      theme: 'grid',
+      headStyles: { fillColor: [43, 62, 53] },
+      styles: { fontSize: 9, cellPadding: 3 },
+      head: [['Customer', 'Shipping Address']],
+      body: [[
+        [
+          order.user?.username || 'N/A',
+          order.user?.email || 'N/A',
+          order.user?.phone || 'N/A',
+        ].join('\n'),
+        [
+          order.shippingAddress.street,
+          `${order.shippingAddress.city}, ${order.shippingAddress.zipCode}`,
+          order.shippingAddress.phone,
+        ].join('\n'),
+      ]],
+    });
+
+    autoTable(doc, {
+      startY: ((doc as any).lastAutoTable?.finalY || 36) + 8,
+      theme: 'grid',
+      headStyles: { fillColor: [43, 62, 53] },
+      styles: { fontSize: 8, cellPadding: 3 },
+      head: [['Product', 'Category', 'Qty', 'Unit Price', 'Line Total']],
+      body: order.items.map((item) => [
+        item.product?.name || 'Unknown Product',
+        item.product?.category || 'Product',
+        item.quantity.toString(),
+        formatCurrency(item.price),
+        formatCurrency(item.price * item.quantity),
+      ]),
+    });
+
+    autoTable(doc, {
+      startY: ((doc as any).lastAutoTable?.finalY || 36) + 8,
+      theme: 'grid',
+      headStyles: { fillColor: [43, 62, 53] },
+      styles: { fontSize: 9, cellPadding: 3 },
+      head: [['Payment & Totals', 'Details']],
+      body: [
+        ['Payment Method', order.paymentMethod],
+        ['Payment Status', order.isPaid ? 'Paid' : 'Unpaid'],
+        ['Paid At', formatDate(order.paidAt)],
+        ['Items Total', formatCurrency(order.itemsPrice)],
+        ['Shipping', formatCurrency(order.shippingPrice)],
+        ['Grand Total', formatCurrency(order.totalPrice)],
+      ],
+    });
+
+    autoTable(doc, {
+      startY: ((doc as any).lastAutoTable?.finalY || 36) + 8,
+      theme: 'grid',
+      headStyles: { fillColor: [43, 62, 53] },
+      styles: { fontSize: 9, cellPadding: 3 },
+      head: [['Payment Confirmation', 'Details']],
+      body: confirmation
+        ? [
+            ['Transaction Ref', confirmation.transactionReference || 'N/A'],
+            ['Payment Date', formatDate(confirmation.paymentDate)],
+            ['Confirmed By', confirmation.confirmedBy?.username || 'N/A'],
+            ['Confirmed At', formatDate(confirmation.confirmedAt)],
+            ['Receipt URL', confirmation.receiptUrl ? resolveImageUrl(confirmation.receiptUrl) : 'N/A'],
+          ]
+        : legacyReceipt
+          ? [
+              ['Record Type', 'Legacy confirmation'],
+              ['Reference', order.paymentResult?.id || 'N/A'],
+              ['Receipt URL', legacyReceipt.startsWith('data:') ? 'Embedded legacy receipt' : resolveImageUrl(legacyReceipt)],
+            ]
+          : [['Confirmation', order.isPaid ? 'No manual confirmation details on file.' : 'Payment has not been confirmed yet.']],
+    });
+
+    doc.save(`Kursimeyz-Order-${shortOrderId}.pdf`);
+  };
+
   return (
     <div className="flex-1 flex flex-col gap-4 px-0 md:px-2 pb-6">
       <Header />
@@ -90,15 +195,25 @@ export default function AdminOrderDetailPage() {
             </p>
           </div>
 
-          {!order.isPaid && (
+          <div className="flex flex-wrap items-center gap-3 self-start">
             <button
-              onClick={() => setPaymentModalOpen(true)}
-              className="px-6 py-3 bg-clay text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-clay/90 transition-colors shadow-soft flex items-center gap-2 self-start"
+              onClick={handleExportPDF}
+              className="px-6 py-3 bg-forest-moss text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-forest-moss-light transition-colors shadow-soft flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-lg!">verified</span>
-              Confirm Payment
+              <span className="material-symbols-outlined text-lg!">picture_as_pdf</span>
+              Export PDF
             </button>
-          )}
+
+            {!order.isPaid && (
+              <button
+                onClick={() => setPaymentModalOpen(true)}
+                className="px-6 py-3 bg-clay text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-clay/90 transition-colors shadow-soft flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-lg!">verified</span>
+                Confirm Payment
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

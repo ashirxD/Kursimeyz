@@ -450,6 +450,7 @@ export default function CheckoutPage() {
       {pendingWalletRedirect && (
         <WalletRedirectModal
           method={pendingWalletRedirect}
+          accountNumber={getWalletAccountNumber(pendingWalletRedirect)}
           onRedirect={redirectToWallet}
           onLater={goToOrderSuccess}
         />
@@ -645,49 +646,101 @@ const WalletInstructionsModal = ({
 
 interface WalletRedirectModalProps {
   method: WalletMethod;
+  accountNumber: string;
   onRedirect: () => void;
   onLater: () => void;
 }
 
 const WalletRedirectModal = ({
   method,
+  accountNumber,
   onRedirect,
   onLater,
-}: WalletRedirectModalProps) => (
-  <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
-    <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-7 border border-white text-center">
-      <div className="size-24 bg-[#5ef037]/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-        <span className="material-symbols-outlined text-[48px] text-[#5ef037] font-black">
-          check_circle
-        </span>
-      </div>
+}: WalletRedirectModalProps) => {
+  const [copied, setCopied] = useState(false);
 
-      <h3 className="text-[34px] font-black text-[#1a2f1a] tracking-tight leading-[1.05] mb-4">
-        Order Confirmed
-      </h3>
+  const copyAccountNumber = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(accountNumber);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = accountNumber;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
 
-      <p className="text-sm font-bold text-[#1a2f1a]/60 leading-relaxed mb-8">
-        Your order has been placed successfully. Open {method} to complete the
-        wallet transfer, then send the payment screenshot on WhatsApp so the
-        admin can confirm your order.
-      </p>
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch (error) {
+      console.error("Failed to copy wallet account number:", error);
+    }
+  };
 
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={onLater}
-          className="flex-1 py-4 bg-slate-100 text-[#1a2f1a] rounded-full font-black uppercase tracking-widest hover:bg-slate-200 transition-colors"
-        >
-          Later
-        </button>
-        <button
-          type="button"
-          onClick={onRedirect}
-          className="flex-[1.4] py-4 bg-[#1a2f1a] text-white rounded-full font-black uppercase tracking-widest hover:bg-black transition-colors"
-        >
-          OK
-        </button>
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-7 border border-white text-center">
+        <div className="size-24 bg-[#5ef037]/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+          <span className="material-symbols-outlined text-[48px] text-[#5ef037] font-black">
+            check_circle
+          </span>
+        </div>
+
+        <h3 className="text-[34px] font-black text-[#1a2f1a] tracking-tight leading-[1.05] mb-4">
+          Order Confirmed
+        </h3>
+
+        <p className="text-sm font-bold text-[#1a2f1a]/60 leading-relaxed mb-5">
+          Your order has been placed successfully. Send payment to the {method}
+          number below, then send the payment screenshot on WhatsApp so the admin
+          can confirm your order.
+        </p>
+
+        <div className="bg-[#f4f5f0] rounded-[1.5rem] p-4 mb-7 text-left">
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40 mb-2">
+            {method} number
+          </p>
+          <div className="flex items-center gap-3">
+            <p className="flex-1 text-xl font-black text-[#1a2f1a] tracking-wide break-all">
+              {accountNumber}
+            </p>
+            <button
+              type="button"
+              onClick={copyAccountNumber}
+              className="shrink-0 size-11 rounded-full bg-white text-[#1a2f1a] hover:bg-[#1a2f1a] hover:text-white transition-colors flex items-center justify-center shadow-sm"
+              aria-label={`Copy ${method} number`}
+            >
+              <span className="material-symbols-outlined text-xl">
+                {copied ? "check" : "content_copy"}
+              </span>
+            </button>
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#5ef037] mt-2 min-h-4">
+            {copied ? "Copied" : ""}
+          </p>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onLater}
+            className="flex-1 py-4 bg-slate-100 text-[#1a2f1a] rounded-full font-black uppercase tracking-widest hover:bg-slate-200 transition-colors"
+          >
+            Later
+          </button>
+          <button
+            type="button"
+            onClick={onRedirect}
+            className="flex-[1.4] py-4 bg-[#1a2f1a] text-white rounded-full font-black uppercase tracking-widest hover:bg-black transition-colors"
+          >
+            OK
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};

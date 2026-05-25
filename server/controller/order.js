@@ -3,6 +3,7 @@ const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const User = require('../models/User');
 const PaymentConfirmation = require('../models/PaymentConfirmation');
+const emailService = require('../services/emailService');
 
 const adminOrderPopulate = [
     { path: 'user', select: 'username email phone' },
@@ -12,6 +13,58 @@ const adminOrderPopulate = [
         populate: { path: 'confirmedBy', select: 'username' },
     },
 ];
+
+const getAdminOrderEmailRecipients = async () => {
+    const admins = await User.find({
+        role: 'admin',
+        email: { $exists: true, $nin: [null, ''] },
+    }).select('email');
+
+    const adminEmails = admins.map((adminUser) => adminUser.email).filter(Boolean);
+
+    if (adminEmails.length > 0) {
+        return adminEmails;
+    }
+
+    return process.env.EMAIL_USER ? [process.env.EMAIL_USER] : [];
+};
+
+const logOrderEmailResults = (orderId, results) => {
+    results.forEach((result) => {
+        if (result.status === 'fulfilled') {
+            return;
+        }
+
+        console.error('Order email failed:', {
+            orderId,
+            context: result.reason?.context,
+            error: result.reason?.message || result.reason,
+        });
+    });
+};
+
+const sendOrderEmails = async (user, order) => {
+    const adminEmails = await getAdminOrderEmailRecipients();
+
+    const tagEmailError = (context, promise) =>
+        promise.catch((error) => {
+            error.context = context;
+            throw error;
+        });
+
+    const results = await Promise.allSettled([
+        tagEmailError(
+            { type: 'customer', recipient: user.email },
+            emailService.sendCustomerOrderConfirmation(user, order)
+        ),
+        tagEmailError(
+            { type: 'admin', recipients: adminEmails },
+            emailService.sendAdminOrderNotification(adminEmails, user, order)
+        ),
+    ]);
+
+    logOrderEmailResults(order._id, results);
+};
 
 // @desc    Create new order
 // @route   POST /api/order
@@ -57,6 +110,18 @@ const createOrder = async (req, res) => {
             { user: req.user.id || req.user._id },
             { $set: { items: [] } }
         );
+
+        const emailOrder = await Order.findById(createdOrder._id)
+            .populate('items.product', 'name image category price');
+
+        try {
+            await sendOrderEmails(req.user, emailOrder || createdOrder);
+        } catch (emailError) {
+            console.error('Order email dispatch failed:', {
+                orderId: createdOrder._id,
+                error: emailError.message,
+            });
+        }
 
         res.status(201).json({
             success: true,

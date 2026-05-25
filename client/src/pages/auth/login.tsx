@@ -86,7 +86,7 @@ const Login = () => {
           </div>
 
           {/* Error Message */}
-          {loginError && (
+          {errorMessage && (
             <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-[14px] font-bold border border-red-100 animate-in fade-in slide-in-from-top-2">
               {errorMessage}
             </div>

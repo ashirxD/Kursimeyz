@@ -180,7 +180,7 @@ export default function OrderHistory() {
                         key={idx}
                         className="flex items-center gap-6 pb-6 border-b border-slate-50 last:border-0 last:pb-0"
                       >
-                        <div className="size-20 bg-[#f4f5f0] rounded-2xl shrink-0 flex items-center justify-center p-3">
+                        <div className="hidden sm:flex size-20 bg-[#f4f5f0] rounded-2xl shrink-0 items-center justify-center p-3">
                           <img
                             src={resolveImageUrl(item.product?.image)}
                             alt={item.product?.name}

@@ -11,6 +11,15 @@ class GoogleAuthService {
     this.client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
 
+  getAllowedClientIds() {
+    return [
+      process.env.GOOGLE_CLIENT_ID,
+      ...(process.env.GOOGLE_CLIENT_IDS || '').split(','),
+    ]
+      .map((clientId) => clientId && clientId.trim())
+      .filter(Boolean);
+  }
+
   /**
    * Verify Google ID Token
    * @param {string} idToken - The ID token from Google Identity Services
@@ -22,13 +31,19 @@ class GoogleAuthService {
    */
   async verifyToken(idToken) {
     try {
+      const allowedClientIds = this.getAllowedClientIds();
+
+      if (allowedClientIds.length === 0) {
+        throw new Error('Google client ID is not configured');
+      }
+
       // Verify the ID token with Google's servers
       // This ensures the token was issued by Google and is valid
       const ticket = await this.client.verifyIdToken({
         idToken: idToken,
         // Validate that the token's audience matches our Google Client ID
         // This prevents token substitution attacks
-        audience: process.env.GOOGLE_CLIENT_ID,
+        audience: allowedClientIds,
       });
 
       // Get the payload containing user information
