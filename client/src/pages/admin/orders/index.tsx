@@ -31,8 +31,8 @@ export default function OrdersPage() {
 
     const tableData = orders.map((order: any) => [
       order._id.substring(0, 8),
-      order.user?.username || "Guest",
-      order.user?.email || "N/A",
+      order.user?.username?.length > 0 ? order.user?.username : "Guest",
+      order.user?.email?.length > 0 ? order.user?.email : "N/A",
       order.items.length.toString(),
       `Rs ${order.totalPrice.toLocaleString()}`,
       order.status,

@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import api from "@/utils/Axios";
 import { useAuthStore } from "@/stores";
+import BrandLogo from "@/components/BrandLogo";
 
 interface VerifyOtpResponse {
   success: boolean;
@@ -95,16 +96,7 @@ const VerifyOtp = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/25 to-transparent" />
         <div className="relative z-10 flex flex-col justify-between h-full px-16 py-20 text-white">
-          <div className="flex items-center gap-3">
-            <div className="size-10 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
-              <span className="material-symbols-outlined text-white font-bold text-2xl">
-                chair
-              </span>
-            </div>
-            <span className="text-3xl font-black tracking-tight uppercase">
-              Kursimeyz
-            </span>
-          </div>
+          <BrandLogo imageClassName="h-12 w-auto max-w-[220px]" />
 
           <div className="max-w-md">
             <div className="w-10 h-1 bg-[#5ef037] mb-6 rounded-full" />
@@ -123,15 +115,8 @@ const VerifyOtp = () => {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#5ef037]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] pointer-events-none" />
 
         <div className="w-full max-w-[400px] flex flex-col gap-6 relative z-10 px-2">
-          <div className="flex md:hidden items-center gap-3 mb-2">
-            <div className="size-9 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
-              <span className="material-symbols-outlined text-white font-bold text-xl">
-                chair
-              </span>
-            </div>
-            <span className="text-xl font-black tracking-tight uppercase text-[#1a2f1a]">
-              Kursimeyz
-            </span>
+          <div className="flex md:hidden mb-2">
+            <BrandLogo imageClassName="h-11 w-auto max-w-[190px]" />
           </div>
 
           <div className="flex flex-col gap-1.5">

@@ -20,10 +20,17 @@ const OTPSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  purpose: {
+    type: String,
+    enum: ['verification', 'password_reset'],
+    default: 'verification',
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
+
+OTPSchema.index({ email: 1, purpose: 1 }, { unique: true });
 
 module.exports = mongoose.model('OTP', OTPSchema);

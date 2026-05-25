@@ -13,13 +13,13 @@ export default function SofaCard({ sofa, onDelete }: SofaCardProps) {
 
     return (
         <>
-            <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-soft border border-white/50 group hover:scale-[1.01] transition-all duration-300 flex flex-col md:flex-row col-span-1 md:col-span-2 min-h-[300px]">
-                {/* Image Section */}
-                <div className="md:w-1/2 relative overflow-hidden bg-oatmeal">
+            <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-soft border border-white/50 group hover:scale-[1.01] transition-all duration-300 flex flex-col md:flex-row col-span-1 md:col-span-2 md:h-[300px]">
+                {/* Image Section — fixed aspect on mobile, fixed card height on md+ */}
+                <div className="aspect-[4/3] shrink-0 md:aspect-auto md:w-1/2 md:h-full relative overflow-hidden bg-oatmeal">
                     <img
                         src={resolveImageUrl(sofa.image)}
                         alt={sofa.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-soft">
                         <span className="text-forest-moss font-black text-sm">Rs {sofa.price}</span>

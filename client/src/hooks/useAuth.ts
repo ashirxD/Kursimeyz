@@ -114,3 +114,43 @@ export const useAuth = () => {
     googleAuthError: googleAuthMutation.error,
   };
 };
+
+interface MessageResponse {
+  success: boolean;
+  message: string;
+}
+
+export const useForgotPassword = () => {
+  const requestResetOtpMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const response = await api.post<MessageResponse>("/auth/forgot-password", { email });
+      return response.data;
+    },
+  });
+
+  const verifyResetOtpMutation = useMutation({
+    mutationFn: async (data: { email: string; otp: string }) => {
+      const response = await api.post<MessageResponse>("/auth/verify-reset-otp", data);
+      return response.data;
+    },
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: async (data: { email: string; password: string }) => {
+      const response = await api.post<MessageResponse>("/auth/reset-password", data);
+      return response.data;
+    },
+  });
+
+  return {
+    requestResetOtp: requestResetOtpMutation.mutateAsync,
+    isRequestingOtp: requestResetOtpMutation.isPending,
+    requestOtpError: requestResetOtpMutation.error,
+    verifyResetOtp: verifyResetOtpMutation.mutateAsync,
+    isVerifyingOtp: verifyResetOtpMutation.isPending,
+    verifyOtpError: verifyResetOtpMutation.error,
+    resetPassword: resetPasswordMutation.mutateAsync,
+    isResettingPassword: resetPasswordMutation.isPending,
+    resetPasswordError: resetPasswordMutation.error,
+  };
+};

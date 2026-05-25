@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { GoogleLoginButton } from "@/components/GoogleLoginButton";
 import type { CredentialResponse } from "@react-oauth/google";
+import BrandLogo from "@/components/BrandLogo";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -49,16 +50,7 @@ const Login = () => {
 
         <div className="relative z-10 flex flex-col justify-between h-full px-16 py-20 text-white">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="size-10 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
-              <span className="material-symbols-outlined text-white font-bold text-2xl">
-                chair
-              </span>
-            </div>
-            <h1 className="text-3xl font-black tracking-tight uppercase">
-              Kursimeyz
-            </h1>
-          </div>
+          <BrandLogo imageClassName="h-12 w-auto max-w-[220px]" />
 
           {/* Content */}
           <div className="max-w-md">
@@ -81,15 +73,8 @@ const Login = () => {
 
         <div className="w-full max-w-[400px] flex flex-col gap-6 lg:gap-8 relative z-10 overflow-y-auto lg:overflow-visible max-h-full py-4 px-2 custom-scrollbar">
           {/* Mobile Logo */}
-          <div className="flex md:hidden items-center gap-3 mb-2">
-            <div className="size-9 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
-              <span className="material-symbols-outlined text-white font-bold text-xl">
-                chair
-              </span>
-            </div>
-            <h1 className="text-xl font-black tracking-tight uppercase text-[#1a2f1a]">
-              Kursimyz
-            </h1>
+          <div className="flex md:hidden mb-2">
+            <BrandLogo imageClassName="h-11 w-auto max-w-[190px]" />
           </div>
 
           {/* Error Message */}
@@ -142,12 +127,12 @@ const Login = () => {
                 >
                   Password
                 </label>
-                <a
-                  href="#"
+                <Link
+                  to="/forgot-password?returnTo=/login"
                   className="text-[#5ef037] hover:text-[#4ad12d] text-xs lg:text-sm font-black transition-colors"
                 >
                   Forgot?
-                </a>
+                </Link>
               </div>
               <div className="relative w-full">
                 <input

@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import BrandLogo from '@/components/BrandLogo';
 
 const navItems = [
     { name: 'My Nest', icon: 'home', path: '/dashboard' },
@@ -13,16 +14,11 @@ export default function Sidebar() {
     return (
         <aside className="w-[280px] flex flex-col h-full bg-white p-8 border-r border-slate-100">
             {/* Logo */}
-            <div className="flex items-center gap-4 mb-16 px-2">
-                <div className="size-11 bg-[#5ef037] rounded-full flex items-center justify-center text-white shadow-lg shadow-[#5ef037]/20">
-                    <span className="material-symbols-outlined !text-2xl font-bold">eco</span>
-                </div>
-                <div>
-                    <h1 className="text-[22px] font-black text-[#1a2f1a] leading-none tracking-tight">Kursimeyz</h1>
-                    <p className="text-[#a5b8a5] text-[10px] font-bold uppercase tracking-widest mt-1">
-                        YOUR FURNITURE NEST
-                    </p>
-                </div>
+            <div className="mb-16 px-2">
+                <BrandLogo imageClassName="h-14 w-auto max-w-[210px]" />
+                <p className="text-[#a5b8a5] text-[10px] font-bold uppercase tracking-widest mt-2">
+                    YOUR FURNITURE NEST
+                </p>
             </div>
 
             {/* Navigation */}

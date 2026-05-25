@@ -1,6 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, currentUser, logout, googleAuth, sendOTP, verifyOTP } = require('../../controller/auth');
+const {
+    register,
+    login,
+    currentUser,
+    logout,
+    googleAuth,
+    sendOTP,
+    verifyOTP,
+    forgotPassword,
+    verifyResetOtp,
+    resetPassword,
+} = require('../../controller/auth');
 const { protect } = require('../../middleware/auth');
 
 // @desc    Register user
@@ -26,5 +37,10 @@ router.post('/logout', protect, logout);
 // @desc    OTP routes
 router.post('/send-otp', sendOTP);
 router.post('/verify-otp', verifyOTP);
+
+// @desc    Password reset routes
+router.post('/forgot-password', forgotPassword);
+router.post('/verify-reset-otp', verifyResetOtp);
+router.post('/reset-password', resetPassword);
 
 module.exports = router;

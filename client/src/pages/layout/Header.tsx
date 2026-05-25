@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import { useIsAuthenticated, useAuthStore } from "@/stores/authStore";
 import api from "@/utils/Axios";
+import BrandLogo from "@/components/BrandLogo";
 
 const shopCategories = [
   { label: "Chairs", icon: "chair", route: "/shop/chairs" },
@@ -43,16 +44,10 @@ export default function Header() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md">
         <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-16 lg:h-20 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/dashboard" className="flex items-center gap-2 group">
-          <div className="size-7 bg-[#5ef037] rounded-lg flex items-center justify-center shadow-lg shadow-[#5ef037]/20 group-hover:scale-110 transition-transform">
-            <span className="material-symbols-outlined text-white font-bold text-lg">
-              chair
-            </span>
-          </div>
-          <h1 className="text-base font-black text-[#1a2f1a] tracking-tight flex flex-col leading-none">
-            <span>Kursimeyz</span>
-            <span className="text-[#5ef037]">Shop</span>
-          </h1>
+        <Link to="/dashboard" className="flex items-center group">
+          <BrandLogo
+            imageClassName="h-10 lg:h-12 w-auto max-w-[150px] sm:max-w-[190px] transition-transform group-hover:scale-[1.03]"
+          />
         </Link>
 
         {/* Navigation links */}

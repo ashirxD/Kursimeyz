@@ -2,11 +2,11 @@
 
 export interface Order {
     _id: string;
-    user: {
+    user?: {
         _id: string;
-        username: string;
-        email: string;
-    };
+        username?: string;
+        email?: string;
+    } | null;
     items: Array<{
         _id: string;
         product: {
@@ -215,10 +215,14 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
         }).format(amount);
     };
 
+    const getCustomerLabel = (order: Order) =>
+        order.user?.username || order.user?.email || 'Guest';
+
     const getInitials = (name: string) => {
-        return name
+        const safe = name?.trim() || 'G';
+        return safe
             .split(' ')
-            .map(word => word[0])
+            .map((word) => word[0])
             .join('')
             .toUpperCase()
             .slice(0, 2);
@@ -226,7 +230,8 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
 
     const getColorForUser = (name: string) => {
         const colors = ['#7ab89a', '#d4824a', '#9a7ab8', '#4a7c4a', '#b87a7a', '#7ab8d4'];
-        const index = name.charCodeAt(0) % colors.length;
+        const safe = name?.trim() || 'G';
+        const index = safe.charCodeAt(0) % colors.length;
         return colors[index];
     };
 
@@ -247,7 +252,9 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-forest-moss/5">
-                        {orders.map((order) => (
+                        {orders.map((order) => {
+                            const customerLabel = getCustomerLabel(order);
+                            return (
                             <tr key={order._id} className="group hover:bg-oatmeal/30 transition-colors">
                                 <td className="px-8 py-5">
                                     <span className="text-sm font-black text-forest-moss/80">#{order._id.slice(-6).toUpperCase()}</span>
@@ -256,13 +263,13 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                                     <div className="flex items-center gap-3">
                                         <div
                                             className="size-10 rounded-full border-2 border-white flex items-center justify-center font-black text-white text-[10px] shadow-sm"
-                                            style={{ backgroundColor: getColorForUser(order.user.username) }}
+                                            style={{ backgroundColor: getColorForUser(customerLabel) }}
                                         >
-                                            {getInitials(order.user.username)}
+                                            {getInitials(customerLabel)}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-black text-forest-moss leading-none">{order.user.username}</p>
-                                            <p className="text-[10px] font-bold text-forest-moss-light/50 mt-1 uppercase tracking-tighter">{order.user.email}</p>
+                                            <p className="text-sm font-black text-forest-moss leading-none">{customerLabel}</p>
+                                            <p className="text-[10px] font-bold text-forest-moss-light/50 mt-1 uppercase tracking-tighter">{order.user?.email || '—'}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -322,7 +329,8 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                                     </button>
                                 </td>
                             </tr>
-                        ))}
+                        );
+                        })}
                     </tbody>
                 </table>
             </div>

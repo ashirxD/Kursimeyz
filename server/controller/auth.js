@@ -38,17 +38,26 @@ const buildUserResponse = (user) => ({
     emailVerified: user.emailVerified,
 });
 
-const createVerificationOTP = async (email) => {
+const OTP_PURPOSE = {
+    VERIFICATION: 'verification',
+    PASSWORD_RESET: 'password_reset',
+};
+
+const createOTP = async (email, purpose, subject) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await OTP.findOneAndUpdate(
-        { email },
-        { otp, expiresAt, verified: false },
+        { email, purpose },
+        { otp, expiresAt, verified: false, purpose },
         { upsert: true, new: true }
     );
 
-    await emailService.sendCustomEmail(email, 'Your Verification Code', 'otp', { otp });
+    await emailService.sendCustomEmail(email, subject, 'otp', { otp });
+};
+
+const createVerificationOTP = async (email) => {
+    await createOTP(email, OTP_PURPOSE.VERIFICATION, 'Your Verification Code');
 };
 
 // @desc    Register new user
@@ -363,6 +372,7 @@ const verifyOTP = async (req, res) => {
         const otpRecord = await OTP.findOne({
             email: normalizedEmail,
             otp,
+            purpose: OTP_PURPOSE.VERIFICATION,
             expiresAt: { $gt: new Date() }
         });
 
@@ -407,6 +417,132 @@ const verifyOTP = async (req, res) => {
     }
 };
 
+// @desc    Send password reset OTP
+// @route   POST /api/auth/forgot-password
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Please provide an email' });
+        }
+
+        const normalizedEmail = normalizeEmail(email);
+        const user = await User.findOne({ email: normalizedEmail });
+
+        if (!user) {
+            return res.json({
+                success: true,
+                message: 'If an account exists with this email, a reset code has been sent.',
+            });
+        }
+
+        if (!user.password) {
+            return res.status(400).json({
+                success: false,
+                message: 'This email is registered with Google. Please sign in with Google.',
+            });
+        }
+
+        try {
+            await createOTP(
+                normalizedEmail,
+                OTP_PURPOSE.PASSWORD_RESET,
+                'Your Password Reset Code'
+            );
+            res.json({
+                success: true,
+                message: 'If an account exists with this email, a reset code has been sent.',
+            });
+        } catch (emailError) {
+            console.error('Failed to send password reset email:', emailError);
+            res.status(500).json({ success: false, message: 'Failed to send reset code email' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @desc    Verify password reset OTP
+// @route   POST /api/auth/verify-reset-otp
+const verifyResetOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: 'Please provide email and OTP' });
+        }
+
+        const normalizedEmail = normalizeEmail(email);
+        const otpRecord = await OTP.findOne({
+            email: normalizedEmail,
+            otp,
+            purpose: OTP_PURPOSE.PASSWORD_RESET,
+            expiresAt: { $gt: new Date() },
+        });
+
+        if (!otpRecord) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+        }
+
+        otpRecord.verified = true;
+        await otpRecord.save();
+
+        res.json({ success: true, message: 'OTP verified. You can now set a new password.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @desc    Reset password after OTP verification
+// @route   POST /api/auth/reset-password
+const resetPassword = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: 'Please provide email and password' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+        }
+
+        const normalizedEmail = normalizeEmail(email);
+        const otpRecord = await OTP.findOne({
+            email: normalizedEmail,
+            purpose: OTP_PURPOSE.PASSWORD_RESET,
+            verified: true,
+            expiresAt: { $gt: new Date() },
+        });
+
+        if (!otpRecord) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired reset session. Please request a new OTP.',
+            });
+        }
+
+        const user = await User.findOne({ email: normalizedEmail });
+
+        if (!user || !user.password) {
+            return res.status(400).json({ success: false, message: 'Unable to reset password for this account' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        await user.save();
+        await OTP.deleteOne({ _id: otpRecord._id });
+
+        res.json({ success: true, message: 'Password reset successfully. You can now log in.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
 module.exports = {
     googleAuth,
     register,
@@ -414,5 +550,8 @@ module.exports = {
     currentUser,
     logout,
     sendOTP,
-    verifyOTP
+    verifyOTP,
+    forgotPassword,
+    verifyResetOtp,
+    resetPassword,
 };

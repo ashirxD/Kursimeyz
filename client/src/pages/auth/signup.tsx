@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import BrandLogo from "@/components/BrandLogo";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,16 +44,7 @@ const Signup = () => {
 
         <div className="relative z-10 flex flex-col justify-between h-full px-16 py-20 text-white">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="size-10 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
-              <span className="material-symbols-outlined text-white font-bold text-2xl">
-                chair
-              </span>
-            </div>
-            <span className="text-3xl font-black tracking-tight uppercase">
-              Kursimeyz
-            </span>
-          </div>
+          <BrandLogo imageClassName="h-12 w-auto max-w-[220px]" />
 
           {/* Content */}
           <div className="max-w-md">
@@ -77,15 +69,8 @@ const Signup = () => {
 
         <div className="w-full max-w-[400px] z-10 flex flex-col gap-4 lg:gap-6 relative overflow-y-auto lg:overflow-visible max-h-full py-4 px-2 custom-scrollbar">
           {/* Mobile Logo */}
-          <div className="flex md:hidden items-center gap-3 mb-2">
-            <div className="size-9 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
-              <span className="material-symbols-outlined text-white font-bold text-xl">
-                chair
-              </span>
-            </div>
-            <span className="text-xl font-black tracking-tight uppercase text-[#1a2f1a]">
-              Kursimyz
-            </span>
+          <div className="flex md:hidden mb-2">
+            <BrandLogo imageClassName="h-11 w-auto max-w-[190px]" />
           </div>
 
           {/* Header */}

@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import BrandLogo from '@/components/BrandLogo';
 
 const AdminLogin = () => {
     const { login, isLoggingIn, loginError } = useAdminAuth();
@@ -27,10 +29,8 @@ const AdminLogin = () => {
                 <div className="relative z-10 flex flex-col justify-between h-full px-16 py-20 text-white">
                     {/* Logo */}
                     <div className="flex items-center gap-3">
-                        <div className="size-10 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
-                            <span className="material-symbols-outlined text-white font-bold text-2xl">grid_view</span>
-                        </div>
-                        <h1 className="text-3xl font-black tracking-tight uppercase">Kursimeyz Admin</h1>
+                        <BrandLogo imageClassName="h-12 w-auto max-w-[220px]" />
+                        <span className="text-sm font-black uppercase tracking-widest text-white/80">Admin</span>
                     </div>
 
                     {/* Content */}
@@ -52,10 +52,8 @@ const AdminLogin = () => {
                 <div className="w-full max-w-[400px] flex flex-col gap-6 lg:gap-8 relative z-10 overflow-y-auto lg:overflow-visible max-h-full py-4 px-2 custom-scrollbar">
                     {/* Mobile Logo */}
                     <div className="flex md:hidden items-center gap-3 mb-2">
-                        <div className="size-9 bg-[#5ef037] rounded-xl flex items-center justify-center shadow-lg shadow-[#5ef037]/30">
-                            <span className="material-symbols-outlined text-white font-bold text-xl">grid_view</span>
-                        </div>
-                        <h1 className="text-xl font-black tracking-tight uppercase text-[#1a2f1a]">Kursimyz Admin</h1>
+                        <BrandLogo imageClassName="h-11 w-auto max-w-[180px]" />
+                        <span className="text-xs font-black uppercase tracking-widest text-[#1a2f1a]/60">Admin</span>
                     </div>
 
                     {/* Header */}
@@ -98,6 +96,12 @@ const AdminLogin = () => {
                         <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-center ml-1">
                                 <label htmlFor="password" className="text-[#1a2f1a] text-[11px] font-black uppercase tracking-widest opacity-60">Security Key</label>
+                                <Link
+                                    to="/forgot-password?returnTo=/admin-login"
+                                    className="text-[#5ef037] hover:text-[#4ad12d] text-xs lg:text-sm font-black transition-colors"
+                                >
+                                    Forgot?
+                                </Link>
                             </div>
                             <div className="relative w-full">
                                 <input

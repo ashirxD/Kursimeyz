@@ -1,6 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import api from '@/utils/Axios';
+import ProductColorPicker from '@/components/ProductColorPicker';
+import { validateProductForm } from '@/utils/productFormValidation';
+
+const SOFA_COLOR_PRESETS = ['#4b3621', '#2c3e50', '#8e44ad', '#c0392b', '#27ae60', '#f1c40f'];
 
 interface AddSofaModalProps {
     isOpen: boolean;
@@ -51,8 +55,9 @@ export default function AddSofaModal({ isOpen, onClose }: AddSofaModalProps) {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!validateProductForm(e.currentTarget, newSofa.name, newSofa.price)) return;
         if (!newSofa.image) {
             alert('Please upload an image first!');
             return;
@@ -121,10 +126,13 @@ export default function AddSofaModal({ isOpen, onClose }: AddSofaModalProps) {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Name</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">
+                                    Name <span className="text-clay">*</span>
+                                </label>
                                 <input
                                     required
                                     type="text"
+                                    minLength={1}
                                     className="w-full bg-white px-5 py-3 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
                                     placeholder="e.g. Velvet Cloud Sofa"
                                     value={newSofa.name}
@@ -132,32 +140,33 @@ export default function AddSofaModal({ isOpen, onClose }: AddSofaModalProps) {
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Price (Rs)</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">
+                                    Price (Rs) <span className="text-clay">*</span>
+                                </label>
                                 <input
                                     required
                                     type="number"
+                                    min={1}
+                                    step={1}
                                     className="w-full bg-white px-5 py-3 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
                                     placeholder="1200"
-                                    value={newSofa.price}
-                                    onChange={(e) => setNewSofa({ ...newSofa, price: Number(e.target.value) })}
+                                    value={newSofa.price || ''}
+                                    onChange={(e) =>
+                                        setNewSofa({
+                                            ...newSofa,
+                                            price: e.target.value === '' ? 0 : Number(e.target.value),
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Color Selection</label>
-                            <div className="flex gap-2 p-1.5 bg-white rounded-full border border-forest-moss/10">
-                                {['#4b3621', '#2c3e50', '#8e44ad', '#c0392b', '#27ae60', '#f1c40f'].map((c) => (
-                                    <button
-                                        key={c}
-                                        type="button"
-                                        onClick={() => setNewSofa({ ...newSofa, color: c })}
-                                        className={`size-8 rounded-full border-2 transition-all ${newSofa.color === c ? 'border-clay scale-110 shadow-soft' : 'border-transparent'}`}
-                                        style={{ backgroundColor: c }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
+                        <ProductColorPicker
+                            label="Color Selection"
+                            presets={SOFA_COLOR_PRESETS}
+                            value={newSofa.color}
+                            onChange={(color) => setNewSofa({ ...newSofa, color })}
+                        />
 
                         <div className="space-y-1">
                             <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Description</label>

@@ -1,5 +1,6 @@
 import { useSidebarStore, useUser } from "@/stores";
 import { Link } from "react-router-dom";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function Header() {
   const { toggleSidebar } = useSidebarStore();
@@ -19,12 +20,7 @@ export default function Header() {
         <div className="space-y-0.5">
           {/* Brand for mobile */}
           <div className="lg:hidden flex items-center gap-2 mb-1">
-            <span className="material-symbols-outlined text-forest-moss !text-xl">
-              chair
-            </span>
-            <h1 className="text-sm font-black text-forest-moss uppercase tracking-tighter">
-              Kursimeyz
-            </h1>
+            <BrandLogo imageClassName="h-8 w-auto max-w-[140px]" />
           </div>
 
           <h2 className="text-xl md:text-3xl font-black text-forest-moss tracking-tight flex items-center gap-2">
@@ -43,7 +39,7 @@ export default function Header() {
           title="Profile Settings"
         >
           {user?.image ? (
-            <img src={user.image} alt={user.username} className="size-full object-cover" />
+            <img src={user.image} alt={user?.username || 'Profile'} className="size-full object-cover" />
           ) : (
             <span className="material-symbols-outlined !text-xl">person</span>
           )}

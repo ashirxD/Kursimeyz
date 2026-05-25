@@ -1,29 +1,43 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import api from '@/utils/Axios';
+import { resolveImageUrl } from '@/utils/imageUrl';
 import ProductColorPicker from '@/components/ProductColorPicker';
 import { validateProductForm } from '@/utils/productFormValidation';
+import type { Chair as Product } from '../chairs/cards';
 
-const CHAIR_COLOR_PRESETS = ['#3a4d39', '#d27d53', '#8a9a5b', '#4b3621', '#f5f0e6'];
+const TABLE_COLOR_PRESETS = ['#4b3621', '#8b4513', '#d2b48c', '#deb887', '#3a4d39'];
 
-interface AddChairModalProps {
+interface EditTableModalProps {
     isOpen: boolean;
     onClose: () => void;
+    table: Product;
 }
 
-export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
-    const { addProduct, isAdding } = useProducts();
+export default function EditTableModal({ isOpen, onClose, table }: EditTableModalProps) {
+    const { updateProduct, isUpdating } = useProducts();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-    const [newChair, setNewChair] = useState({
-        name: '',
-        price: 0,
-        image: '',
-        description: '',
-        color: '#3a4d39',
+    const [editedTable, setEditedTable] = useState({
+        name: table.name,
+        price: table.price,
+        image: table.image,
+        description: table.description,
+        color: table.color,
     });
+
+    useEffect(() => {
+        setEditedTable({
+            name: table.name,
+            price: table.price,
+            image: table.image,
+            description: table.description,
+            color: table.color,
+        });
+        setPreviewUrl(null);
+    }, [table, isOpen]);
 
     if (!isOpen) return null;
 
@@ -31,11 +45,9 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Show preview
         const objectUrl = URL.createObjectURL(file);
         setPreviewUrl(objectUrl);
 
-        // Initial check for size/type
         if (file.size > 5 * 1024 * 1024) {
             alert('File is too large! Max 5MB.');
             return;
@@ -48,7 +60,7 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
 
             const response = await api.post('/upload', formData);
 
-            setNewChair({ ...newChair, image: response.data.url });
+            setEditedTable({ ...editedTable, image: response.data.url });
         } catch (error) {
             console.error('Upload failed:', error);
             alert('Failed to upload image.');
@@ -59,18 +71,12 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!validateProductForm(e.currentTarget, newChair.name, newChair.price)) return;
-        if (!newChair.image) {
-            alert('Please upload an image first!');
-            return;
-        }
+        if (!validateProductForm(e.currentTarget, editedTable.name, editedTable.price)) return;
         try {
-            await addProduct({ ...newChair, category: 'chair' });
-            setNewChair({ name: '', price: 0, image: '', description: '', color: '#3a4d39' });
-            setPreviewUrl(null);
+            await updateProduct({ ...table, ...editedTable });
             onClose();
         } catch (error) {
-            console.error('Failed to add chair:', error);
+            console.error('Failed to update table:', error);
         }
     };
 
@@ -79,7 +85,7 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
             <div className="bg-oatmeal w-full max-w-lg rounded-[2.5rem] shadow-medium overflow-hidden border border-white/50 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
                 <div className="p-8 space-y-6">
                     <div className="flex justify-between items-center">
-                        <h3 className="text-2xl font-black text-forest-moss tracking-tight">Add New Chair</h3>
+                        <h3 className="text-2xl font-black text-forest-moss tracking-tight">Edit Table</h3>
                         <button
                             onClick={onClose}
                             className="size-10 rounded-full bg-white flex items-center justify-center text-forest-moss hover:bg-red-50 hover:text-red-500 transition-all shadow-soft"
@@ -89,16 +95,15 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Image Upload Area */}
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Chair Image</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Table Image</label>
                             <div
                                 onClick={() => fileInputRef.current?.click()}
                                 className="group relative aspect-video rounded-3xl border-2 border-dashed border-forest-moss/20 bg-white/50 flex flex-col items-center justify-center cursor-pointer hover:border-clay/50 transition-all overflow-hidden"
                             >
-                                {previewUrl ? (
+                                {(previewUrl || editedTable.image) ? (
                                     <>
-                                        <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
+                                        <img src={previewUrl || resolveImageUrl(editedTable.image)} className="w-full h-full object-cover" alt="Preview" />
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                             <span className="text-white font-black text-xs uppercase tracking-widest">Change Image</span>
                                         </div>
@@ -109,7 +114,6 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                                             <span className="material-symbols-outlined !text-3xl">add_photo_alternate</span>
                                         </div>
                                         <p className="text-[11px] font-bold text-forest-moss/40 uppercase tracking-widest">Click to upload photo</p>
-                                        <p className="text-[9px] font-medium text-forest-moss/30 mt-1">PNG, JPG up to 5MB</p>
                                     </>
                                 )}
                                 {isUploading && (
@@ -138,9 +142,9 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                                     type="text"
                                     minLength={1}
                                     className="w-full bg-white px-5 py-3 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
-                                    placeholder="e.g. Nordic Oak"
-                                    value={newChair.name}
-                                    onChange={(e) => setNewChair({ ...newChair, name: e.target.value })}
+                                    placeholder="e.g. Oak Dining Table"
+                                    value={editedTable.name}
+                                    onChange={(e) => setEditedTable({ ...editedTable, name: e.target.value })}
                                 />
                             </div>
                             <div className="space-y-1">
@@ -153,11 +157,11 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                                     min={1}
                                     step={1}
                                     className="w-full bg-white px-5 py-3 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
-                                    placeholder="450"
-                                    value={newChair.price || ''}
+                                    placeholder="850"
+                                    value={editedTable.price || ''}
                                     onChange={(e) =>
-                                        setNewChair({
-                                            ...newChair,
+                                        setEditedTable({
+                                            ...editedTable,
                                             price: e.target.value === '' ? 0 : Number(e.target.value),
                                         })
                                     }
@@ -166,30 +170,30 @@ export default function AddChairModal({ isOpen, onClose }: AddChairModalProps) {
                         </div>
 
                         <ProductColorPicker
-                            label="Color"
-                            presets={CHAIR_COLOR_PRESETS}
-                            value={newChair.color}
-                            onChange={(color) => setNewChair({ ...newChair, color })}
+                            label="Wood / Color"
+                            presets={TABLE_COLOR_PRESETS}
+                            value={editedTable.color}
+                            onChange={(color) => setEditedTable({ ...editedTable, color })}
                         />
 
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Description</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Craftsmanship Details</label>
                             <textarea
                                 required
                                 rows={3}
                                 className="w-full bg-white px-5 py-4 rounded-3xl border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm resize-none"
-                                placeholder="Tell us about this masterpiece..."
-                                value={newChair.description}
-                                onChange={(e) => setNewChair({ ...newChair, description: e.target.value })}
+                                placeholder="Describe the dimensions and wood quality..."
+                                value={editedTable.description}
+                                onChange={(e) => setEditedTable({ ...editedTable, description: e.target.value })}
                             />
                         </div>
 
                         <button
-                            disabled={isAdding || isUploading}
+                            disabled={isUpdating || isUploading}
                             type="submit"
                             className="w-full bg-forest-moss text-white py-4 rounded-full font-black text-sm hover:bg-forest-moss-light transition-all shadow-medium uppercase tracking-widest mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isAdding ? 'Creating...' : 'Create Product'}
+                            {isUpdating ? 'Updating...' : 'Update Table'}
                         </button>
                     </form>
                 </div>

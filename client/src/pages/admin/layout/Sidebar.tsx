@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSidebarStore, useUser } from "@/stores";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -71,20 +72,8 @@ export default function Sidebar() {
       <div className="flex flex-col gap-6">
         {/* Logo / Brand & Close Button */}
         <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-3">
-            <div className="size-10 bg-white/10 rounded-full flex items-center justify-center text-white border-2 border-white/20 shadow-inner shrink-0">
-              <span className="material-symbols-outlined !text-2xl font-bold">
-                chair
-              </span>
-            </div>
-            <div>
-              <h1 className="text-xl font-black leading-none tracking-tight">
-                Kursimeyz
-              </h1>
-              <p className="text-white/60 text-[9px] font-bold uppercase tracking-widest mt-0.5">
-                FOREST WORKSHOP
-              </p>
-            </div>
+          <div className="flex items-center gap-3 min-w-0">
+            <BrandLogo className="shrink-0" imageClassName="h-8 w-auto max-w-[150px]" />
           </div>
 
           {/* Close button for mobile */}
@@ -137,7 +126,7 @@ export default function Sidebar() {
             {user?.image ? (
               <img
                 src={user.image}
-                alt={user.username}
+                alt={user?.username || 'Profile'}
                 className="size-9 rounded-full border-2 border-white/20 object-cover shadow-soft shrink-0"
               />
             ) : (

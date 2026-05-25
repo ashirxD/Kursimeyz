@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { Chair as Product } from '../chairs/cards';
 import { resolveImageUrl } from '@/utils/imageUrl';
+import EditTableModal from './edit';
 
 interface TableCardProps {
     table: Product;
@@ -7,14 +9,17 @@ interface TableCardProps {
 }
 
 export default function TableCard({ table, onDelete }: TableCardProps) {
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
     return (
-        <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-soft border border-white/50 group hover:scale-[1.01] transition-all duration-300 flex flex-col md:flex-row col-span-1 md:col-span-2 min-h-[300px]">
+        <>
+        <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-soft border border-white/50 group hover:scale-[1.01] transition-all duration-300 flex flex-col md:flex-row col-span-1 md:col-span-2 md:h-[300px]">
             {/* Image Section - Wider Aspect for Tables */}
-            <div className="md:w-1/2 relative overflow-hidden bg-oatmeal">
+            <div className="aspect-[4/3] shrink-0 md:aspect-auto md:w-1/2 md:h-full relative overflow-hidden bg-oatmeal">
                 <img
                     src={resolveImageUrl(table.image)}
                     alt={table.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-soft">
                     <span className="text-forest-moss font-black text-sm">Rs {table.price}</span>
@@ -44,7 +49,11 @@ export default function TableCard({ table, onDelete }: TableCardProps) {
                 </div>
 
                 <div className="pt-6 flex gap-3">
-                    <button className="flex-1 bg-forest-moss text-white py-3.5 rounded-full font-black text-xs hover:bg-forest-moss-light transition-all uppercase tracking-widest shadow-soft">
+                    <button
+                        type="button"
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="flex-1 bg-forest-moss text-white py-3.5 rounded-full font-black text-xs hover:bg-forest-moss-light transition-all uppercase tracking-widest shadow-soft"
+                    >
                         Edit Details
                     </button>
                     <button
@@ -56,5 +65,12 @@ export default function TableCard({ table, onDelete }: TableCardProps) {
                 </div>
             </div>
         </div>
+
+        <EditTableModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            table={table}
+        />
+        </>
     );
 }
