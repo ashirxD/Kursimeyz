@@ -13,6 +13,7 @@ const AdminCustomers = lazy(() => import('../pages/admin/customers/index'));
 const AdminSettings = lazy(() => import('../pages/admin/settings/index'));
 const AdminSofas = lazy(() => import('../pages/admin/sofas/index'));
 const AdminProfile = lazy(() => import('../pages/admin/profile'));
+const AdminSellerManagement = lazy(() => import('../pages/admin/SellerManagment/index'));
 export const adminRoutes = [
     {
         path: '/admin',
@@ -71,6 +72,14 @@ export const adminRoutes = [
                 element: (
                     <Suspense fallback={<LoadingSpinner />}>
                         <AdminCustomers />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'seller-management',
+                element: (
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <AdminSellerManagement />
                     </Suspense>
                 ),
             },

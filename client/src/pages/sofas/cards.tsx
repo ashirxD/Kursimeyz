@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import type { Chair as Sofa } from "@/pages/admin/chairs/cards";
 import { useCart } from "@/hooks/useCart";
 import ProductRating from "@/components/ProductRating";
@@ -12,33 +13,32 @@ interface SofaProductCardProps {
 export default function SofaProductCard({ sofa, badge }: SofaProductCardProps) {
   const { addToCart, isAdding } = useCart();
   const [added, setAdded] = useState(false);
+  const productUrl = `/product/${sofa.id}`;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Adding Sofa to cart, product ID:", sofa.id);
     addToCart(
       { productId: sofa.id },
       {
         onSuccess: () => {
-          console.log("Successfully added Sofa to cart");
           setAdded(true);
           setTimeout(() => setAdded(false), 2000);
-        },
-        onError: (err) => {
-          console.error("Failed to add Sofa to cart:", err);
         },
       },
     );
   };
 
+  const addToCartButtonClass = `px-6 py-2.5 ${
+    added ? "bg-[#5ef037] text-[#1a2f1a]" : "bg-[#1a2f1a] hover:bg-black text-white"
+  } text-[12px] font-black uppercase tracking-widest rounded-full shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50`;
+
   return (
-    <div className="group cursor-pointer">
-      <div className="relative bg-[#f4f5f0] rounded-2xl overflow-hidden aspect-square flex items-center justify-center p-6 transition-all duration-500 group-hover:shadow-lg group-hover:shadow-black/5">
-        {/* Badge */}
+    <div className="group flex flex-col">
+      <div className="relative bg-[#f4f5f0] rounded-2xl overflow-hidden aspect-square flex items-center justify-center transition-all duration-500 group-hover:shadow-lg group-hover:shadow-black/5">
         {badge && (
           <div
-            className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+            className={`absolute top-4 left-4 z-20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
               badge === "NEW"
                 ? "bg-[#5ef037] text-white"
                 : "bg-[#5ef037] text-white"
@@ -48,12 +48,12 @@ export default function SofaProductCard({ sofa, badge }: SofaProductCardProps) {
           </div>
         )}
 
-        {/* Add to Cart Button Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-10">
+        {/* Add to Cart overlay — desktop hover only */}
+        <div className="absolute inset-0 hidden md:flex items-center justify-center translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-10 pointer-events-none group-hover:pointer-events-auto">
           <button
             onClick={handleAddToCart}
             disabled={isAdding || added}
-            className={`px-6 py-2.5 ${added ? "bg-[#5ef037] text-[#1a2f1a]" : "bg-[#1a2f1a] hover:bg-black text-white"} text-[12px] font-black uppercase tracking-widest rounded-full shadow-xl flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50`}
+            className={`${addToCartButtonClass} pointer-events-auto`}
           >
             <span className="material-symbols-outlined text-[16px]">
               {added ? "check_circle" : "shopping_bag"}
@@ -62,18 +62,21 @@ export default function SofaProductCard({ sofa, badge }: SofaProductCardProps) {
           </button>
         </div>
 
-        {/* Product Image */}
-        <img
-          src={resolveImageUrl(sofa.image)}
-          alt={sofa.name}
-          className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
-        />
+        <Link
+          to={productUrl}
+          className="flex items-center justify-center w-full h-full p-6"
+        >
+          <img
+            src={resolveImageUrl(sofa.image)}
+            alt={sofa.name}
+            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
+          />
+        </Link>
       </div>
 
-      {/* Product Info */}
-      <div className="mt-4 flex items-start justify-between gap-2">
+      <Link to={productUrl} className="mt-4 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="text-[15px] font-bold text-[#1a2f1a] truncate">
+          <h3 className="text-[15px] font-bold text-[#1a2f1a] truncate group-hover:text-[#5ef037] transition-colors">
             {sofa.name}
           </h3>
           <p className="text-[12px] text-[#1a2f1a]/40 font-medium mt-0.5 truncate">
@@ -89,7 +92,19 @@ export default function SofaProductCard({ sofa, badge }: SofaProductCardProps) {
         <span className="text-[15px] font-bold text-[#1a2f1a] whitespace-nowrap">
           Rs. {sofa.price}
         </span>
-      </div>
+      </Link>
+
+      {/* Add to Cart — mobile */}
+      <button
+        onClick={handleAddToCart}
+        disabled={isAdding || added}
+        className={`md:hidden mt-3 w-full ${addToCartButtonClass}`}
+      >
+        <span className="material-symbols-outlined text-[16px]">
+          {added ? "check_circle" : "shopping_bag"}
+        </span>
+        {isAdding ? "Adding..." : added ? "Added!" : "Add to Cart"}
+      </button>
     </div>
   );
 }

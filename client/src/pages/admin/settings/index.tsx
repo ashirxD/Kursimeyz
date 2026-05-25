@@ -1,7 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Header from "@/pages/admin/layout/Header";
 import api from "@/utils/Axios";
-import DebugAuth from "@/components/DebugAuth";
 
 const DEFAULT_EASYPAISA_REDIRECT_URL =
   "https://easypaisa.onelink.me/cw4d/q9y8ba5v";
@@ -137,7 +136,6 @@ export default function SettingsPage() {
 
   return (
     <>
-      <DebugAuth />
       <div className="flex-1 flex flex-col gap-4 px-0 md:px-2 pb-6">
         <Header />
 

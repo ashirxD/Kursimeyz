@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import Header from "@/pages/admin/layout/Header";
-import DebugAuth from "@/components/DebugAuth";
 import { useAuthStore } from "@/stores/authStore";
 import { useAdminProfile } from "@/hooks/useAdminProfile";
 
@@ -78,7 +77,6 @@ export default function ProfilePage() {
 
   return (
     <>
-      <DebugAuth />
       <div className="flex-1 flex flex-col gap-4 px-0 md:px-2 pb-6">
         <Header />
 

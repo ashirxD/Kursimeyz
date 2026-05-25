@@ -51,6 +51,11 @@ export default function Sidebar() {
       path: "/admin/customers",
     },
     {
+      name: "Seller Management",
+      icon: "store",
+      path: "/admin/seller-management",
+    },
+    {
       name: "Settings",
       icon: "settings",
       path: "/admin/settings",

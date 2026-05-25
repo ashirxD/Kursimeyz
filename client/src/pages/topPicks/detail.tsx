@@ -6,6 +6,19 @@ import { Link } from "react-router-dom";
 import ProductRating from "@/components/ProductRating";
 import { resolveImageUrl } from "@/utils/imageUrl";
 
+function getCategoryShopLink(category: string) {
+  switch (category) {
+    case "chair":
+      return { path: "/shop/chairs", label: "Chairs" };
+    case "table":
+      return { path: "/shop/tables", label: "Tables" };
+    case "sofa":
+      return { path: "/shop/sofas", label: "Sofas" };
+    default:
+      return { path: "/top-picks", label: "Top Picks" };
+  }
+}
+
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const { product, isProductLoading, productError } = useProduct(id);
@@ -53,6 +66,8 @@ export default function ProductDetail() {
     );
   }
 
+  const shopLink = getCategoryShopLink(product.category);
+
   return (
     <div className="pt-24 pb-16 px-6 md:px-10 max-w-[1440px] mx-auto">
       {/* Breadcrumbs */}
@@ -67,10 +82,10 @@ export default function ProductDetail() {
           chevron_right
         </span>
         <Link
-          to="/top-picks"
+          to={shopLink.path}
           className="hover:text-[#5ef037] transition-colors"
         >
-          Top Picks
+          {shopLink.label}
         </Link>
         <span className="material-symbols-outlined text-[12px]">
           chevron_right
