@@ -74,7 +74,7 @@ export default function ProductDetail() {
       <div className="flex items-center gap-2 mb-12 text-[10px] font-black uppercase tracking-[0.2em] text-[#1a2f1a]/40">
         <Link
           to="/dashboard"
-          className="hover:text-[#5ef037] transition-colors"
+          className="hover:text-[#ff6b35] transition-colors"
         >
           Home
         </Link>
@@ -83,7 +83,7 @@ export default function ProductDetail() {
         </span>
         <Link
           to={shopLink.path}
-          className="hover:text-[#5ef037] transition-colors"
+          className="hover:text-[#ff6b35] transition-colors"
         >
           {shopLink.label}
         </Link>
@@ -106,7 +106,7 @@ export default function ProductDetail() {
 
           {/* Floating Category Badge */}
           <div className="absolute top-8 left-8 bg-white/80 backdrop-blur-md px-6 py-2 rounded-full shadow-lg shadow-black/5 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#5ef037]">
+            <span className="material-symbols-outlined text-[16px] text-[#ff6b35]">
               verified
             </span>
             <span className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]">
@@ -122,7 +122,7 @@ export default function ProductDetail() {
               {product.name}
             </h1>
             <div className="flex flex-wrap items-center gap-6">
-              <span className="bg-[#5ef037]/10 text-[#5ef037] px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
+              <span className="bg-[#ff6b35]/10 text-[#ff6b35] px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
                 In Stock
               </span>
               {product.ratingCount && product.ratingCount > 0 ? (
@@ -199,7 +199,7 @@ export default function ProductDetail() {
                 disabled={isAdding}
                 className={`flex-1 h-14 rounded-[1.5rem] font-black uppercase tracking-widest transition-all transform active:scale-95 shadow-xl flex items-center justify-center gap-3 ${
                   added
-                    ? "bg-[#5ef037] text-[#1a2f1a]"
+                    ? "bg-[#ff6b35] text-[#1a2f1a]"
                     : "bg-[#1a2f1a] text-white hover:bg-black"
                 }`}
               >

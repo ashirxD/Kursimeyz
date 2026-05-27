@@ -30,11 +30,11 @@ export default function Sidebar() {
                             key={item.name}
                             to={item.path}
                             className={`flex items-center gap-4 px-6 py-4 rounded-[20px] transition-all duration-300 group ${isActive
-                                ? 'bg-[#5ef037] text-[#1a2f1a] font-bold shadow-lg shadow-[#5ef037]/20'
+                                ? 'bg-[#ff6b35] text-[#1a2f1a] font-bold shadow-lg shadow-[#ff6b35]/20'
                                 : 'text-slate-400 hover:text-[#1a2f1a] hover:bg-slate-50'
                                 }`}
                         >
-                            <span className={`material-symbols-outlined !text-2xl ${isActive ? 'text-[#1a2f1a]' : 'text-slate-300 group-hover:text-[#5ef037]'}`}>
+                            <span className={`material-symbols-outlined !text-2xl ${isActive ? 'text-[#1a2f1a]' : 'text-slate-300 group-hover:text-[#ff6b35]'}`}>
                                 {item.icon}
                             </span>
                             <span className="text-[15px] font-semibold">{item.name}</span>
@@ -47,13 +47,13 @@ export default function Sidebar() {
             <div className="bg-[#f6f8f6] rounded-[32px] p-6 mt-auto border border-slate-50">
                 <div className="flex items-center gap-3 mb-4">
                     <div className="size-9 bg-white rounded-full flex items-center justify-center shadow-sm">
-                        <span className="material-symbols-outlined !text-xl text-[#5ef037]">potted_plant</span>
+                        <span className="material-symbols-outlined !text-xl text-[#ff6b35]">potted_plant</span>
                     </div>
                     <span className="text-[14px] font-bold text-[#1a2f1a] truncate">Seedling Status</span>
                 </div>
 
                 <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden mb-3">
-                    <div className="h-full bg-[#5ef037] w-[65%]" />
+                    <div className="h-full bg-[#ff6b35] w-[65%]" />
                 </div>
 
                 <p className="text-[11px] text-slate-400 font-medium italic leading-loose">

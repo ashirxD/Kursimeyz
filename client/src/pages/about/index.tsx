@@ -6,7 +6,7 @@ export default function About() {
       {/* Hero Section */}
       <section className="text-center mb-20">
         <div className="inline-flex items-center gap-1.5 mb-5">
-          <span className="size-1 bg-[#5ef037] rounded-full"></span>
+          <span className="size-1 bg-[#ff6b35] rounded-full"></span>
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#1a2f1a]/40">
             Our Story
           </span>
@@ -14,7 +14,7 @@ export default function About() {
         <h1 className="text-[40px] lg:text-[52px] font-black leading-[1] text-[#1a2f1a] tracking-tight mb-6">
           Crafting Comfort
           <br />
-          <span className="text-[#5ef037]">Since 2020</span>
+          <span className="text-[#ff6b35]">Since 2020</span>
         </h1>
         <p className="text-lg text-[#1a2f1a]/50 font-medium leading-relaxed max-w-[600px] mx-auto">
           We believe that everyone deserves a space to relax, unwind, and feel truly at home. 
@@ -46,7 +46,7 @@ export default function About() {
               key={idx}
               className="text-center p-8 rounded-3xl bg-[#f4f5f0] hover:bg-[#eef0ea] transition-colors"
             >
-              <div className="w-16 h-16 bg-[#5ef037] rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-[#5ef037]/20">
+              <div className="w-16 h-16 bg-[#ff6b35] rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-[#ff6b35]/20">
                 <span className="material-symbols-outlined text-white text-3xl">
                   {value.icon}
                 </span>
@@ -67,7 +67,7 @@ export default function About() {
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1">
             <div className="inline-flex items-center gap-1.5 mb-5">
-              <span className="size-1 bg-[#5ef037] rounded-full"></span>
+              <span className="size-1 bg-[#ff6b35] rounded-full"></span>
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#1a2f1a]/40">
                 Our Journey
               </span>
@@ -95,7 +95,7 @@ export default function About() {
               />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-5 shadow-xl">
-              <div className="text-[32px] font-black text-[#5ef037]">4+</div>
+              <div className="text-[32px] font-black text-[#ff6b35]">4+</div>
               <div className="text-[12px] font-bold text-[#1a2f1a]/60 uppercase tracking-wider">
                 Years of Excellence
               </div>
@@ -145,7 +145,7 @@ export default function About() {
             </a>
             <a
               href="tel:++92 321 1411478"
-              className="flex items-center gap-3 bg-[#5ef037] hover:bg-[#4ad12d] text-[#1a2f1a] px-6 py-4 rounded-full transition-all"
+              className="flex items-center gap-3 bg-[#ff6b35] hover:bg-[#f05a28] text-[#1a2f1a] px-6 py-4 rounded-full transition-all"
             >
               <span className="material-symbols-outlined text-[24px]">phone</span>
               <span className="text-[14px] font-bold">+92 321 1411478</span>

@@ -16,7 +16,7 @@ export default function Dashboard() {
         {/* Text Content */}
         <div className="flex-1 max-w-[500px] z-10">
           <div className="inline-flex items-center gap-1.5 mb-5 animate-in fade-in slide-in-from-left-4 duration-700">
-            <span className="size-1 bg-[#5ef037] rounded-full"></span>
+            <span className="size-1 bg-[#ff6b35] rounded-full"></span>
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#1a2f1a]/40">
               New Collection 2026
             </span>
@@ -27,7 +27,7 @@ export default function Dashboard() {
             <br />
             <span className="text-[#d27d53]">Breathe.</span>
             <br />
-            <span className="text-[#5ef037]">Belong.</span>
+            <span className="text-[#ff6b35]">Belong.</span>
           </h1>
 
           <p className="text-base text-[#1a2f1a]/50 font-medium leading-relaxed max-w-[380px] mb-8 animate-in fade-in slide-in-from-left-8 duration-1000 delay-150">
@@ -38,7 +38,7 @@ export default function Dashboard() {
           <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
             <button
               onClick={scrollToCollection}
-              className="h-14 px-8 bg-[#5ef037] hover:bg-[#4ad12d] text-white font-black text-base rounded-full flex items-center gap-2.5 transition-all transform hover:scale-[1.05] active:scale-95 shadow-xl shadow-[#5ef037]/20 cursor-pointer"
+              className="h-14 px-8 bg-[#ff6b35] hover:bg-[#f05a28] text-white font-black text-base rounded-full flex items-center gap-2.5 transition-all transform hover:scale-[1.05] active:scale-95 shadow-xl shadow-[#ff6b35]/20 cursor-pointer"
             >
               Shop Collection
               <span className="material-symbols-outlined font-black text-xl">
@@ -123,7 +123,7 @@ export default function Dashboard() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
               </div>
-              <h3 className="text-xl font-black text-[#1a2f1a] group-hover:text-[#5ef037] transition-colors duration-300 uppercase tracking-widest text-[16px]">
+              <h3 className="text-xl font-black text-[#1a2f1a] group-hover:text-[#ff6b35] transition-colors duration-300 uppercase tracking-widest text-[16px]">
                 {category.name}
               </h3>
               <p className="text-[#1a2f1a]/40 font-bold text-[10px] tracking-widest mt-2 uppercase">

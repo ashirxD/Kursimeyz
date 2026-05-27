@@ -101,7 +101,7 @@ export default function TopPicks({
                 <Link to={`/product/${product._id}`} className="mb-3">
                   <div className="flex items-center justify-between gap-2">
                     <h3
-                      className={`font-bold text-[#1a2f1a] group-hover:text-[#5ef037] transition-colors truncate
+                      className={`font-bold text-[#1a2f1a] group-hover:text-[#ff6b35] transition-colors truncate
                       ${isDashboard ? "text-[15px]" : "text-[14px]"}`}
                     >
                       {product.name}
@@ -127,7 +127,7 @@ export default function TopPicks({
                   disabled={isCurrentAdding || isAdded}
                   className={`w-full py-2 px-3 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 mt-auto
                     ${isAdded 
-                      ? "bg-[#5ef037] text-[#1a2f1a]" 
+                      ? "bg-[#ff6b35] text-[#1a2f1a]" 
                       : "bg-[#1a2f1a] hover:bg-black text-white"
                     }`}
                 >

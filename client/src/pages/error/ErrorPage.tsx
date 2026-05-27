@@ -17,7 +17,7 @@ export default function ErrorPage() {
   return (
     <div className="min-h-screen w-full bg-[#fdfcf8] flex items-center justify-center p-4 font-sans text-[#101b0e]">
       {/* Decorative background circle */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#5ef037]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#ff6b35]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#1a2f1a]/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-[120px] pointer-events-none" />
 
       <div className="max-w-md w-full text-center relative z-10">
@@ -28,7 +28,7 @@ export default function ErrorPage() {
               warning
             </span>
           </div>
-          <div className="absolute -inset-4 bg-[#5ef037]/20 rounded-[40px] blur-xl animate-pulse"></div>
+          <div className="absolute -inset-4 bg-[#ff6b35]/20 rounded-[40px] blur-xl animate-pulse"></div>
         </div>
 
         {/* Error Details */}

@@ -178,7 +178,7 @@ export default function CheckoutPage() {
         </h2>
         <Link
           to="/dashboard"
-          className="text-[#5ef037] font-black uppercase tracking-widest hover:underline"
+          className="text-[#ff6b35] font-black uppercase tracking-widest hover:underline"
         >
           Go back to shop
         </Link>
@@ -341,7 +341,7 @@ export default function CheckoutPage() {
                     Selected Wallet Account
                   </p>
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#5ef037]">
+                    <span className="material-symbols-outlined text-[#ff6b35]">
                       account_balance_wallet
                     </span>
                     <span className="text-xl font-black text-[#1a2f1a] tracking-wide">
@@ -484,7 +484,7 @@ const CheckoutInput = ({
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full h-14 px-6 rounded-2xl border border-slate-100 bg-[#f4f5f0]/50 focus:bg-white focus:border-[#5ef037] transition-all outline-none font-bold text-[#1a2f1a]"
+      className="w-full h-14 px-6 rounded-2xl border border-slate-100 bg-[#f4f5f0]/50 focus:bg-white focus:border-[#ff6b35] transition-all outline-none font-bold text-[#1a2f1a]"
     />
   </div>
 );
@@ -509,13 +509,13 @@ const PaymentButton = ({
     onClick={onClick}
     className={`h-24 px-8 rounded-[2rem] border-2 flex items-center gap-4 transition-all ${
       selected
-        ? "border-[#5ef037] bg-[#5ef037]/5"
+        ? "border-[#ff6b35] bg-[#ff6b35]/5"
         : "border-slate-100 hover:border-[#1a2f1a]/20"
     }`}
   >
     <span
       className={`material-symbols-outlined text-3xl ${
-        selected ? "text-[#5ef037]" : "text-[#1a2f1a]/20"
+        selected ? "text-[#ff6b35]" : "text-[#1a2f1a]/20"
       }`}
     >
       {icon}
@@ -552,7 +552,7 @@ const WalletPaymentButton = ({
       disabled={disabled}
       className={`min-h-24 px-8 py-5 rounded-[2rem] border-2 flex items-center gap-4 transition-all text-left ${
         selected
-          ? "border-[#5ef037] bg-[#5ef037]/5"
+          ? "border-[#ff6b35] bg-[#ff6b35]/5"
           : "border-slate-100 hover:border-[#1a2f1a]/20"
       } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-100`}
     >
@@ -594,8 +594,8 @@ const WalletInstructionsModal = ({
   <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
     <div className="relative bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-7 border border-white">
       <div className="flex items-center gap-4 mb-5">
-        <div className="size-12 rounded-2xl bg-[#5ef037]/10 flex items-center justify-center">
-          <span className="material-symbols-outlined text-[#5ef037] text-3xl">
+        <div className="size-12 rounded-2xl bg-[#ff6b35]/10 flex items-center justify-center">
+          <span className="material-symbols-outlined text-[#ff6b35] text-3xl">
             account_balance_wallet
           </span>
         </div>
@@ -684,8 +684,8 @@ const WalletRedirectModal = ({
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-7 border border-white text-center">
-        <div className="size-24 bg-[#5ef037]/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-          <span className="material-symbols-outlined text-[48px] text-[#5ef037] font-black">
+        <div className="size-24 bg-[#ff6b35]/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+          <span className="material-symbols-outlined text-[48px] text-[#ff6b35] font-black">
             check_circle
           </span>
         </div>
@@ -719,7 +719,7 @@ const WalletRedirectModal = ({
               </span>
             </button>
           </div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-[#5ef037] mt-2 min-h-4">
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#ff6b35] mt-2 min-h-4">
             {copied ? "Copied" : ""}
           </p>
         </div>

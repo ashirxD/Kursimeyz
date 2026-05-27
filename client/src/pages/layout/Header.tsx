@@ -58,7 +58,7 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             Home
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5ef037] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
           </Link>
 
           {/* Top Picks */}
@@ -67,7 +67,7 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             Top Picks
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5ef037] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
           </Link> */}
 
           {/* Shop with dropdown */}
@@ -86,7 +86,7 @@ export default function Header() {
               >
                 expand_more
               </span>
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5ef037] transition-all group-hover:w-full"></span>
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
             </button>
 
             {/* Dropdown */}
@@ -104,7 +104,7 @@ export default function Header() {
                     to={cat.route}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#1a2f1a]/70 hover:bg-[#f4f5f0] hover:text-[#1a2f1a] transition-all group/item"
                   >
-                    <span className="material-symbols-outlined text-[20px] text-[#5ef037] group-hover/item:scale-110 transition-transform">
+                    <span className="material-symbols-outlined text-[20px] text-[#ff6b35] group-hover/item:scale-110 transition-transform">
                       {cat.icon}
                     </span>
                     <span className="text-[13px] font-bold">{cat.label}</span>
@@ -123,7 +123,7 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             About
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5ef037] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
           </Link>
 
           {/* Contact */}
@@ -132,7 +132,7 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             Contact
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5ef037] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
           </Link> */}
 
           {/* My Orders */}
@@ -141,7 +141,7 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             My Orders
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5ef037] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
           </Link>
         </nav>
 
@@ -177,7 +177,7 @@ export default function Header() {
           ) : (
             <Link
               to="/login"
-              className="h-11 px-4 sm:px-6 bg-[#5ef037] hover:bg-[#4ad12d] text-[#1a2f1a] rounded-full flex items-center gap-2 sm:gap-3 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#5ef037]/30 font-black text-[12px] sm:text-[13px] uppercase tracking-widest"
+              className="h-11 px-4 sm:px-6 bg-[#ff6b35] hover:bg-[#f05a28] text-white rounded-full flex items-center gap-2 sm:gap-3 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#ff6b35]/30 font-bold text-[12px] sm:text-[13px] uppercase tracking-widest"
             >
               <span className="material-symbols-outlined text-[20px]">
                 login
@@ -198,9 +198,9 @@ export default function Header() {
                   key={cat.label}
                   to={cat.route}
                   onClick={() => setMobileShopOpen(false)}
-                  className="flex flex-col items-center justify-center gap-1 h-16 rounded-2xl bg-[#f7f8f3] text-[#1a2f1a] transition-colors hover:bg-[#5ef037]/15"
+                  className="flex flex-col items-center justify-center gap-1 h-16 rounded-2xl bg-[#f7f8f3] text-[#1a2f1a] transition-colors hover:bg-[#ff6b35]/15"
                 >
-                  <span className="material-symbols-outlined text-[22px] text-[#5ef037]">
+                  <span className="material-symbols-outlined text-[22px] text-[#ff6b35]">
                     {cat.icon}
                   </span>
                   <span className="text-[10px] font-black uppercase tracking-wide">

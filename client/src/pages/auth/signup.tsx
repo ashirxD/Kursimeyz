@@ -70,10 +70,10 @@ const Signup = () => {
 
           {/* Content */}
           <div className="max-w-md">
-            <div className="w-10 h-1 bg-[#5ef037] mb-6 rounded-full"></div>
+            <div className="w-10 h-1 bg-[#ff6b35] mb-6 rounded-full"></div>
             <h2 className="text-[36px] lg:text-[40px] font-black leading-[1.1] mb-5 tracking-tight">
               Crafted from nature, designed for{" "}
-              <span className="text-[#5ef037]">comfort</span>.
+              <span className="text-[#ff6b35]">comfort</span>.
             </h2>
             <p className="text-white/70 text-base font-medium">
               Join over 50,000 enthusiasts building a more sustainable and cozy
@@ -94,7 +94,7 @@ const Signup = () => {
         </Link>
 
         {/* Decorative background shapes */}
-        <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-[#5ef037]/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-[120px] pointer-events-none" />
+        <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-[#ff6b35]/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#1a2f1a]/5 rounded-full translate-x-1/4 translate-y-1/4 blur-[100px] pointer-events-none" />
 
         <div className="w-full max-w-[400px] z-10 flex flex-col gap-4 lg:gap-6 relative overflow-y-auto lg:overflow-visible max-h-full py-4 px-2 custom-scrollbar">
@@ -139,7 +139,7 @@ const Signup = () => {
                   id="name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full h-11 lg:h-12 px-4 pr-12 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#5ef037] focus:ring-4 focus:ring-[#5ef037]/10 transition-all duration-300 outline-none shadow-sm"
+                  className="w-full h-11 lg:h-12 px-4 pr-12 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff6b35] focus:ring-4 focus:ring-[#ff6b35]/10 transition-all duration-300 outline-none shadow-sm"
                   placeholder="e.g. Oliver Tree"
                   disabled={isRegistering || isGoogleAuthing}
                 />
@@ -163,7 +163,7 @@ const Signup = () => {
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-11 lg:h-12 px-4 pr-12 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#5ef037] focus:ring-4 focus:ring-[#5ef037]/10 transition-all duration-300 outline-none shadow-sm"
+                  className="w-full h-11 lg:h-12 px-4 pr-12 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff6b35] focus:ring-4 focus:ring-[#ff6b35]/10 transition-all duration-300 outline-none shadow-sm"
                   placeholder="name@example.com"
                   disabled={isRegistering || isGoogleAuthing}
                 />
@@ -187,7 +187,7 @@ const Signup = () => {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-11 lg:h-12 px-4 pr-14 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#5ef037] focus:ring-4 focus:ring-[#5ef037]/10 transition-all duration-300 outline-none shadow-sm"
+                  className="w-full h-11 lg:h-12 px-4 pr-14 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff6b35] focus:ring-4 focus:ring-[#ff6b35]/10 transition-all duration-300 outline-none shadow-sm"
                   placeholder="Min. 8 characters"
                   disabled={isRegistering || isGoogleAuthing}
                 />
@@ -244,7 +244,7 @@ const Signup = () => {
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="text-[#5ef037] font-black hover:underline underline-offset-4"
+                className="text-[#ff6b35] font-black hover:underline underline-offset-4"
               >
                 Log In
               </Link>
@@ -255,11 +255,11 @@ const Signup = () => {
           <div className="text-center">
             <p className="text-[11px] text-slate-300 font-bold max-w-[300px] mx-auto leading-relaxed mt-1">
               By signing up, you agree to our{" "}
-              <a href="#" className="text-slate-400 hover:text-[#5ef037]">
+              <a href="#" className="text-slate-400 hover:text-[#ff6b35]">
                 Terms
               </a>{" "}
               and{" "}
-              <a href="#" className="text-slate-400 hover:text-[#5ef037]">
+              <a href="#" className="text-slate-400 hover:text-[#ff6b35]">
                 Privacy
               </a>
               .

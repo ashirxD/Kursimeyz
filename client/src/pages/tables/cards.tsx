@@ -33,7 +33,7 @@ export default function TableProductCard({
   };
 
   const addToCartButtonClass = `px-6 py-2.5 ${
-    added ? "bg-[#5ef037] text-[#1a2f1a]" : "bg-[#1a2f1a] hover:bg-black text-white"
+    added ? "bg-[#ff6b35] text-[#1a2f1a]" : "bg-[#1a2f1a] hover:bg-black text-white"
   } text-[12px] font-black uppercase tracking-widest rounded-full shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50`;
 
   return (
@@ -43,8 +43,8 @@ export default function TableProductCard({
           <div
             className={`absolute top-4 left-4 z-20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
               badge === "NEW"
-                ? "bg-[#5ef037] text-white"
-                : "bg-[#5ef037] text-white"
+                ? "bg-[#ff6b35] text-white"
+                : "bg-[#ff6b35] text-white"
             }`}
           >
             {badge}
@@ -79,7 +79,7 @@ export default function TableProductCard({
 
       <Link to={productUrl} className="mt-4 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="text-[15px] font-bold text-[#1a2f1a] truncate group-hover:text-[#5ef037] transition-colors">
+          <h3 className="text-[15px] font-bold text-[#1a2f1a] truncate group-hover:text-[#ff6b35] transition-colors">
             {table.name}
           </h3>
           <p className="text-[12px] text-[#1a2f1a]/40 font-medium mt-0.5 truncate">

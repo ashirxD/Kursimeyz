@@ -71,7 +71,7 @@ export default function OrderHistory() {
         </div>
         <Link
           to="/dashboard"
-          className="inline-flex items-center gap-2 text-[#5ef037] font-black uppercase tracking-widest hover:underline"
+          className="inline-flex items-center gap-2 text-[#ff6b35] font-black uppercase tracking-widest hover:underline"
         >
           <span className="material-symbols-outlined text-xl">add</span>
           New Order
@@ -146,7 +146,7 @@ export default function OrderHistory() {
                     {order.status}
                   </span>
                   {order.isPaid && (
-                    <span className="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#5ef037]/10 text-[#5ef037]">
+                    <span className="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#ff6b35]/10 text-[#ff6b35]">
                       Paid
                     </span>
                   )}
@@ -248,7 +248,7 @@ export default function OrderHistory() {
                           {order.paymentMethod}
                         </p>
                         <p
-                          className={`text-xs font-black uppercase tracking-widest ${order.isPaid ? "text-[#5ef037]" : "text-orange-500"}`}
+                          className={`text-xs font-black uppercase tracking-widest ${order.isPaid ? "text-[#ff6b35]" : "text-orange-500"}`}
                         >
                           {order.isPaid ? "Completed" : "Pending"}
                         </p>

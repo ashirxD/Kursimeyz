@@ -1,17 +1,25 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useSidebarStore, useUser } from "@/stores";
+import { useAuthStore, useSidebarStore, useUser } from "@/stores";
 import BrandLogo from "@/components/BrandLogo";
+import api from "@/utils/Axios";
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isSidebarOpen, closeSidebar } = useSidebarStore();
+  const logout = useAuthStore((state) => state.logout);
   const user = useUser();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-    closeSidebar();
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Admin logout error:", error);
+    } finally {
+      logout();
+      closeSidebar();
+      navigate("/admin-login", { replace: true });
+    }
   };
 
   const navItems = [
