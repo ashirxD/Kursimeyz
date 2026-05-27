@@ -1,13 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const cookieParser = require('cookie-parser');
+
+// Load config before importing routes/controllers that read process.env.
+dotenv.config({ path: path.join(__dirname, '.env') });
+
 const apiRoutes = require('./routes/apis');
 const connectDB = require('./config/db');
 const mongoose = require("mongoose");
-
-// Load config
-dotenv.config();
 
 
 
