@@ -4,12 +4,18 @@ import { useAuth } from "../../hooks/useAuth";
 import BrandLogo from "@/components/BrandLogo";
 import { GoogleLoginButton } from "@/components/GoogleLoginButton";
 import type { CredentialResponse } from "@react-oauth/google";
+import {
+  normalizePakistaniMobile,
+  PAKISTANI_MOBILE_HINT,
+} from "@/utils/phone";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const {
     register,
@@ -21,7 +27,9 @@ const Signup = () => {
   } = useAuth();
 
   // Type guard or casting for error message
-  const errorMessage = registerError
+  const errorMessage = localError
+    ? localError
+    : registerError
     ? (registerError as any).response?.data?.message || "Registration failed"
     : googleAuthError
     ? (googleAuthError as any).response?.data?.message ||
@@ -31,14 +39,29 @@ const Signup = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    setLocalError(null);
+
     // Basic validation in UI before sending
+    if (!phone) {
+      setLocalError(PAKISTANI_MOBILE_HINT);
+      return;
+    }
+
     if (!fullName || !email || !password) return;
+
+    const normalizedPhone = normalizePakistaniMobile(phone);
+
+    if (!normalizedPhone) {
+      setLocalError(PAKISTANI_MOBILE_HINT);
+      return;
+    }
 
     register({
       email,
       password,
       username: fullName, // Mapping fullName to username as requested
       fullName: fullName,
+      phone: normalizedPhone,
     });
   };
 
@@ -162,13 +185,45 @@ const Signup = () => {
                   type="email"
                   id="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setLocalError(null);
+                  }}
                   className="w-full h-11 lg:h-12 px-4 pr-12 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff6b35] focus:ring-4 focus:ring-[#ff6b35]/10 transition-all duration-300 outline-none shadow-sm"
                   placeholder="name@example.com"
                   disabled={isRegistering || isGoogleAuthing}
                 />
                 <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none text-xl!">
                   mail
+                </span>
+              </div>
+            </div>
+
+            {/* Phone */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                className="text-[#1a2f1a] text-[11px] font-black uppercase tracking-widest ml-1 opacity-60"
+                htmlFor="phone"
+              >
+                Pakistani Phone
+              </label>
+              <div className="relative">
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  required
+                  id="phone"
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    setLocalError(null);
+                  }}
+                  className="w-full h-11 lg:h-12 px-4 pr-12 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff6b35] focus:ring-4 focus:ring-[#ff6b35]/10 transition-all duration-300 outline-none shadow-sm"
+                  placeholder="+923001234567"
+                  disabled={isRegistering || isGoogleAuthing}
+                />
+                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none text-xl!">
+                  phone
                 </span>
               </div>
             </div>

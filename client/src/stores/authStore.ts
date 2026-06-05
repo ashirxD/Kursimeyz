@@ -5,10 +5,17 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  phone?: string;
   role?: string;
   image?: string;
   provider?: string;
   emailVerified?: boolean;
+}
+
+export interface PendingCartPhoneAction {
+  productId: string;
+  quantity?: number;
+  retry: () => void;
 }
 
 interface AuthState {
@@ -19,6 +26,8 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   isQuickAuthModalOpen: boolean;
+  isPhoneRequiredModalOpen: boolean;
+  pendingCartPhoneAction: PendingCartPhoneAction | null;
 
   // Actions
   setUser: (user: User | null) => void;
@@ -27,6 +36,9 @@ interface AuthState {
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   setQuickAuthModalOpen: (isOpen: boolean) => void;
+  requestPhoneForCart: (action: PendingCartPhoneAction) => void;
+  closePhoneRequiredModal: () => void;
+  updateUserPhone: (phone: string) => void;
   login: (user: User, token: string) => void;
   logout: () => void;
   clearError: () => void;
@@ -42,6 +54,8 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
       isQuickAuthModalOpen: false,
+      isPhoneRequiredModalOpen: false,
+      pendingCartPhoneAction: null,
 
       // Actions
       setUser: (user) => set({ user }),
@@ -50,6 +64,14 @@ export const useAuthStore = create<AuthState>()(
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
       setQuickAuthModalOpen: (isQuickAuthModalOpen) => set({ isQuickAuthModalOpen }),
+      requestPhoneForCart: (pendingCartPhoneAction) =>
+        set({ isPhoneRequiredModalOpen: true, pendingCartPhoneAction }),
+      closePhoneRequiredModal: () =>
+        set({ isPhoneRequiredModalOpen: false, pendingCartPhoneAction: null }),
+      updateUserPhone: (phone) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, phone } : state.user,
+        })),
 
       login: (user, token) => {
         localStorage.setItem("token", token);

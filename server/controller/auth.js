@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const googleAuthService = require('../services/googleAuth.service');
 const emailService = require('../services/emailService');
+const { requirePakistaniMobile } = require('../utils/phone');
 
 const getRequestMeta = (req) => ({
     ip: req.ip || req.socket?.remoteAddress,
@@ -58,6 +59,7 @@ const buildUserResponse = (user) => ({
     id: user._id,
     username: user.username,
     email: user.email,
+    phone: user.phone,
     image: user.image,
     provider: user.provider,
     role: user.role,
@@ -102,6 +104,14 @@ const register = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Please provide email and password' });
         }
 
+        let normalizedPhone;
+        try {
+            normalizedPhone = requirePakistaniMobile(phone);
+        } catch (validationError) {
+            authLog('warn', action, 'Invalid phone number', meta);
+            return res.status(400).json({ success: false, message: validationError.message });
+        }
+
         const normalizedEmail = normalizeEmail(email);
         meta.email = normalizedEmail;
 
@@ -127,7 +137,7 @@ const register = async (req, res, next) => {
         if (user) {
             user.password = hashedPassword;
             user.username = username;
-            user.phone = phone;
+            user.phone = normalizedPhone;
             user.emailVerified = false;
             await user.save();
         } else {
@@ -136,7 +146,7 @@ const register = async (req, res, next) => {
                 email: normalizedEmail,
                 password: hashedPassword,
                 username,
-                phone,
+                phone: normalizedPhone,
                 emailVerified: false,
             });
         }

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { isValidPakistaniMobile, normalizePakistaniMobile } = require('../utils/phone');
 
 const UserSchema = new mongoose.Schema({
   googleId: {
@@ -17,6 +18,17 @@ const UserSchema = new mongoose.Schema({
     type: String,
     // Note: unique + sparse is set via index below to handle null values properly
     trim: true,
+    set: (value) => {
+      if (!value) {
+        return value;
+      }
+
+      return normalizePakistaniMobile(value) || value;
+    },
+    validate: {
+      validator: (value) => !value || isValidPakistaniMobile(value),
+      message: 'Phone must be a valid Pakistani mobile number',
+    },
   },
 
   username: {

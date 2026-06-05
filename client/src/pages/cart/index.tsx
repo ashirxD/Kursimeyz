@@ -50,33 +50,44 @@ export default function CartPage() {
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Items List */}
           <div className="flex-1 space-y-8">
-            {cart.items.map((item: any) => (
-              <div
-                key={item.product?._id || Math.random()}
-                className="flex gap-6 group"
-              >
-                <div className="size-32 bg-[#f4f5f0] rounded-3xl overflow-hidden flex items-center justify-center p-4">
-                  <img
-                    src={resolveImageUrl(item.product?.image)}
-                    alt={item.product?.name || "Product"}
-                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
-                  />
-                </div>
+            {cart.items.map((item: any) => {
+              const unitPrice = item.product?.price || 0;
+              const itemTotal = unitPrice * item.quantity;
 
-                <div className="flex-1 flex flex-col justify-between py-1">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-lg font-bold text-[#1a2f1a]">
-                        {item.product?.name || "Unknown Product"}
-                      </h3>
-                      <p className="text-sm text-[#1a2f1a]/40 font-medium">
-                        {item.product?.color}
-                      </p>
-                    </div>
-                    <p className="text-lg font-black text-[#1a2f1a]">
-                      Rs. {item.product?.price || 0}
-                    </p>
+              return (
+                <div
+                  key={item.product?._id || Math.random()}
+                  className="flex gap-6 group"
+                >
+                  <div className="size-32 bg-[#f4f5f0] rounded-3xl overflow-hidden flex items-center justify-center p-4">
+                    <img
+                      src={resolveImageUrl(item.product?.image)}
+                      alt={item.product?.name || "Product"}
+                      className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+                    />
                   </div>
+
+                  <div className="flex-1 flex flex-col justify-between py-1">
+                    <div className="flex justify-between items-start gap-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-[#1a2f1a]">
+                          {item.product?.name || "Unknown Product"}
+                        </h3>
+                        <p className="text-sm text-[#1a2f1a]/40 font-medium">
+                          {item.product?.color}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-lg font-black text-[#1a2f1a]">
+                          Rs. {itemTotal}
+                        </p>
+                        {item.quantity > 1 && (
+                          <p className="text-[11px] font-bold text-[#1a2f1a]/40">
+                            Rs. {unitPrice} each
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
                   <div className="flex justify-between items-end">
                     <div className="flex items-center gap-4 bg-[#f4f5f0] rounded-full px-4 py-2">
@@ -117,9 +128,10 @@ export default function CartPage() {
                       Remove
                     </button>
                   </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Order Summary */}

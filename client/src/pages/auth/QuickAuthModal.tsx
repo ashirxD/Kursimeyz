@@ -5,6 +5,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { GoogleLoginButton } from '@/components/GoogleLoginButton';
 import ForgotPasswordForm from '@/components/ForgotPasswordForm';
 import type { CredentialResponse } from '@react-oauth/google';
+import {
+    normalizePakistaniMobile,
+    PAKISTANI_MOBILE_HINT,
+} from '@/utils/phone';
 
 type AuthMode = 'signup' | 'login' | 'forgot';
 
@@ -13,6 +17,7 @@ export default function QuickAuthModal() {
     const { googleAuth, isGoogleAuthing, googleAuthError } = useAuth();
     const [mode, setMode] = useState<AuthMode>('signup');
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [otp, setOtp] = useState('');
     const [isOtpSent, setIsOtpSent] = useState(false);
@@ -33,6 +38,7 @@ export default function QuickAuthModal() {
     useEffect(() => {
         if (!isQuickAuthModalOpen) {
             setEmail('');
+            setPhone('');
             setPassword('');
             setOtp('');
             setIsOtpSent(false);
@@ -55,7 +61,15 @@ export default function QuickAuthModal() {
         try {
             setIsLoading(true);
             setLocalError(null);
-            await api.post('/auth/register', { email, password });
+
+            const normalizedPhone = normalizePakistaniMobile(phone);
+
+            if (!normalizedPhone) {
+                setLocalError(PAKISTANI_MOBILE_HINT);
+                return;
+            }
+
+            await api.post('/auth/register', { email, password, phone: normalizedPhone });
             setIsOtpSent(true);
         } catch (err: any) {
             setLocalError(err.response?.data?.message || 'Failed to send OTP');
@@ -178,9 +192,34 @@ export default function QuickAuthModal() {
                                             className="w-full bg-white px-5 py-3.5 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
                                             placeholder="your@email.com"
                                             value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
+                                            onChange={(e) => {
+                                                setEmail(e.target.value);
+                                                setLocalError(null);
+                                            }}
                                         />
                                     </div>
+
+                                    {mode === 'signup' && (
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">Pakistani Phone</label>
+                                            <div className="relative flex items-center">
+                                                <input
+                                                    required
+                                                    disabled={isLoading || isOtpSent || isOtpVerified}
+                                                    type="tel"
+                                                    inputMode="tel"
+                                                    className="w-full bg-white pl-5 pr-12 py-3.5 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
+                                                    placeholder="+923001234567"
+                                                    value={phone}
+                                                    onChange={(e) => {
+                                                        setPhone(e.target.value);
+                                                        setLocalError(null);
+                                                    }}
+                                                />
+                                                <span className="material-symbols-outlined absolute right-5 text-forest-moss/30 text-[18px] pointer-events-none">phone</span>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="space-y-1">
                                         <div className="flex justify-between items-center ml-4 mr-4">
@@ -222,7 +261,7 @@ export default function QuickAuthModal() {
                                                     {!isOtpVerified ? (
                                                         <button
                                                             type="button"
-                                                            disabled={!email || !password || isLoading || isOtpSent}
+                                                            disabled={!email || !password || !phone || isLoading || isOtpSent}
                                                             onClick={handleSendOtp}
                                                             className="bg-clay text-white px-3 py-1.5 rounded-full text-[10px] font-black hover:bg-clay-soft disabled:opacity-50 disabled:bg-forest-moss/10 disabled:text-forest-moss/40 uppercase tracking-widest transition-all shadow-sm"
                                                         >

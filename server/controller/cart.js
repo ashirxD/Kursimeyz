@@ -1,5 +1,6 @@
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
+const { isValidPakistaniMobile } = require('../utils/phone');
 
 // Get user cart
 const getCart = async (req, res) => {
@@ -28,6 +29,14 @@ const addToCart = async (req, res) => {
     console.log('POST /api/cart/add - Body:', req.body, 'User:', req.user?.id || req.user?._id);
 
     try {
+        if (!isValidPakistaniMobile(req.user?.phone)) {
+            return res.status(428).json({
+                success: false,
+                code: 'PHONE_REQUIRED',
+                message: 'Please add a valid Pakistani phone number before adding items to cart',
+            });
+        }
+
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({

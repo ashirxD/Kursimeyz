@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const { requirePakistaniMobile } = require('../utils/phone');
 
 const DEFAULT_WHATSAPP_NUMBER = '+923211411478';
 const DEFAULT_EASYPAISA_REDIRECT_URL = 'https://easypaisa.onelink.me/cw4d/q9y8ba5v';
@@ -48,6 +49,17 @@ const buildPaymentSettings = (admin, isDefault = false) => ({
     isDefault,
 });
 
+const buildUserResponse = (user) => ({
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    phone: user.phone,
+    image: user.image,
+    provider: user.provider,
+    role: user.role,
+    emailVerified: user.emailVerified,
+});
+
 const findAdminWithPaymentSettings = async () => {
     return User.findOne({
         role: 'admin',
@@ -94,6 +106,46 @@ const getPaymentSettings = async (req, res) => {
         });
     } catch (err) {
         console.error('Error fetching payment settings:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+// @desc    Update current user's profile phone
+// @route   PUT /api/v1/user/phone
+const updateUserPhone = async (req, res) => {
+    try {
+        const normalizedPhone = requirePakistaniMobile(req.body.phone);
+
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { phone: normalizedPhone },
+            { new: true, runValidators: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Phone number updated successfully',
+            user: buildUserResponse(user)
+        });
+    } catch (err) {
+        if (err.statusCode === 400 || err.name === 'ValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+        console.error('Error updating user phone:', err);
         res.status(500).json({
             success: false,
             message: 'Server error'
@@ -389,6 +441,7 @@ const updateAdminProfile = async (req, res) => {
 module.exports = {
     getWhatsAppNumber,
     getPaymentSettings,
+    updateUserPhone,
     getAdminWhatsAppNumber,
     getAdminPaymentSettings,
     updateWhatsAppNumber,

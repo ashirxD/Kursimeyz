@@ -64,11 +64,11 @@ export default function TopPicks({
           const handleAddToCart = (e: React.MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
-            setAddedProductId(product._id);
             addToCart(
               { productId: product._id },
               {
                 onSuccess: () => {
+                  setAddedProductId(product._id);
                   setTimeout(() => setAddedProductId(null), 2000);
                 },
                 onError: () => {

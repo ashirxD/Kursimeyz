@@ -5,6 +5,7 @@ const {
     getPaymentSettings,
     getAdminWhatsAppNumber,
     getAdminPaymentSettings,
+    updateUserPhone,
     updateWhatsAppNumber,
     updatePaymentSettings,
     getAllCustomers,
@@ -19,6 +20,10 @@ router.get('/whatsapp', getWhatsAppNumber);
 // @desc    Get public payment settings
 // @route   GET /user/payment-settings
 router.get('/payment-settings', getPaymentSettings);
+
+// @desc    Update current user's profile phone
+// @route   PUT /user/phone
+router.put('/phone', protect, updateUserPhone);
 
 // @desc    Get WhatsApp number for admin (protected)
 // @route   GET /user/admin/whatsapp

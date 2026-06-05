@@ -9,6 +9,7 @@ interface RegisterPayload {
   username: string;
   password: string;
   fullName: string;
+  phone: string;
 }
 
 interface AuthResponse {
@@ -18,6 +19,7 @@ interface AuthResponse {
     id: string;
     username: string;
     email: string;
+    phone?: string;
     image?: string;
     provider?: string;
     role?: string;

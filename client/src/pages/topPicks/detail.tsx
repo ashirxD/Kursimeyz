@@ -28,9 +28,15 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     if (product?._id) {
-      addToCart({ productId: product._id, quantity });
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
+      addToCart(
+        { productId: product._id, quantity },
+        {
+          onSuccess: () => {
+            setAdded(true);
+            setTimeout(() => setAdded(false), 2000);
+          },
+        },
+      );
     }
   };
 

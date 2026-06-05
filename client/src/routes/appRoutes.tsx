@@ -4,12 +4,14 @@ import { protectedRoutes } from "./protectedRoutes";
 import { adminRoutes } from "./adminRoutes";
 import ErrorPage from "../pages/error/ErrorPage";
 import QuickAuthModal from "../pages/auth/QuickAuthModal";
+import PhoneRequiredModal from "@/components/PhoneRequiredModal";
 
 const AppLayout = () => {
   return (
     <>
       <Outlet />
       <QuickAuthModal />
+      <PhoneRequiredModal />
     </>
   );
 };
