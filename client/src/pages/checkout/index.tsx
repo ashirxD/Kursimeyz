@@ -1,9 +1,33 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { AxiosError } from "axios";
 import { useCart } from "@/hooks/useCart";
 import { useOrder, type OrderPayload } from "@/hooks/useOrder";
 import api from "@/utils/Axios";
 import { resolveImageUrl } from "@/utils/imageUrl";
+
+interface CartProduct {
+  _id: string;
+  name: string;
+  price: number;
+  image?: string;
+}
+
+interface CartLineItem {
+  product: CartProduct;
+  quantity: number;
+}
+
+const getOrderErrorMessage = (error: unknown) => {
+  if (error instanceof AxiosError) {
+    return (
+      (error.response?.data as { message?: string } | undefined)?.message ||
+      "Failed to place order. Please try again."
+    );
+  }
+
+  return "Failed to place order. Please try again.";
+};
 
 type PaymentMethod = "Cash" | "Card" | "Easypaisa" | "JazzCash" | "Bank";
 type WalletMethod = Extract<PaymentMethod, "Easypaisa" | "JazzCash">;
@@ -58,7 +82,7 @@ export default function CheckoutPage() {
     phone: "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Card");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Cash");
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(
     defaultPaymentSettings,
   );
@@ -68,12 +92,6 @@ export default function CheckoutPage() {
     useState<WalletMethod | null>(null);
   const [orderCreated, setOrderCreated] = useState(false);
   const [localError, setLocalError] = useState("");
-
-  const [cardInfo] = useState({
-    number: "4242 4242 4242 4242",
-    expiry: "12/26",
-    cvc: "123",
-  });
 
   useEffect(() => {
     const fetchPaymentSettings = async () => {
@@ -94,10 +112,11 @@ export default function CheckoutPage() {
     fetchPaymentSettings();
   }, []);
 
+  const cartItems = (cart?.items ?? []) as CartLineItem[];
+
   const subtotal =
-    cart?.items?.reduce(
-      (acc: number, item: any) =>
-        acc + (item.product?.price || 0) * item.quantity,
+    cartItems.reduce(
+      (acc, item) => acc + (item.product?.price || 0) * item.quantity,
       0,
     ) || 0;
   const shipping = subtotal > 0 ? 50 : 0;
@@ -123,7 +142,7 @@ export default function CheckoutPage() {
   };
 
   const buildOrderPayload = (): OrderPayload => ({
-    items: cart.items.map((item: any) => ({
+    items: cartItems.map((item) => ({
       product: item.product._id,
       quantity: item.quantity,
       price: item.product.price,
@@ -154,11 +173,8 @@ export default function CheckoutPage() {
         } else {
           navigate("/order-success");
         }
-      } catch (error: any) {
-        setLocalError(
-          error.response?.data?.message ||
-            "Failed to place order. Please try again.",
-        );
+      } catch (error: unknown) {
+        setLocalError(getOrderErrorMessage(error));
       }
       return;
     }
@@ -179,9 +195,20 @@ export default function CheckoutPage() {
     navigate("/order-success");
   };
 
-  const hasCartItems = Boolean(cart?.items?.length);
+  const hasCartItems = cartItems.length > 0;
 
-  if (!hasCartItems && !pendingWalletRedirect && !orderCreated) {
+  if (pendingWalletRedirect) {
+    return (
+      <WalletRedirectModal
+        method={pendingWalletRedirect}
+        accountNumber={getWalletAccountNumber(pendingWalletRedirect)}
+        onRedirect={redirectToWallet}
+        onLater={goToOrderSuccess}
+      />
+    );
+  }
+
+  if (!hasCartItems && !orderCreated) {
     return (
       <div className="pt-32 pb-16 flex flex-col items-center justify-center text-center">
         <span className="material-symbols-outlined text-[80px] text-[#1a2f1a]/10 mb-6">
@@ -317,7 +344,7 @@ export default function CheckoutPage() {
 
               {(paymentMethod === "Easypaisa" ||
                 paymentMethod === "JazzCash") && (
-                <div className="mt-8 p-6 bg-[#f4f5f0] rounded-[2rem] border border-slate-100">
+                <div className="mt-8 p-6 bg-[#f4f5f0] rounded-4xl border border-slate-100">
                   <p className="text-[10px] font-black text-[#1a2f1a]/40 uppercase tracking-widest mb-2">
                     Selected Wallet Account
                   </p>
@@ -337,7 +364,7 @@ export default function CheckoutPage() {
               )}
 
               {paymentMethod === "Bank" && (
-                <div className="mt-8 p-6 bg-[#f4f5f0] rounded-[2rem] border border-slate-100 space-y-4">
+                <div className="mt-8 p-6 bg-[#f4f5f0] rounded-4xl border border-slate-100 space-y-4">
                   <p className="text-[10px] font-black text-[#1a2f1a]/40 uppercase tracking-widest">
                     Bank Transfer Details
                   </p>
@@ -376,13 +403,13 @@ export default function CheckoutPage() {
           </div>
 
           <div className="w-full lg:w-[420px]">
-            <div className="bg-[#f4f5f0] rounded-[2.5rem] p-10 sticky top-28">
+            <div className="bg-[#f4f5f0] rounded-5xl p-10 sticky top-28">
               <h2 className="text-2xl font-black text-[#1a2f1a] mb-8">
                 Order Harmony
               </h2>
 
               <div className="space-y-6 mb-10 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                {cart?.items?.map((item: any) => (
+                {cartItems.map((item) => (
                   <div
                     key={item.product?._id}
                     className="flex justify-between items-center gap-4"
@@ -428,9 +455,7 @@ export default function CheckoutPage() {
 
               {(localError || createError) && (
                 <div className="mb-5 p-4 rounded-2xl bg-red-50 text-red-600 border border-red-100 text-sm font-bold">
-                  {localError ||
-                    (createError as any)?.response?.data?.message ||
-                    "Failed to place order. Please try again."}
+                  {localError || getOrderErrorMessage(createError)}
                 </div>
               )}
 
@@ -465,14 +490,6 @@ export default function CheckoutPage() {
         />
       )}
 
-      {pendingWalletRedirect && (
-        <WalletRedirectModal
-          method={pendingWalletRedirect}
-          accountNumber={getWalletAccountNumber(pendingWalletRedirect)}
-          onRedirect={redirectToWallet}
-          onLater={goToOrderSuccess}
-        />
-      )}
     </>
   );
 }
@@ -525,7 +542,7 @@ const PaymentButton = ({
   <button
     type="button"
     onClick={onClick}
-    className={`h-24 px-8 rounded-[2rem] border-2 flex items-center gap-4 transition-all ${
+    className={`h-24 px-8 rounded-4xl border-2 flex items-center gap-4 transition-all ${
       selected
         ? "border-[#ff6b35] bg-[#ff6b35]/5"
         : "border-slate-100 hover:border-[#1a2f1a]/20"
@@ -568,7 +585,7 @@ const WalletPaymentButton = ({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`min-h-24 px-8 py-5 rounded-[2rem] border-2 flex items-center gap-4 transition-all text-left ${
+      className={`min-h-24 px-8 py-5 rounded-4xl border-2 flex items-center gap-4 transition-all text-left ${
         selected
           ? "border-[#ff6b35] bg-[#ff6b35]/5"
           : "border-slate-100 hover:border-[#1a2f1a]/20"
@@ -614,7 +631,7 @@ const BankPaymentButton = ({
   <button
     type="button"
     onClick={onClick}
-    className={`min-h-24 px-8 py-5 rounded-[2rem] border-2 flex items-center gap-4 transition-all text-left ${
+    className={`min-h-24 px-8 py-5 rounded-4xl border-2 flex items-center gap-4 transition-all text-left ${
       selected
         ? "border-[#ff6b35] bg-[#ff6b35]/5"
         : "border-slate-100 hover:border-[#1a2f1a]/20"
@@ -659,8 +676,8 @@ const WalletInstructionsModal = ({
   whatsappNumber,
   onClose,
 }: WalletInstructionsModalProps) => (
-  <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
-    <div className="relative bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-7 border border-white">
+  <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
+    <div className="relative bg-white w-full max-w-md rounded-4xl shadow-2xl p-7 border border-white">
       <div className="flex items-center gap-4 mb-5">
         <div className="size-12 rounded-2xl bg-[#ff6b35]/10 flex items-center justify-center">
           <span className="material-symbols-outlined text-[#ff6b35] text-3xl">
@@ -750,8 +767,8 @@ const WalletRedirectModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-7 border border-white text-center">
+    <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-md rounded-4xl shadow-2xl p-7 border border-white text-center">
         <div className="size-24 bg-[#ff6b35]/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
           <span className="material-symbols-outlined text-[48px] text-[#ff6b35] font-black">
             check_circle
@@ -768,7 +785,7 @@ const WalletRedirectModal = ({
           can confirm your order.
         </p>
 
-        <div className="bg-[#f4f5f0] rounded-[1.5rem] p-4 mb-7 text-left">
+        <div className="bg-[#f4f5f0] rounded-3xl p-4 mb-7 text-left">
           <p className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40 mb-2">
             {method} number
           </p>
