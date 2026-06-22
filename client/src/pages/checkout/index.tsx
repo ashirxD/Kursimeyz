@@ -5,7 +5,7 @@ import { useOrder, type OrderPayload } from "@/hooks/useOrder";
 import api from "@/utils/Axios";
 import { resolveImageUrl } from "@/utils/imageUrl";
 
-type PaymentMethod = "Cash" | "Card" | "Easypaisa" | "JazzCash";
+type PaymentMethod = "Cash" | "Card" | "Easypaisa" | "JazzCash" | "Bank";
 type WalletMethod = Extract<PaymentMethod, "Easypaisa" | "JazzCash">;
 
 interface PaymentSettings {
@@ -14,6 +14,9 @@ interface PaymentSettings {
   easypaisaRedirectUrl: string;
   jazzcashAccountNumber: string;
   jazzcashRedirectUrl: string;
+  bankAccountNumber: string;
+  bankName: string;
+  bankAccountTitle: string;
 }
 
 const defaultPaymentSettings: PaymentSettings = {
@@ -23,6 +26,9 @@ const defaultPaymentSettings: PaymentSettings = {
   jazzcashAccountNumber: "",
   jazzcashRedirectUrl:
     "https://www.jazzcash.com.pk/jazzcash-app-aur-bhi-behtar/",
+  bankAccountNumber: "",
+  bankName: "",
+  bankAccountTitle: "",
 };
 
 const walletConfig = {
@@ -135,11 +141,19 @@ export default function CheckoutPage() {
 
     const orderPayload = buildOrderPayload();
 
-    if (paymentMethod === "Easypaisa" || paymentMethod === "JazzCash") {
+    if (
+      paymentMethod === "Easypaisa" ||
+      paymentMethod === "JazzCash" ||
+      paymentMethod === "Bank"
+    ) {
       try {
         await createOrderAsync(orderPayload);
         setOrderCreated(true);
-        setPendingWalletRedirect(paymentMethod);
+        if (paymentMethod === "Easypaisa" || paymentMethod === "JazzCash") {
+          setPendingWalletRedirect(paymentMethod);
+        } else {
+          navigate("/order-success");
+        }
       } catch (error: any) {
         setLocalError(
           error.response?.data?.message ||
@@ -257,13 +271,13 @@ export default function CheckoutPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <PaymentButton
+                {/* <PaymentButton
                   selected={paymentMethod === "Card"}
                   icon="credit_card"
                   title="Credit / Debit Card"
                   subtitle="Instant Activation"
                   onClick={() => setPaymentMethod("Card")}
-                />
+                /> */}
                 <PaymentButton
                   selected={paymentMethod === "Cash"}
                   icon="payments"
@@ -283,56 +297,23 @@ export default function CheckoutPage() {
                   accountNumber={paymentSettings.jazzcashAccountNumber}
                   onClick={() => handleWalletSelect("JazzCash")}
                 />
+                {paymentSettings.bankAccountNumber && (
+                  <BankPaymentButton
+                    selected={paymentMethod === "Bank"}
+                    bankName={paymentSettings.bankName}
+                    bankAccountTitle={paymentSettings.bankAccountTitle}
+                    accountNumber={paymentSettings.bankAccountNumber}
+                    onClick={() => setPaymentMethod("Bank")}
+                  />
+                )}
               </div>
 
+              {/* Card details panel — commented out with the Card button above
               {paymentMethod === "Card" && (
                 <div className="mt-8 p-8 bg-[#1a2f1a] rounded-[2.5rem] text-white space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">
-                      Card Number
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        readOnly
-                        value={cardInfo.number}
-                        className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 font-black tracking-[0.2em] outline-none"
-                      />
-                      <span className="material-symbols-outlined absolute right-6 top-1/2 -translate-y-1/2 text-white/20">
-                        lock
-                      </span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">
-                        Expiry
-                      </label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={cardInfo.expiry}
-                        className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 font-black outline-none"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">
-                        CVC
-                      </label>
-                      <input
-                        type="password"
-                        readOnly
-                        value={cardInfo.cvc}
-                        className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-6 font-black outline-none"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-[11px] font-bold text-white/30 text-center italic">
-                    Payment gateway integration coming soon. This is a secure
-                    simulation.
-                  </p>
+                  ...
                 </div>
-              )}
+              )} */}
 
               {(paymentMethod === "Easypaisa" ||
                 paymentMethod === "JazzCash") && (
@@ -351,6 +332,43 @@ export default function CheckoutPage() {
                   <p className="mt-3 text-sm font-bold text-[#1a2f1a]/50 leading-relaxed">
                     Please transfer the order total to this account and send the
                     payment screenshot through the WhatsApp button.
+                  </p>
+                </div>
+              )}
+
+              {paymentMethod === "Bank" && (
+                <div className="mt-8 p-6 bg-[#f4f5f0] rounded-[2rem] border border-slate-100 space-y-4">
+                  <p className="text-[10px] font-black text-[#1a2f1a]/40 uppercase tracking-widest">
+                    Bank Transfer Details
+                  </p>
+                  <div className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-[#ff6b35] mt-0.5">
+                      account_balance
+                    </span>
+                    <div className="space-y-1">
+                      {paymentSettings.bankName && (
+                        <p className="text-[10px] font-black text-[#1a2f1a]/40 uppercase tracking-widest">
+                          {paymentSettings.bankName}
+                        </p>
+                      )}
+                      <p className="text-xl font-black text-[#1a2f1a] tracking-wide">
+                        {paymentSettings.bankAccountNumber}
+                      </p>
+                      {paymentSettings.bankAccountTitle && (
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="material-symbols-outlined text-sm text-[#1a2f1a]/40">
+                            badge
+                          </span>
+                          <p className="text-sm font-black text-[#1a2f1a]/60">
+                            {paymentSettings.bankAccountTitle}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm font-bold text-[#1a2f1a]/50 leading-relaxed">
+                    Please verify the account title before transferring, then
+                    send your payment screenshot through the WhatsApp button.
                   </p>
                 </div>
               )}
@@ -577,6 +595,56 @@ const WalletPaymentButton = ({
     </button>
   );
 };
+
+interface BankPaymentButtonProps {
+  selected: boolean;
+  bankName: string;
+  bankAccountTitle: string;
+  accountNumber: string;
+  onClick: () => void;
+}
+
+const BankPaymentButton = ({
+  selected,
+  bankName,
+  bankAccountTitle,
+  accountNumber,
+  onClick,
+}: BankPaymentButtonProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`min-h-24 px-8 py-5 rounded-[2rem] border-2 flex items-center gap-4 transition-all text-left ${
+      selected
+        ? "border-[#ff6b35] bg-[#ff6b35]/5"
+        : "border-slate-100 hover:border-[#1a2f1a]/20"
+    }`}
+  >
+    <span
+      className={`material-symbols-outlined text-3xl ${
+        selected ? "text-[#ff6b35]" : "text-[#1a2f1a]/20"
+      }`}
+    >
+      account_balance
+    </span>
+    <div>
+      <p className="font-black text-[#1a2f1a]">
+        Bank Transfer{bankName ? ` — ${bankName}` : ""}
+      </p>
+      <p className="text-[10px] font-bold text-[#1a2f1a]/40 uppercase tracking-widest">
+        Direct bank deposit
+      </p>
+      <p className="text-xs font-black text-[#1a2f1a]/60 mt-1">
+        {accountNumber}
+      </p>
+      {bankAccountTitle && (
+        <p className="text-[10px] font-bold text-[#1a2f1a]/40 mt-0.5">
+          {bankAccountTitle}
+        </p>
+      )}
+    </div>
+  </button>
+);
 
 interface WalletInstructionsModalProps {
   method: WalletMethod;

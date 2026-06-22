@@ -35,6 +35,7 @@ const seedAdmin = async () => {
             username: 'admin',
             email: adminEmail,
             password: hashedPassword,
+            emailVerified: true,
             role: 'admin',
             phone: '+923001234567' // Valid placeholder phone
         });

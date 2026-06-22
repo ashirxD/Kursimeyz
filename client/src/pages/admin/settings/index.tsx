@@ -13,6 +13,9 @@ interface PaymentSettings {
   easypaisaRedirectUrl: string;
   jazzcashAccountNumber: string;
   jazzcashRedirectUrl: string;
+  bankAccountNumber: string;
+  bankName: string;
+  bankAccountTitle: string;
 }
 
 const emptySettings: PaymentSettings = {
@@ -21,6 +24,9 @@ const emptySettings: PaymentSettings = {
   easypaisaRedirectUrl: DEFAULT_EASYPAISA_REDIRECT_URL,
   jazzcashAccountNumber: "",
   jazzcashRedirectUrl: DEFAULT_JAZZCASH_REDIRECT_URL,
+  bankAccountNumber: "",
+  bankName: "",
+  bankAccountTitle: "",
 };
 
 export default function SettingsPage() {
@@ -103,6 +109,9 @@ export default function SettingsPage() {
         ),
         jazzcashRedirectUrl:
           settings.jazzcashRedirectUrl.trim() || DEFAULT_JAZZCASH_REDIRECT_URL,
+        bankAccountNumber: settings.bankAccountNumber.trim(),
+        bankName: settings.bankName.trim(),
+        bankAccountTitle: settings.bankAccountTitle.trim(),
       };
 
       setLoading(true);
@@ -145,7 +154,7 @@ export default function SettingsPage() {
               Settings
             </h2>
             <p className="text-forest-moss-light/70 font-bold text-xs md:text-sm">
-              Manage WhatsApp contact and wallet payment details.
+              Manage WhatsApp contact, wallet, and bank transfer payment details.
             </p>
           </div>
 
@@ -162,7 +171,7 @@ export default function SettingsPage() {
                     Payment & Contact Settings
                   </h3>
                   <p className="text-forest-moss-light/60 font-bold text-xs">
-                    Configure WhatsApp, Easypaisa, and JazzCash details
+                    Configure WhatsApp, Easypaisa, JazzCash, and bank details
                   </p>
                 </div>
               </div>
@@ -233,6 +242,45 @@ export default function SettingsPage() {
                     />
                   </div>
 
+                  <div className="border-t border-forest-moss/5 pt-6">
+                    <p className="text-[10px] font-black text-forest-moss/40 uppercase tracking-widest mb-4">
+                      Bank Transfer
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <SettingsInput
+                        id="bankName"
+                        icon="account_balance"
+                        label="Bank Name"
+                        value={settings.bankName}
+                        placeholder="e.g. HBL, MCB, UBL"
+                        helper="Name of the bank shown to customers."
+                        onChange={(value) => updateField("bankName", value)}
+                      />
+                      <SettingsInput
+                        id="bankAccountTitle"
+                        icon="badge"
+                        label="Account Title"
+                        value={settings.bankAccountTitle}
+                        placeholder="e.g. Muhammad Ali"
+                        helper="Account holder name so customers can verify the recipient."
+                        onChange={(value) =>
+                          updateField("bankAccountTitle", value)
+                        }
+                      />
+                      <SettingsInput
+                        id="bankAccountNumber"
+                        icon="pin"
+                        label="Bank Account Number"
+                        value={settings.bankAccountNumber}
+                        placeholder="e.g. PK36HABB0000000013030010"
+                        helper="Account number for direct bank transfers."
+                        onChange={(value) =>
+                          updateField("bankAccountNumber", value)
+                        }
+                      />
+                    </div>
+                  </div>
+
                   {message.text && (
                     <div
                       className={`p-4 rounded-xl flex items-center gap-3 ${
@@ -290,9 +338,9 @@ export default function SettingsPage() {
 
               <div className="space-y-4">
                 {[
-                  "Customer selects Easypaisa or JazzCash at checkout.",
-                  "They see your wallet number and a reminder to send the screenshot on WhatsApp.",
-                  "After placing the order, they can open the selected wallet app/page.",
+                  "Customer selects Easypaisa, JazzCash, or Bank Transfer at checkout.",
+                  "They see the account/bank number and a reminder to send the screenshot on WhatsApp.",
+                  "After placing the order, wallet customers can open the selected app/page.",
                   "You confirm the payment from the admin Orders page after reviewing proof.",
                 ].map((item, index) => (
                   <div key={item} className="flex gap-4">
@@ -314,8 +362,8 @@ export default function SettingsPage() {
                     lightbulb
                   </span>
                   <p className="text-forest-moss-light/60 text-xs font-bold leading-relaxed">
-                    If you leave a wallet account number empty, that payment
-                    option will be disabled for customers.
+                    If you leave a wallet or bank account number empty, that
+                    payment option will be hidden from customers.
                   </p>
                 </div>
               </div>

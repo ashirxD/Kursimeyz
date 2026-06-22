@@ -18,7 +18,7 @@ export interface ShippingAddress {
 export interface OrderPayload {
   items: OrderItem[];
   shippingAddress: ShippingAddress;
-  paymentMethod: "Cash" | "Card" | "Easypaisa" | "JazzCash";
+  paymentMethod: "Cash" | "Card" | "Easypaisa" | "JazzCash" | "Bank";
   itemsPrice: number;
   shippingPrice: number;
   totalPrice: number;

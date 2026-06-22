@@ -3,6 +3,7 @@ const router = express.Router();
 const {
     register,
     login,
+    adminLogin,
     currentUser,
     logout,
     googleAuth,
@@ -21,6 +22,10 @@ router.post('/register', register);
 // @desc    Login user
 // @route   POST /auth/login
 router.post('/login', login);
+
+// @desc    Login admin user
+// @route   POST /auth/admin-login
+router.post('/admin-login', adminLogin);
 
 // @desc    Google OAuth login/signup
 // @route   POST /auth/google

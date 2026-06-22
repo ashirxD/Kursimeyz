@@ -225,6 +225,15 @@ const login = async (req, res, next) => {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
+        // Block admin accounts from using the user login page
+        if (user.role === 'admin') {
+            authLog('warn', action, 'Admin tried to login via user portal', { ...meta, userId: user._id });
+            return res.status(403).json({
+                success: false,
+                message: 'Admin accounts must sign in through the admin portal.',
+            });
+        }
+
         if (user.provider === 'local' && !user.emailVerified) {
             authLog('warn', action, 'Email not verified', { ...meta, userId: user._id });
             return res.status(403).json({
@@ -254,6 +263,74 @@ const login = async (req, res, next) => {
 
     } catch (err) {
         authLog('error', action, 'Login failed', {
+            ...getRequestMeta(req),
+            error: err.message,
+        });
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @desc    Login admin user
+// @route   POST /api/v1/auth/admin-login
+const adminLogin = async (req, res) => {
+    const action = 'admin_login';
+    try {
+        const { email, password } = req.body;
+        const meta = { ...getRequestMeta(req), email: email ? normalizeEmail(email) : undefined };
+
+        authLog('info', action, 'Admin login attempt', meta);
+
+        if (!email || !password) {
+            authLog('warn', action, 'Missing email or password', meta);
+            return res.status(400).json({ success: false, message: 'Please provide email and password' });
+        }
+
+        const normalizedEmail = normalizeEmail(email);
+        meta.email = normalizedEmail;
+
+        const user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+            authLog('warn', action, 'Invalid credentials - user not found', meta);
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        if (!user.password) {
+            authLog('warn', action, 'Google-only account login attempt', { ...meta, userId: user._id });
+            return res.status(401).json({ success: false, message: 'Please sign in with Google for this account' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            authLog('warn', action, 'Invalid credentials - wrong password', { ...meta, userId: user._id });
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        // Block non-admin accounts from using the admin login page
+        if (user.role !== 'admin') {
+            authLog('warn', action, 'Non-admin tried to login via admin portal', { ...meta, userId: user._id });
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. This portal is for admin accounts only.',
+            });
+        }
+
+        const token = signToken(user._id);
+        setTokenCookie(res, token);
+
+        authLog('info', action, 'Admin login successful', {
+            ...meta,
+            userId: user._id,
+            role: user.role,
+        });
+
+        res.json({
+            success: true,
+            token,
+            user: buildUserResponse(user),
+        });
+
+    } catch (err) {
+        authLog('error', action, 'Admin login failed', {
             ...getRequestMeta(req),
             error: err.message,
         });
@@ -768,6 +845,7 @@ module.exports = {
     googleAuth,
     register,
     login,
+    adminLogin,
     currentUser,
     logout,
     sendOTP,

@@ -32,28 +32,16 @@ export const useAdminAuth = () => {
 
   const loginMutation = useMutation({
     mutationFn: async (data: { email: string; password: string }) => {
-      const response = await api.post<AuthResponse>("/auth/login", data);
+      const response = await api.post<AuthResponse>("/auth/admin-login", data);
       return response.data;
     },
     onSuccess: (data) => {
-      console.log("Admin login success:", data);
       storeLogin(data.user, data.token);
-      
-      // Check if user is admin and redirect accordingly
-      if (data.user.role === 'admin') {
-        console.log("User is admin, redirecting to admin dashboard");
-        navigate("/admin/dashboard");
-      } else {
-        console.log("User is not admin, role:", data.user.role);
-        setError("Access denied. Admin privileges required.");
-        // Clear auth state since user is not admin
-        localStorage.removeItem("token");
-      }
+      navigate("/admin/dashboard");
     },
     onError: (error: any) => {
       const message = error.response?.data?.message || error.message;
       setError(message);
-      console.error("Admin login failed:", message);
     },
   });
 

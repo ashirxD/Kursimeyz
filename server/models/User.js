@@ -59,26 +59,6 @@ const UserSchema = new mongoose.Schema({
     default: 'user',
   },
 
-  whatsappNumber: {
-    type: String,
-    trim: true,
-  },
-  easypaisaAccountNumber: {
-    type: String,
-    trim: true,
-  },
-  easypaisaRedirectUrl: {
-    type: String,
-    trim: true,
-  },
-  jazzcashAccountNumber: {
-    type: String,
-    trim: true,
-  },
-  jazzcashRedirectUrl: {
-    type: String,
-    trim: true,
-  },
 });
 
 module.exports = mongoose.model('User', UserSchema);

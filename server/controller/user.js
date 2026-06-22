@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const PaymentSettings = require('../models/PaymentSettings');
 const bcrypt = require('bcryptjs');
 const { requirePakistaniMobile } = require('../utils/phone');
 
@@ -40,13 +41,15 @@ const validateOptionalRedirectUrl = (value, label) => {
     return url;
 };
 
-const buildPaymentSettings = (admin, isDefault = false) => ({
-    whatsappNumber: admin?.whatsappNumber || DEFAULT_WHATSAPP_NUMBER,
-    easypaisaAccountNumber: admin?.easypaisaAccountNumber || '',
-    easypaisaRedirectUrl: admin?.easypaisaRedirectUrl || DEFAULT_EASYPAISA_REDIRECT_URL,
-    jazzcashAccountNumber: admin?.jazzcashAccountNumber || '',
-    jazzcashRedirectUrl: admin?.jazzcashRedirectUrl || DEFAULT_JAZZCASH_REDIRECT_URL,
-    isDefault,
+const buildPaymentSettingsResponse = (doc) => ({
+    whatsappNumber: doc?.whatsappNumber || DEFAULT_WHATSAPP_NUMBER,
+    easypaisaAccountNumber: doc?.easypaisaAccountNumber || '',
+    easypaisaRedirectUrl: doc?.easypaisaRedirectUrl || DEFAULT_EASYPAISA_REDIRECT_URL,
+    jazzcashAccountNumber: doc?.jazzcashAccountNumber || '',
+    jazzcashRedirectUrl: doc?.jazzcashRedirectUrl || DEFAULT_JAZZCASH_REDIRECT_URL,
+    bankAccountNumber: doc?.bankAccountNumber || '',
+    bankName: doc?.bankName || '',
+    bankAccountTitle: doc?.bankAccountTitle || '',
 });
 
 const buildUserResponse = (user) => ({
@@ -60,37 +63,20 @@ const buildUserResponse = (user) => ({
     emailVerified: user.emailVerified,
 });
 
-const findAdminWithPaymentSettings = async () => {
-    return User.findOne({
-        role: 'admin',
-        $or: [
-            { whatsappNumber: { $exists: true, $nin: [null, ''] } },
-            { easypaisaAccountNumber: { $exists: true, $nin: [null, ''] } },
-            { easypaisaRedirectUrl: { $exists: true, $nin: [null, ''] } },
-            { jazzcashAccountNumber: { $exists: true, $nin: [null, ''] } },
-            { jazzcashRedirectUrl: { $exists: true, $nin: [null, ''] } },
-        ]
-    });
-};
-
 // @desc    Get WhatsApp number (public - for frontend button)
 // @route   GET /api/v1/user/whatsapp
 const getWhatsAppNumber = async (req, res) => {
     try {
-        const admin = await findAdminWithPaymentSettings();
-        const settings = buildPaymentSettings(admin, !admin || !admin.whatsappNumber);
+        const settings = await PaymentSettings.findOne();
 
         return res.json({
             success: true,
-            whatsappNumber: settings.whatsappNumber,
-            isDefault: settings.isDefault
+            whatsappNumber: settings?.whatsappNumber || DEFAULT_WHATSAPP_NUMBER,
+            isDefault: !settings?.whatsappNumber,
         });
     } catch (err) {
         console.error('Error fetching WhatsApp number:', err);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -98,18 +84,15 @@ const getWhatsAppNumber = async (req, res) => {
 // @route   GET /api/v1/user/payment-settings
 const getPaymentSettings = async (req, res) => {
     try {
-        const admin = await findAdminWithPaymentSettings();
+        const settings = await PaymentSettings.findOne();
 
         res.json({
             success: true,
-            data: buildPaymentSettings(admin, !admin)
+            data: buildPaymentSettingsResponse(settings),
         });
     } catch (err) {
         console.error('Error fetching payment settings:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Server error'
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -126,58 +109,21 @@ const updateUserPhone = async (req, res) => {
         );
 
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
 
         res.json({
             success: true,
             message: 'Phone number updated successfully',
-            user: buildUserResponse(user)
+            user: buildUserResponse(user),
         });
     } catch (err) {
         if (err.statusCode === 400 || err.name === 'ValidationError') {
-            return res.status(400).json({
-                success: false,
-                message: err.message
-            });
+            return res.status(400).json({ success: false, message: err.message });
         }
 
         console.error('Error updating user phone:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Server error'
-        });
-    }
-};
-
-// @desc    Get WhatsApp number for admin (protected)
-// @route   GET /api/v1/user/admin/whatsapp
-const getAdminWhatsAppNumber = async (req, res) => {
-    try {
-        // Check if user is admin
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Only admin users can access this endpoint'
-            });
-        }
-
-        // Return the current admin's WhatsApp number
-        const user = await User.findById(req.user.id);
-
-        res.json({
-            success: true,
-            whatsappNumber: user.whatsappNumber || ''
-        });
-    } catch (err) {
-        console.error('Error fetching admin WhatsApp number:', err);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -188,96 +134,19 @@ const getAdminPaymentSettings = async (req, res) => {
         if (req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Only admin users can access this endpoint'
+                message: 'Only admin users can access this endpoint',
             });
         }
 
-        const user = await User.findById(req.user.id);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
-        }
+        const settings = await PaymentSettings.findOne();
 
         res.json({
             success: true,
-            data: buildPaymentSettings(user, false)
+            data: buildPaymentSettingsResponse(settings),
         });
     } catch (err) {
         console.error('Error fetching admin payment settings:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Server error'
-        });
-    }
-};
-
-// @desc    Update WhatsApp number (admin only)
-// @route   PUT /api/v1/user/whatsapp
-const updateWhatsAppNumber = async (req, res) => {
-    try {
-        const { whatsappNumber } = req.body;
-
-        // Check if user is admin
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Only admin users can update WhatsApp number'
-            });
-        }
-
-        // Validate input
-        if (!whatsappNumber) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please provide a WhatsApp number'
-            });
-        }
-
-        // Remove any non-digit characters and validate
-        const cleanedNumber = whatsappNumber.toString().replace(/\D/g, '');
-
-        if (cleanedNumber.length < 10) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please provide a valid WhatsApp number with at least 10 digits'
-            });
-        }
-
-        if (cleanedNumber.length > 15) {
-            return res.status(400).json({
-                success: false,
-                message: 'WhatsApp number must not exceed 15 digits'
-            });
-        }
-
-        // Update the admin user's WhatsApp number
-        const user = await User.findByIdAndUpdate(
-            req.user.id,
-            { whatsappNumber: cleanedNumber },
-            { new: true, runValidators: true }
-        );
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'WhatsApp number updated successfully',
-            whatsappNumber: user.whatsappNumber
-        });
-    } catch (err) {
-        console.error('Error updating WhatsApp number:', err);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -285,62 +154,55 @@ const updateWhatsAppNumber = async (req, res) => {
 // @route   PUT /api/v1/user/admin/payment-settings
 const updatePaymentSettings = async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only admin users can update payment settings',
+            });
+        }
+
         const {
             whatsappNumber,
             easypaisaAccountNumber,
             easypaisaRedirectUrl,
             jazzcashAccountNumber,
             jazzcashRedirectUrl,
+            bankAccountNumber,
+            bankName,
+            bankAccountTitle,
         } = req.body;
 
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Only admin users can update payment settings'
-            });
-        }
-
-        let settings;
+        let data;
 
         try {
-            settings = {
+            data = {
                 whatsappNumber: validateOptionalNumber(whatsappNumber, 'WhatsApp number'),
                 easypaisaAccountNumber: validateOptionalNumber(easypaisaAccountNumber, 'Easypaisa account number'),
                 easypaisaRedirectUrl: validateOptionalRedirectUrl(easypaisaRedirectUrl, 'Easypaisa redirect URL') || DEFAULT_EASYPAISA_REDIRECT_URL,
                 jazzcashAccountNumber: validateOptionalNumber(jazzcashAccountNumber, 'JazzCash account number'),
                 jazzcashRedirectUrl: validateOptionalRedirectUrl(jazzcashRedirectUrl, 'JazzCash redirect URL') || DEFAULT_JAZZCASH_REDIRECT_URL,
+                bankAccountNumber: (bankAccountNumber || '').toString().trim(),
+                bankName: (bankName || '').toString().trim(),
+                bankAccountTitle: (bankAccountTitle || '').toString().trim(),
             };
         } catch (validationError) {
-            return res.status(400).json({
-                success: false,
-                message: validationError.message
-            });
+            return res.status(400).json({ success: false, message: validationError.message });
         }
 
-        const user = await User.findByIdAndUpdate(
-            req.user.id,
-            settings,
-            { new: true, runValidators: true }
+        const settings = await PaymentSettings.findOneAndUpdate(
+            {},
+            data,
+            { upsert: true, new: true, runValidators: true }
         );
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
-        }
 
         res.json({
             success: true,
             message: 'Payment settings updated successfully',
-            data: buildPaymentSettings(user, false)
+            data: buildPaymentSettingsResponse(settings),
         });
     } catch (err) {
         console.error('Error updating payment settings:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Server error'
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -352,16 +214,10 @@ const getAllCustomers = async (req, res) => {
             .select('_id username email phone image createdAt role')
             .sort({ createdAt: -1 });
 
-        res.json({
-            success: true,
-            data: customers
-        });
+        res.json({ success: true, data: customers });
     } catch (err) {
         console.error('Error fetching customers:', err);
-        res.status(500).json({ 
-            success: false,
-            message: 'Server error' 
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -369,50 +225,55 @@ const getAllCustomers = async (req, res) => {
 // @route   PUT /api/v1/user/admin/profile
 const updateAdminProfile = async (req, res) => {
     try {
-        const { currentPassword, newEmail, newPassword } = req.body;
-
-        // Check if user is admin
         if (req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Only admin users can update admin profile'
+                message: 'Only admin users can update admin profile',
             });
         }
 
-        // Validate input
+        const { currentPassword, newEmail, newPassword } = req.body;
+
         if (!currentPassword) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide your current password to make changes'
+                message: 'Please provide your current password to make changes',
             });
         }
 
         const user = await User.findById(req.user.id);
+
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // Verify current password
         const isMatch = await bcrypt.compare(currentPassword, user.password);
+
         if (!isMatch) {
             return res.status(401).json({ success: false, message: 'Incorrect current password' });
         }
 
-        // Update email if provided
         if (newEmail && newEmail !== user.email) {
-            // Check if email is already taken
             const emailExists = await User.findOne({ email: newEmail });
+
             if (emailExists) {
-                return res.status(400).json({ success: false, message: 'Email is already in use by another account' });
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email is already in use by another account',
+                });
             }
+
             user.email = newEmail;
         }
 
-        // Update password if provided
         if (newPassword) {
             if (newPassword.length < 6) {
-                return res.status(400).json({ success: false, message: 'New password must be at least 6 characters' });
+                return res.status(400).json({
+                    success: false,
+                    message: 'New password must be at least 6 characters',
+                });
             }
+
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(newPassword, salt);
         }
@@ -426,15 +287,28 @@ const updateAdminProfile = async (req, res) => {
                 id: user._id,
                 email: user.email,
                 username: user.username,
-                role: user.role
-            }
+                role: user.role,
+            },
         });
     } catch (err) {
         console.error('Error updating admin profile:', err);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// Kept for backwards-compatibility — the route still exists but now reads from PaymentSettings
+const getWhatsAppNumberAdmin = async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Only admin users can access this endpoint' });
+        }
+
+        const settings = await PaymentSettings.findOne();
+
+        res.json({ success: true, whatsappNumber: settings?.whatsappNumber || '' });
+    } catch (err) {
+        console.error('Error fetching admin WhatsApp number:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -442,10 +316,10 @@ module.exports = {
     getWhatsAppNumber,
     getPaymentSettings,
     updateUserPhone,
-    getAdminWhatsAppNumber,
+    getAdminWhatsAppNumber: getWhatsAppNumberAdmin,
     getAdminPaymentSettings,
-    updateWhatsAppNumber,
+    updateWhatsAppNumber: updatePaymentSettings, // legacy route alias
     updatePaymentSettings,
     getAllCustomers,
-    updateAdminProfile
-}
+    updateAdminProfile,
+};
