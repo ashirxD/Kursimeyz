@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
+const Product = require('../models/Product');
 const User = require('../models/User');
+const { getEffectivePrice } = require('../utils/productPricing');
 const PaymentConfirmation = require('../models/PaymentConfirmation');
 const emailService = require('../services/emailService');
 
@@ -74,9 +76,7 @@ const createOrder = async (req, res) => {
         items,
         shippingAddress,
         paymentMethod,
-        itemsPrice,
         shippingPrice,
-        totalPrice,
     } = req.body;
 
     try {
@@ -87,17 +87,45 @@ const createOrder = async (req, res) => {
             });
         }
 
+        // Never trust client-side prices: re-read each product and charge the
+        // discounted price whenever one is active.
+        const products = await Product.find({
+            _id: { $in: items.map((item) => item.product) },
+        });
+        const productsById = new Map(products.map((product) => [product._id.toString(), product]));
+
+        const missingProduct = items.find((item) => !productsById.has(String(item.product)));
+        if (missingProduct) {
+            return res.status(400).json({
+                success: false,
+                message: 'One or more products in your order are no longer available',
+            });
+        }
+
+        const pricedItems = items.map((item) => ({
+            product: item.product,
+            quantity: Math.max(1, Number(item.quantity) || 1),
+            price: getEffectivePrice(productsById.get(String(item.product))),
+        }));
+
+        const itemsPrice = pricedItems.reduce((total, item) => total + item.price * item.quantity, 0);
+        const parsedShippingPrice = Number(shippingPrice);
+        const resolvedShippingPrice = Number.isFinite(parsedShippingPrice) && parsedShippingPrice >= 0
+            ? parsedShippingPrice
+            : 0;
+        const totalPrice = itemsPrice + resolvedShippingPrice;
+
         // Simulating "Paid" status if payment method is "Card"
         const isPaid = paymentMethod === 'Card';
         const paidAt = isPaid ? Date.now() : null;
 
         const order = new Order({
             user: req.user.id || req.user._id,
-            items,
+            items: pricedItems,
             shippingAddress,
             paymentMethod,
             itemsPrice,
-            shippingPrice,
+            shippingPrice: resolvedShippingPrice,
             totalPrice,
             isPaid,
             paidAt,

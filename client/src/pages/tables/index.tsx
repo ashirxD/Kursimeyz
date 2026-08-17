@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProducts } from "@/hooks/useProducts";
+import { getEffectivePrice } from "@/utils/productPricing";
 import TableProductCard from "./cards";
 
 const ITEMS_PER_PAGE = 6;
@@ -24,7 +25,10 @@ export default function TablesPage() {
   }, []);
 
   useEffect(() => {
-    const highestPrice = Math.max(DEFAULT_MAX_PRICE, ...tables.map((table) => table.price));
+    const highestPrice = Math.max(
+      DEFAULT_MAX_PRICE,
+      ...tables.map((table) => getEffectivePrice(table)),
+    );
     setPriceCeiling((currentCeiling) => Math.max(currentCeiling, highestPrice));
   }, [tables]);
 
@@ -35,12 +39,6 @@ export default function TablesPage() {
   const sliderValue = selectedMaxPrice ?? priceCeiling;
   const visibleTables = tables.slice(0, visibleCount);
   const hasMore = visibleCount < tables.length;
-
-  const getBadge = (index: number): "NEW" | "SALE" | undefined => {
-    if (index === 0) return "NEW";
-    if (index === 3) return "SALE";
-    return undefined;
-  };
 
   return (
     <div className="pt-20 pb-16">
@@ -139,12 +137,8 @@ export default function TablesPage() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {visibleTables.map((table, index) => (
-                  <TableProductCard
-                    key={table.id}
-                    table={table}
-                    badge={getBadge(index)}
-                  />
+                {visibleTables.map((table) => (
+                  <TableProductCard key={table.id} table={table} />
                 ))}
               </div>
 

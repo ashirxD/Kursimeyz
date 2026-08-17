@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import type { Chair as Product } from '../chairs/cards';
 import { resolveImageUrl } from '@/utils/imageUrl';
+import {
+    formatDimensions,
+    getCoverImage,
+    getDiscountPercent,
+    getEffectivePrice,
+    getProductImages,
+    hasDiscount,
+} from '@/utils/productPricing';
 import EditTableModal from './edit';
 
 interface TableCardProps {
@@ -10,6 +18,9 @@ interface TableCardProps {
 
 export default function TableCard({ table, onDelete }: TableCardProps) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const imageCount = getProductImages(table).length;
+    const discounted = hasDiscount(table);
+    const dimensions = formatDimensions(table.dimensions);
 
     return (
         <>
@@ -17,13 +28,31 @@ export default function TableCard({ table, onDelete }: TableCardProps) {
             {/* Image Section - Wider Aspect for Tables */}
             <div className="aspect-[4/3] shrink-0 md:aspect-auto md:w-1/2 md:h-full relative overflow-hidden bg-oatmeal">
                 <img
-                    src={resolveImageUrl(table.image)}
+                    src={resolveImageUrl(getCoverImage(table))}
                     alt={table.name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-soft">
-                    <span className="text-forest-moss font-black text-sm">Rs {table.price}</span>
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-soft flex items-baseline gap-2">
+                    <span className={`font-black text-sm ${discounted ? 'text-clay' : 'text-forest-moss'}`}>
+                        Rs {getEffectivePrice(table)}
+                    </span>
+                    {discounted && (
+                        <span className="text-[11px] font-bold text-forest-moss/40 line-through">
+                            Rs {table.price}
+                        </span>
+                    )}
                 </div>
+                {discounted && (
+                    <div className="absolute top-4 right-4 bg-clay text-white px-3 py-1.5 rounded-full shadow-soft text-[10px] font-black uppercase tracking-widest">
+                        {getDiscountPercent(table)}% off
+                    </div>
+                )}
+                {imageCount > 1 && (
+                    <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-soft flex items-center gap-1 text-forest-moss">
+                        <span className="material-symbols-outlined !text-sm">photo_library</span>
+                        <span className="text-[11px] font-black">{imageCount}</span>
+                    </div>
+                )}
             </div>
 
             {/* Content Section */}
@@ -41,6 +70,12 @@ export default function TableCard({ table, onDelete }: TableCardProps) {
                         <span className="bg-clay/5 text-clay text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-clay/5">
                             Solid Wood
                         </span>
+                        {dimensions && (
+                            <span className="bg-forest-moss/5 text-forest-moss/60 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-forest-moss/5 flex items-center gap-1">
+                                <span className="material-symbols-outlined !text-xs">straighten</span>
+                                {dimensions}
+                            </span>
+                        )}
                     </div>
 
                     <p className="text-forest-moss-light/70 text-sm font-medium leading-relaxed italic">

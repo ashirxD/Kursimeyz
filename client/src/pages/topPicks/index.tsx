@@ -4,6 +4,12 @@ import { useCart } from "@/hooks/useCart";
 import { Link } from "react-router-dom";
 import ProductRating from "@/components/ProductRating";
 import { resolveImageUrl } from "@/utils/imageUrl";
+import {
+  getCoverImage,
+  getDiscountPercent,
+  getEffectivePrice,
+  hasDiscount,
+} from "@/utils/productPricing";
 
 interface TopPicksProps {
   limit?: number;
@@ -86,13 +92,18 @@ export default function TopPicks({
               {/* Image Container - Fixed height with object-cover */}
               <Link
                 to={`/product/${product._id}`}
-                className="block w-full aspect-square overflow-hidden rounded-lg bg-gray-100 mb-3"
+                className="relative block w-full aspect-square overflow-hidden rounded-lg bg-gray-100 mb-3"
               >
                 <img
-                  src={resolveImageUrl(product.image)}
+                  src={resolveImageUrl(getCoverImage(product))}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
+                {hasDiscount(product) && (
+                  <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-[#ff6b35] text-white text-[9px] font-black uppercase tracking-wider">
+                    {getDiscountPercent(product)}% off
+                  </span>
+                )}
               </Link>
 
               {/* Content - Fixed structure */}
@@ -107,10 +118,17 @@ export default function TopPicks({
                       {product.name}
                     </h3>
                     <span
-                      className={`font-black text-[#d27d53] whitespace-nowrap
+                      className={`flex flex-col items-end whitespace-nowrap
                       ${isDashboard ? "text-[15px]" : "text-[14px]"}`}
                     >
-                      {product.price} Rs
+                      <span className="font-black text-[#d27d53]">
+                        {getEffectivePrice(product)} Rs
+                      </span>
+                      {hasDiscount(product) && (
+                        <span className="text-[11px] font-bold text-[#1a2f1a]/40 line-through leading-none">
+                          {product.price} Rs
+                        </span>
+                      )}
                     </span>
                   </div>
                   <div className="mt-1.5">

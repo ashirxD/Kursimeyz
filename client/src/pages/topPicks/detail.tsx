@@ -4,7 +4,15 @@ import { useCart } from "@/hooks/useCart";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ProductRating from "@/components/ProductRating";
-import { resolveImageUrl } from "@/utils/imageUrl";
+import ProductImageGallery from "@/components/ProductImageGallery";
+import {
+  DIMENSION_LABELS,
+  getDiscountPercent,
+  getEffectivePrice,
+  getProductImages,
+  hasDimensions,
+  hasDiscount,
+} from "@/utils/productPricing";
 
 function getCategoryShopLink(category: string) {
   switch (category) {
@@ -73,6 +81,8 @@ export default function ProductDetail() {
   }
 
   const shopLink = getCategoryShopLink(product.category);
+  const productImages = getProductImages(product);
+  const discounted = hasDiscount(product);
 
   return (
     <div className="pt-24 pb-16 px-6 md:px-10 max-w-[1440px] mx-auto">
@@ -100,18 +110,16 @@ export default function ProductDetail() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-        {/* Left: Product Image */}
-        <div className="relative group">
-          <div className="bg-[#f4f5f0] rounded-[3rem] aspect-[4/5] p-12 lg:p-20 overflow-hidden flex items-center justify-center transition-all duration-700 hover:shadow-2xl hover:shadow-black/5">
-            <img
-              src={resolveImageUrl(product.image)}
-              alt={product.name}
-              className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out"
-            />
-          </div>
+        {/* Left: Product Gallery */}
+        <div className="relative">
+          <ProductImageGallery
+            key={product._id}
+            images={productImages}
+            alt={product.name}
+          />
 
           {/* Floating Category Badge */}
-          <div className="absolute top-8 left-8 bg-white/80 backdrop-blur-md px-6 py-2 rounded-full shadow-lg shadow-black/5 flex items-center gap-2">
+          <div className="absolute top-8 left-8 z-10 bg-white/80 backdrop-blur-md px-6 py-2 rounded-full shadow-lg shadow-black/5 flex items-center gap-2">
             <span className="material-symbols-outlined text-[16px] text-[#ff6b35]">
               verified
             </span>
@@ -131,6 +139,11 @@ export default function ProductDetail() {
               <span className="bg-[#ff6b35]/10 text-[#ff6b35] px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
                 In Stock
               </span>
+              {discounted && (
+                <span className="bg-[#ff6b35] text-white px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
+                  {getDiscountPercent(product)}% Off
+                </span>
+              )}
               {product.ratingCount && product.ratingCount > 0 ? (
                 <ProductRating
                   averageRating={product.averageRating}
@@ -173,11 +186,55 @@ export default function ProductDetail() {
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
                   Investment
                 </h3>
-                <p className="text-3xl font-black text-[#1a2f1a]">
-                  Rs. {product.price}
-                </p>
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <p
+                    className={`text-3xl font-black ${
+                      discounted ? "text-[#ff6b35]" : "text-[#1a2f1a]"
+                    }`}
+                  >
+                    Rs. {getEffectivePrice(product)}
+                  </p>
+                  {discounted && (
+                    <p className="text-lg font-bold text-[#1a2f1a]/40 line-through">
+                      Rs. {product.price}
+                    </p>
+                  )}
+                </div>
+                {discounted && (
+                  <p className="text-[12px] font-bold text-[#ff6b35]">
+                    You save Rs. {product.price - getEffectivePrice(product)}
+                  </p>
+                )}
               </div>
             </div>
+
+            {hasDimensions(product.dimensions) && (
+              <div className="space-y-4">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
+                  Dimensions
+                </h3>
+                <dl className="flex flex-wrap gap-3">
+                  {DIMENSION_LABELS.filter(
+                    ({ key }) => Number(product.dimensions?.[key]) > 0,
+                  ).map(({ key, label }) => (
+                    <div
+                      key={key}
+                      className="bg-[#f4f5f0] rounded-2xl px-6 py-4 min-w-[110px]"
+                    >
+                      <dt className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40 mb-1">
+                        {label}
+                      </dt>
+                      <dd className="text-xl font-black text-[#1a2f1a]">
+                        {product.dimensions?.[key]}
+                        <span className="text-[12px] font-bold text-[#1a2f1a]/40 ml-1">
+                          {product.dimensions?.unit ?? "cm"}
+                        </span>
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
           </div>
 
           <div className="mt-auto space-y-6">

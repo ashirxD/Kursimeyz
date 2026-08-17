@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProducts } from "@/hooks/useProducts";
+import { getEffectivePrice } from "@/utils/productPricing";
 import SofaProductCard from "./cards";
 
 const ITEMS_PER_PAGE = 6;
@@ -24,7 +25,10 @@ export default function SofasPage() {
   }, []);
 
   useEffect(() => {
-    const highestPrice = Math.max(DEFAULT_MAX_PRICE, ...sofas.map((sofa) => sofa.price));
+    const highestPrice = Math.max(
+      DEFAULT_MAX_PRICE,
+      ...sofas.map((sofa) => getEffectivePrice(sofa)),
+    );
     setPriceCeiling((currentCeiling) => Math.max(currentCeiling, highestPrice));
   }, [sofas]);
 
@@ -35,12 +39,6 @@ export default function SofasPage() {
   const sliderValue = selectedMaxPrice ?? priceCeiling;
   const visibleSofas = sofas.slice(0, visibleCount);
   const hasMore = visibleCount < sofas.length;
-
-  const getBadge = (index: number): "NEW" | "SALE" | undefined => {
-    if (index === 1) return "NEW";
-    if (index === 2) return "SALE";
-    return undefined;
-  };
 
   return (
     <div className="pt-20 pb-16">
@@ -139,12 +137,8 @@ export default function SofasPage() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {visibleSofas.map((sofa, index) => (
-                  <SofaProductCard
-                    key={sofa.id}
-                    sofa={sofa}
-                    badge={getBadge(index)}
-                  />
+                {visibleSofas.map((sofa) => (
+                  <SofaProductCard key={sofa.id} sofa={sofa} />
                 ))}
               </div>
 

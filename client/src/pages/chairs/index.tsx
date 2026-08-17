@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProducts } from "@/hooks/useProducts";
+import { getEffectivePrice } from "@/utils/productPricing";
 import ChairProductCard from "./cards";
 
 const ITEMS_PER_PAGE = 6;
@@ -24,7 +25,10 @@ export default function ChairsPage() {
   }, []);
 
   useEffect(() => {
-    const highestPrice = Math.max(DEFAULT_MAX_PRICE, ...chairs.map((chair) => chair.price));
+    const highestPrice = Math.max(
+      DEFAULT_MAX_PRICE,
+      ...chairs.map((chair) => getEffectivePrice(chair)),
+    );
     setPriceCeiling((currentCeiling) => Math.max(currentCeiling, highestPrice));
   }, [chairs]);
 
@@ -35,13 +39,6 @@ export default function ChairsPage() {
   const sliderValue = selectedMaxPrice ?? priceCeiling;
   const visibleChairs = chairs.slice(0, visibleCount);
   const hasMore = visibleCount < chairs.length;
-
-  // Assign badges to first few products for visual variety
-  const getBadge = (index: number): "NEW" | "SALE" | undefined => {
-    if (index === 1) return "NEW";
-    if (index === 4) return "SALE";
-    return undefined;
-  };
 
   return (
     <div className="pt-20 pb-16">
@@ -151,12 +148,8 @@ export default function ChairsPage() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {visibleChairs.map((chair, index) => (
-                  <ChairProductCard
-                    key={chair.id}
-                    chair={chair}
-                    badge={getBadge(index)}
-                  />
+                {visibleChairs.map((chair) => (
+                  <ChairProductCard key={chair.id} chair={chair} />
                 ))}
               </div>
 

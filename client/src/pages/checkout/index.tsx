@@ -5,12 +5,19 @@ import { useCart } from "@/hooks/useCart";
 import { useOrder, type OrderPayload } from "@/hooks/useOrder";
 import api from "@/utils/Axios";
 import { resolveImageUrl } from "@/utils/imageUrl";
+import {
+  getCoverImage,
+  getEffectivePrice,
+  hasDiscount,
+} from "@/utils/productPricing";
 
 interface CartProduct {
   _id: string;
   name: string;
   price: number;
+  discountPrice?: number | null;
   image?: string;
+  images?: string[];
 }
 
 interface CartLineItem {
@@ -116,9 +123,15 @@ export default function CheckoutPage() {
 
   const subtotal =
     cartItems.reduce(
+      (acc, item) => acc + getEffectivePrice(item.product) * item.quantity,
+      0,
+    ) || 0;
+  const listTotal =
+    cartItems.reduce(
       (acc, item) => acc + (item.product?.price || 0) * item.quantity,
       0,
     ) || 0;
+  const savings = listTotal - subtotal;
   const shipping = subtotal > 0 ? 50 : 0;
   const total = subtotal + shipping;
 
@@ -145,7 +158,7 @@ export default function CheckoutPage() {
     items: cartItems.map((item) => ({
       product: item.product._id,
       quantity: item.quantity,
-      price: item.product.price,
+      price: getEffectivePrice(item.product),
     })),
     shippingAddress: address,
     paymentMethod,
@@ -417,7 +430,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-4">
                       <div className="size-16 bg-white rounded-2xl flex items-center justify-center p-2">
                         <img
-                          src={resolveImageUrl(item.product?.image)}
+                          src={resolveImageUrl(getCoverImage(item.product))}
                           className="w-full h-full object-contain"
                           alt={item.product?.name}
                         />
@@ -431,9 +444,22 @@ export default function CheckoutPage() {
                         </p>
                       </div>
                     </div>
-                    <p className="font-black text-[#1a2f1a] text-sm">
-                      Rs. {item.product?.price * item.quantity}
-                    </p>
+                    <div className="text-right shrink-0">
+                      <p
+                        className={`font-black text-sm ${
+                          hasDiscount(item.product)
+                            ? "text-[#ff6b35]"
+                            : "text-[#1a2f1a]"
+                        }`}
+                      >
+                        Rs. {getEffectivePrice(item.product) * item.quantity}
+                      </p>
+                      {hasDiscount(item.product) && (
+                        <p className="text-[11px] font-bold text-[#1a2f1a]/40 line-through">
+                          Rs. {item.product.price * item.quantity}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -443,6 +469,12 @@ export default function CheckoutPage() {
                   <span>Subtotal</span>
                   <span>Rs. {subtotal}</span>
                 </div>
+                {savings > 0 && (
+                  <div className="flex justify-between text-[#ff6b35] font-bold">
+                    <span>Discount savings</span>
+                    <span>- Rs. {savings}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-[#1a2f1a]/60 font-medium">
                   <span>Shipping</span>
                   <span>Rs. {shipping}</span>

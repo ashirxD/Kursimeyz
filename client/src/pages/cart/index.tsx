@@ -1,17 +1,33 @@
 import { useCart } from "@/hooks/useCart";
 import { Link } from "react-router-dom";
 import { resolveImageUrl } from "@/utils/imageUrl";
+import {
+  getCoverImage,
+  getEffectivePrice,
+  hasDiscount,
+  type PricedProduct,
+} from "@/utils/productPricing";
+
+interface CartLineItem {
+  product?: PricedProduct & { _id: string; name?: string; color?: string };
+  quantity: number;
+}
 
 export default function CartPage() {
   const { cart, isLoading, updateQuantity, removeFromCart, itemsCount } =
     useCart();
 
-  const subtotal =
-    cart?.items?.reduce(
-      (acc: number, item: any) =>
-        acc + (item.product?.price || 0) * item.quantity,
-      0,
-    ) || 0;
+  const items = (cart?.items ?? []) as CartLineItem[];
+
+  const subtotal = items.reduce(
+    (acc, item) => acc + getEffectivePrice(item.product) * item.quantity,
+    0,
+  );
+  const listTotal = items.reduce(
+    (acc, item) => acc + (item.product?.price || 0) * item.quantity,
+    0,
+  );
+  const savings = listTotal - subtotal;
   const shipping = subtotal > 0 ? 50 : 0;
   const total = subtotal + shipping;
 
@@ -50,19 +66,21 @@ export default function CartPage() {
         <div className="flex flex-col lg:flex-row gap-16">
           {/* Items List */}
           <div className="flex-1 space-y-8">
-            {cart.items.map((item: any) => {
-              const unitPrice = item.product?.price || 0;
+            {items.map((item) => {
+              const product = item.product;
+              // A line whose product no longer exists has no usable controls.
+              if (!product) return null;
+
+              const unitPrice = getEffectivePrice(product);
               const itemTotal = unitPrice * item.quantity;
+              const discounted = hasDiscount(product);
 
               return (
-                <div
-                  key={item.product?._id || Math.random()}
-                  className="flex gap-6 group"
-                >
+                <div key={product._id} className="flex gap-6 group">
                   <div className="size-32 bg-[#f4f5f0] rounded-3xl overflow-hidden flex items-center justify-center p-4">
                     <img
-                      src={resolveImageUrl(item.product?.image)}
-                      alt={item.product?.name || "Product"}
+                      src={resolveImageUrl(getCoverImage(product))}
+                      alt={product.name || "Product"}
                       className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
                     />
                   </div>
@@ -71,16 +89,25 @@ export default function CartPage() {
                     <div className="flex justify-between items-start gap-4">
                       <div>
                         <h3 className="text-lg font-bold text-[#1a2f1a]">
-                          {item.product?.name || "Unknown Product"}
+                          {product.name || "Unknown Product"}
                         </h3>
                         <p className="text-sm text-[#1a2f1a]/40 font-medium">
-                          {item.product?.color}
+                          {product.color}
                         </p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-lg font-black text-[#1a2f1a]">
+                        <p
+                          className={`text-lg font-black ${
+                            discounted ? "text-[#ff6b35]" : "text-[#1a2f1a]"
+                          }`}
+                        >
                           Rs. {itemTotal}
                         </p>
+                        {discounted && (
+                          <p className="text-[12px] font-bold text-[#1a2f1a]/40 line-through">
+                            Rs. {(product.price || 0) * item.quantity}
+                          </p>
+                        )}
                         {item.quantity > 1 && (
                           <p className="text-[11px] font-bold text-[#1a2f1a]/40">
                             Rs. {unitPrice} each
@@ -94,7 +121,7 @@ export default function CartPage() {
                       <button
                         onClick={() =>
                           updateQuantity({
-                            productId: item.product._id,
+                            productId: product._id,
                             quantity: Math.max(1, item.quantity - 1),
                           })
                         }
@@ -108,7 +135,7 @@ export default function CartPage() {
                       <button
                         onClick={() =>
                           updateQuantity({
-                            productId: item.product._id,
+                            productId: product._id,
                             quantity: item.quantity + 1,
                           })
                         }
@@ -119,7 +146,7 @@ export default function CartPage() {
                     </div>
 
                     <button
-                      onClick={() => removeFromCart(item.product._id)}
+                      onClick={() => removeFromCart(product._id)}
                       className="text-[12px] font-black text-red-500/60 hover:text-red-500 uppercase tracking-widest transition-colors flex items-center gap-1.5"
                     >
                       <span className="material-symbols-outlined text-[16px]">
@@ -144,6 +171,12 @@ export default function CartPage() {
                   <span>Subtotal</span>
                   <span>Rs. {subtotal}</span>
                 </div>
+                {savings > 0 && (
+                  <div className="flex justify-between text-[#ff6b35] font-bold">
+                    <span>Discount savings</span>
+                    <span>- Rs. {savings}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-[#white]/60 font-medium">
                   <span>Shipping</span>
                   <span>Rs. {shipping}</span>

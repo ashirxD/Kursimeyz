@@ -3,17 +3,32 @@ import { Link } from "react-router-dom";
 import type { Chair as Sofa } from "@/pages/admin/chairs/cards";
 import { useCart } from "@/hooks/useCart";
 import ProductRating from "@/components/ProductRating";
+import ProductPrice from "@/components/ProductPrice";
 import { resolveImageUrl } from "@/utils/imageUrl";
+import {
+  formatDimensions,
+  getDiscountPercent,
+  getProductImages,
+  hasDiscount,
+} from "@/utils/productPricing";
 
 interface SofaProductCardProps {
   sofa: Sofa;
   badge?: "NEW" | "SALE";
 }
 
-export default function SofaProductCard({ sofa, badge }: SofaProductCardProps) {
+export default function SofaProductCard({
+  sofa,
+  badge,
+}: SofaProductCardProps) {
   const { addToCart, isAdding } = useCart();
   const [added, setAdded] = useState(false);
   const productUrl = `/product/${sofa.id}`;
+  const images = getProductImages(sofa);
+  const discounted = hasDiscount(sofa);
+  const dimensions = formatDimensions(sofa.dimensions);
+  // A live discount always wins over the decorative badge passed by the shop page.
+  const resolvedBadge = discounted ? `${getDiscountPercent(sofa)}% OFF` : badge;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,15 +51,18 @@ export default function SofaProductCard({ sofa, badge }: SofaProductCardProps) {
   return (
     <div className="group flex flex-col">
       <div className="relative bg-[#f4f5f0] rounded-2xl overflow-hidden aspect-square flex items-center justify-center transition-all duration-500 group-hover:shadow-lg group-hover:shadow-black/5">
-        {badge && (
-          <div
-            className={`absolute top-4 left-4 z-20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-              badge === "NEW"
-                ? "bg-[#ff6b35] text-white"
-                : "bg-[#ff6b35] text-white"
-            }`}
-          >
-            {badge}
+        {resolvedBadge && (
+          <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#ff6b35] text-white">
+            {resolvedBadge}
+          </div>
+        )}
+
+        {images.length > 1 && (
+          <div className="absolute top-4 right-4 z-20 px-2.5 py-1 rounded-full bg-white/80 backdrop-blur-md text-[#1a2f1a] flex items-center gap-1">
+            <span className="material-symbols-outlined text-[13px]">
+              photo_library
+            </span>
+            <span className="text-[10px] font-black">{images.length}</span>
           </div>
         )}
 
@@ -64,13 +82,23 @@ export default function SofaProductCard({ sofa, badge }: SofaProductCardProps) {
 
         <Link
           to={productUrl}
-          className="flex items-center justify-center w-full h-full p-6"
+          className="relative flex items-center justify-center w-full h-full p-6"
         >
           <img
-            src={resolveImageUrl(sofa.image)}
+            src={resolveImageUrl(images[0])}
             alt={sofa.name}
-            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110"
+            className={`w-full h-full object-contain transition-all duration-700 group-hover:scale-110 ${
+              images.length > 1 ? "group-hover:opacity-0" : ""
+            }`}
           />
+          {/* Second shot previews on hover, the way most storefronts do it. */}
+          {images.length > 1 && (
+            <img
+              src={resolveImageUrl(images[1])}
+              alt={`${sofa.name} alternate view`}
+              className="absolute inset-0 w-full h-full object-contain p-6 opacity-0 transition-all duration-700 group-hover:opacity-100 group-hover:scale-110"
+            />
+          )}
         </Link>
       </div>
 
@@ -82,6 +110,11 @@ export default function SofaProductCard({ sofa, badge }: SofaProductCardProps) {
           <p className="text-[12px] text-[#1a2f1a]/40 font-medium mt-0.5 truncate">
             {sofa.description}
           </p>
+          {dimensions && (
+            <p className="text-[11px] text-[#1a2f1a]/30 font-bold mt-0.5 truncate">
+              {dimensions}
+            </p>
+          )}
           <div className="mt-1">
             <ProductRating
               averageRating={sofa.averageRating}
@@ -89,9 +122,13 @@ export default function SofaProductCard({ sofa, badge }: SofaProductCardProps) {
             />
           </div>
         </div>
-        <span className="text-[15px] font-bold text-[#1a2f1a] whitespace-nowrap">
-          Rs. {sofa.price}
-        </span>
+        <ProductPrice
+          product={sofa}
+          size="md"
+          layout="stacked"
+          showPercent={false}
+          className="shrink-0"
+        />
       </Link>
 
       {/* Add to Cart — mobile */}
