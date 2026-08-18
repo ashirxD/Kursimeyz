@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import type { Chair as Sofa } from "@/pages/admin/chairs/cards";
 import { useCart } from "@/hooks/useCart";
 import ProductRating from "@/components/ProductRating";
 import ProductPrice from "@/components/ProductPrice";
+import type { Product } from "@/types/product";
 import { resolveImageUrl } from "@/utils/imageUrl";
 import {
   formatDimensions,
@@ -12,29 +12,31 @@ import {
   hasDiscount,
 } from "@/utils/productPricing";
 
-interface SofaProductCardProps {
-  sofa: Sofa;
+interface ShopProductCardProps {
+  product: Product;
   badge?: "NEW" | "SALE";
 }
 
-export default function SofaProductCard({
-  sofa,
-  badge,
-}: SofaProductCardProps) {
+/**
+ * The shopper-facing product card, shared by every kind of product. The chairs,
+ * tables and sofas pages each had a byte-identical copy of this before types
+ * became data.
+ */
+export default function ShopProductCard({ product, badge }: ShopProductCardProps) {
   const { addToCart, isAdding } = useCart();
   const [added, setAdded] = useState(false);
-  const productUrl = `/product/${sofa.id}`;
-  const images = getProductImages(sofa);
-  const discounted = hasDiscount(sofa);
-  const dimensions = formatDimensions(sofa.dimensions);
+  const productUrl = `/product/${product.id}`;
+  const images = getProductImages(product);
+  const discounted = hasDiscount(product);
+  const dimensions = formatDimensions(product.dimensions);
   // A live discount always wins over the decorative badge passed by the shop page.
-  const resolvedBadge = discounted ? `${getDiscountPercent(sofa)}% OFF` : badge;
+  const resolvedBadge = discounted ? `${getDiscountPercent(product)}% OFF` : badge;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addToCart(
-      { productId: sofa.id },
+      { productId: product.id },
       {
         onSuccess: () => {
           setAdded(true);
@@ -86,7 +88,7 @@ export default function SofaProductCard({
         >
           <img
             src={resolveImageUrl(images[0])}
-            alt={sofa.name}
+            alt={product.name}
             className={`w-full h-full object-contain transition-all duration-700 group-hover:scale-110 ${
               images.length > 1 ? "group-hover:opacity-0" : ""
             }`}
@@ -95,7 +97,7 @@ export default function SofaProductCard({
           {images.length > 1 && (
             <img
               src={resolveImageUrl(images[1])}
-              alt={`${sofa.name} alternate view`}
+              alt={`${product.name} alternate view`}
               className="absolute inset-0 w-full h-full object-contain p-6 opacity-0 transition-all duration-700 group-hover:opacity-100 group-hover:scale-110"
             />
           )}
@@ -105,10 +107,10 @@ export default function SofaProductCard({
       <Link to={productUrl} className="mt-4 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-[15px] font-bold text-[#1a2f1a] truncate group-hover:text-[#ff6b35] transition-colors">
-            {sofa.name}
+            {product.name}
           </h3>
           <p className="text-[12px] text-[#1a2f1a]/40 font-medium mt-0.5 truncate">
-            {sofa.description}
+            {product.description}
           </p>
           {dimensions && (
             <p className="text-[11px] text-[#1a2f1a]/30 font-bold mt-0.5 truncate">
@@ -117,13 +119,13 @@ export default function SofaProductCard({
           )}
           <div className="mt-1">
             <ProductRating
-              averageRating={sofa.averageRating}
-              ratingCount={sofa.ratingCount}
+              averageRating={product.averageRating}
+              ratingCount={product.ratingCount}
             />
           </div>
         </div>
         <ProductPrice
-          product={sofa}
+          product={product}
           size="md"
           layout="stacked"
           showPercent={false}

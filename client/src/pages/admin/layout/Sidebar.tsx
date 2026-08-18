@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore, useSidebarStore, useUser } from "@/stores";
 import BrandLogo from "@/components/BrandLogo";
+import ProductTypeFormModal from "@/components/ProductTypeFormModal";
+import { useProductTypes } from "@/hooks/useProductTypes";
 import api from "@/utils/Axios";
 
 export default function Sidebar() {
@@ -9,6 +12,8 @@ export default function Sidebar() {
   const { isSidebarOpen, closeSidebar } = useSidebarStore();
   const logout = useAuthStore((state) => state.logout);
   const user = useUser();
+  const { productTypes } = useProductTypes();
+  const [isAddTypeOpen, setIsAddTypeOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -22,27 +27,22 @@ export default function Sidebar() {
     }
   };
 
-  const navItems = [
+  // Product tabs are data now — whatever kinds the admin has created, in order.
+  const productNavItems = productTypes.map((type) => ({
+    name: type.pluralName,
+    icon: type.icon,
+    path: `/admin/products/${type.pluralSlug}`,
+  }));
+
+  const topNavItems = [
     {
       name: "Dashboard",
       icon: "dashboard",
       path: "/admin/dashboard",
     },
-    {
-      name: "Chairs",
-      icon: "chair",
-      path: "/admin/chairs",
-    },
-    {
-      name: "Tables",
-      icon: "table_bar",
-      path: "/admin/tables",
-    },
-    {
-      name: "Sofas",
-      icon: "weekend",
-      path: "/admin/sofas",
-    },
+  ];
+
+  const bottomNavItems = [
     {
       name: "Orders",
       icon: "shopping_basket",
@@ -70,6 +70,32 @@ export default function Sidebar() {
     },
   ];
 
+  const renderNavItem = (item: { name: string; icon: string; path: string }) => {
+    const isActive =
+      location.pathname === item.path ||
+      (item.path === "/admin/dashboard" && location.pathname === "/admin");
+
+    return (
+      <Link
+        key={item.path}
+        to={item.path}
+        onClick={closeSidebar}
+        className={`flex items-center gap-3.5 px-4 py-3 rounded-full transition-all group shrink-0 ${
+          isActive
+            ? "bg-oatmeal text-forest-moss font-bold shadow-soft"
+            : "text-white/70 hover:text-white hover:bg-white/5 font-medium"
+        }`}
+      >
+        <span
+          className={`material-symbols-outlined !text-xl ${isActive ? "" : "text-white/50 group-hover:text-white"}`}
+        >
+          {item.icon}
+        </span>
+        <span className="text-[13px] tracking-wide truncate">{item.name}</span>
+      </Link>
+    );
+  };
+
   return (
     <aside
       className={`
@@ -82,9 +108,9 @@ export default function Sidebar() {
             overflow-hidden shrink-0 transition-transform duration-300 ease-in-out
         `}
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 min-h-0 flex-1">
         {/* Logo / Brand & Close Button */}
-        <div className="flex items-center justify-between px-1">
+        <div className="flex items-center justify-between px-1 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <BrandLogo className="shrink-0" imageClassName="h-8 w-auto max-w-[150px]" />
           </div>
@@ -98,38 +124,39 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex flex-col gap-1.5">
-          {navItems.map((item) => {
-            const isActive =
-              location.pathname === item.path ||
-              (item.path === "/admin/dashboard" &&
-                location.pathname === "/admin");
-            return (
-              <Link
-                key={item.name}
-                to={item.path}
-                onClick={closeSidebar}
-                className={`flex items-center gap-3.5 px-4 py-3 rounded-full transition-all group ${
-                  isActive
-                    ? "bg-oatmeal text-forest-moss font-bold shadow-soft"
-                    : "text-white/70 hover:text-white hover:bg-white/5 font-medium"
-                }`}
-              >
-                <span
-                  className={`material-symbols-outlined !text-xl ${isActive ? "" : "text-white/50 group-hover:text-white"}`}
-                >
-                  {item.icon}
-                </span>
-                <span className="text-[13px] tracking-wide">{item.name}</span>
-              </Link>
-            );
-          })}
+        {/* Navigation — scrolls once enough product kinds are added. */}
+        <nav className="flex flex-col gap-1.5 min-h-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {topNavItems.map(renderNavItem)}
+
+          {productNavItems.map(renderNavItem)}
+
+          <button
+            type="button"
+            onClick={() => setIsAddTypeOpen(true)}
+            title="Add a new kind of product"
+            className="flex items-center gap-3.5 px-4 py-3 rounded-full border-2 border-dashed border-white/15 text-white/50 hover:text-white hover:border-white/40 hover:bg-white/5 transition-all font-medium"
+          >
+            <span className="material-symbols-outlined !text-xl">add</span>
+            <span className="text-[13px] tracking-wide">Add Product Kind</span>
+          </button>
+
+          <div className="h-px bg-white/10 my-2 mx-4" />
+
+          {bottomNavItems.map(renderNavItem)}
         </nav>
       </div>
 
+      <ProductTypeFormModal
+        isOpen={isAddTypeOpen}
+        onClose={() => setIsAddTypeOpen(false)}
+        onCreated={(productType) => {
+          closeSidebar();
+          navigate(`/admin/products/${productType.pluralSlug}`);
+        }}
+      />
+
       {/* Bottom section */}
-      <div className="mt-auto space-y-6">
+      <div className="mt-auto shrink-0 space-y-6">
         <div className="flex items-center justify-between px-1 pb-1">
           <Link
             to="/admin/profile"

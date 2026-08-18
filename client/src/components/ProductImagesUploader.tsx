@@ -11,6 +11,10 @@ interface ProductImagesUploaderProps {
     images: string[];
     onChange: (images: string[]) => void;
     onUploadingChange?: (isUploading: boolean) => void;
+    /** Cap the gallery — 1 turns this into a single-image picker. */
+    maxImages?: number;
+    /** Hidden when the field is optional, e.g. a collection cover. */
+    required?: boolean;
 }
 
 export default function ProductImagesUploader({
@@ -18,6 +22,8 @@ export default function ProductImagesUploader({
     images,
     onChange,
     onUploadingChange,
+    maxImages,
+    required = true,
 }: ProductImagesUploaderProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -51,7 +57,9 @@ export default function ProductImagesUploader({
             const response = await api.post('/upload/multiple', formData);
             const uploadedUrls: string[] = response.data.urls ?? [];
 
-            onChange([...images, ...uploadedUrls]);
+            const merged = [...images, ...uploadedUrls];
+            // A capped picker keeps the newest pick rather than silently ignoring it.
+            onChange(maxImages ? merged.slice(-maxImages) : merged);
         } catch (uploadError) {
             console.error('Upload failed:', uploadError);
             const message =
@@ -81,9 +89,9 @@ export default function ProductImagesUploader({
         <div className="space-y-1">
             <div className="flex items-center justify-between px-4">
                 <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light">
-                    {label} <span className="text-clay">*</span>
+                    {label} {required && <span className="text-clay">*</span>}
                 </label>
-                {images.length > 0 && (
+                {images.length > 0 && maxImages !== 1 && (
                     <span className="text-[9px] font-bold text-forest-moss/40 uppercase tracking-widest">
                         {images.length} photo{images.length === 1 ? '' : 's'} · first is the cover
                     </span>
@@ -92,7 +100,7 @@ export default function ProductImagesUploader({
 
             <div className="relative rounded-3xl border-2 border-dashed border-forest-moss/20 bg-white/50 p-3">
                 {images.length > 0 && (
-                    <div className="grid grid-cols-3 gap-3 mb-3">
+                    <div className={`grid gap-3 mb-3 ${maxImages === 1 ? 'grid-cols-1' : 'grid-cols-3'}`}>
                         {images.map((url, index) => (
                             <div
                                 key={`${url}-${index}`}
@@ -115,13 +123,14 @@ export default function ProductImagesUploader({
                                     className="w-full h-full object-cover pointer-events-none"
                                 />
 
-                                {index === 0 && (
+                                {index === 0 && maxImages !== 1 && (
                                     <span className="absolute top-1.5 left-1.5 bg-clay text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
                                         Cover
                                     </span>
                                 )}
 
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                                    {maxImages !== 1 && (
                                     <button
                                         type="button"
                                         onClick={() => moveImage(index, index - 1)}
@@ -131,6 +140,7 @@ export default function ProductImagesUploader({
                                     >
                                         <span className="material-symbols-outlined !text-sm">chevron_left</span>
                                     </button>
+                                    )}
                                     <button
                                         type="button"
                                         onClick={() => removeImage(index)}
@@ -139,6 +149,7 @@ export default function ProductImagesUploader({
                                     >
                                         <span className="material-symbols-outlined !text-sm">delete</span>
                                     </button>
+                                    {maxImages !== 1 && (
                                     <button
                                         type="button"
                                         onClick={() => moveImage(index, index + 1)}
@@ -148,6 +159,7 @@ export default function ProductImagesUploader({
                                     >
                                         <span className="material-symbols-outlined !text-sm">chevron_right</span>
                                     </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -165,10 +177,18 @@ export default function ProductImagesUploader({
                         <span className="material-symbols-outlined !text-3xl">add_photo_alternate</span>
                     </div>
                     <p className="text-[11px] font-bold text-forest-moss/40 uppercase tracking-widest">
-                        {images.length > 0 ? 'Add more photos' : 'Click to upload photos'}
+                        {maxImages === 1
+                            ? images.length > 0
+                                ? 'Replace photo'
+                                : 'Click to upload a photo'
+                            : images.length > 0
+                              ? 'Add more photos'
+                              : 'Click to upload photos'}
                     </p>
                     <p className="text-[9px] font-medium text-forest-moss/30 mt-1">
-                        PNG, JPG up to 5MB each · select several at once
+                        {maxImages === 1
+                            ? 'PNG, JPG up to 5MB'
+                            : 'PNG, JPG up to 5MB each · select several at once'}
                     </p>
                 </button>
 
@@ -190,7 +210,7 @@ export default function ProductImagesUploader({
                 onChange={handleFilesChange}
                 className="hidden"
                 accept="image/*"
-                multiple
+                multiple={maxImages !== 1}
             />
         </div>
     );

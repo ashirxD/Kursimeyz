@@ -1,9 +1,12 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
+import { useProductTypes } from "@/hooks/useProductTypes";
+import { resolveImageUrl } from "@/utils/imageUrl";
 import TopPicks from "../topPicks";
 
 export default function Dashboard() {
   const findYourSpaceRef = useRef<HTMLDivElement>(null);
+  const { productTypes } = useProductTypes();
 
   const scrollToCollection = () => {
     findYourSpaceRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -88,47 +91,39 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {[
-            {
-              name: "Chairs",
-              desc: "Handcrafted Comfort",
-              img: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&q=80&w=800",
-              url: "/shop/chairs",
-            },
-            {
-              name: "Tables",
-              desc: "Modern Elegance",
-              img: "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?auto=format&fit=crop&q=80&w=800",
-              url: "/shop/tables",
-            },
-            {
-              name: "Sofas",
-              desc: "Luxurious Lounging",
-              img: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&q=80&w=800",
-              url: "/shop/sofas",
-            },
-          ].map((category, idx) => (
+        {/* Built from the admin's product kinds, so adding one lists it here. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
+          {productTypes.map((type) => (
             <Link
-              to={category.url}
-              key={idx}
-              id={category.name.toLowerCase()}
+              to={`/shop/${type.pluralSlug}`}
+              key={type._id}
+              id={type.pluralSlug}
               className="group cursor-pointer flex flex-col items-center text-center"
             >
               <div className="relative aspect-[4/5] w-full rounded-[32px] overflow-hidden mb-6 transition-all duration-700 hover:-translate-y-2 shadow-sm hover:shadow-2xl hover:shadow-black/10">
-                <img
-                  src={category.img}
-                  alt={category.name}
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
+                {type.coverImage ? (
+                  <img
+                    src={resolveImageUrl(type.coverImage)}
+                    alt={type.pluralName}
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-[#f4f5f0] transition-transform duration-1000 group-hover:scale-110">
+                    <span className="material-symbols-outlined text-[72px] text-[#1a2f1a]/15">
+                      {type.icon}
+                    </span>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
               </div>
               <h3 className="text-xl font-black text-[#1a2f1a] group-hover:text-[#ff6b35] transition-colors duration-300 uppercase tracking-widest text-[16px]">
-                {category.name}
+                {type.pluralName}
               </h3>
-              <p className="text-[#1a2f1a]/40 font-bold text-[10px] tracking-widest mt-2 uppercase">
-                {category.desc}
-              </p>
+              {type.tagline && (
+                <p className="text-[#1a2f1a]/40 font-bold text-[10px] tracking-widest mt-2 uppercase">
+                  {type.tagline}
+                </p>
+              )}
             </Link>
           ))}
         </div>

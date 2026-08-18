@@ -1,25 +1,38 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/Axios';
-import type { Chair as Product } from '@/pages/admin/chairs/cards';
+import { CATEGORIES_QUERY_KEY } from '@/hooks/useCategories';
+import type { Product } from '@/types/product';
 
 export interface ProductQueryOptions {
-    category?: 'chair' | 'table' | 'sofa' | 'bed' | 'other';
+    /** ProductType slug, e.g. "chair". */
+    category?: string;
+    /** Category slug within that product type, e.g. "slim". */
+    subCategory?: string;
     minPrice?: number;
     maxPrice?: number;
+    /** Set false when a caller only needs the mutations, to skip the fetch. */
+    enabled?: boolean;
 }
 
 const PRODUCTS_QUERY_KEY = ['products'];
 
 export const useProducts = (options: ProductQueryOptions = {}) => {
     const queryClient = useQueryClient();
-    const { category, minPrice, maxPrice } = options;
+    const { category, subCategory, minPrice, maxPrice, enabled = true } = options;
+
+    // Saving a product can mint a new category, so both caches go stale together.
+    const invalidateProducts = () => {
+        queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });
+    };
 
     // Fetch products (optionally filtered by category and price)
     const { data: products = [], isLoading, error } = useQuery<Product[]>({
-        queryKey: [...PRODUCTS_QUERY_KEY, category, minPrice, maxPrice],
+        queryKey: [...PRODUCTS_QUERY_KEY, category, subCategory, minPrice, maxPrice],
         queryFn: async () => {
             const params: ProductQueryOptions = {};
             if (category !== undefined) params.category = category;
+            if (subCategory !== undefined) params.subCategory = subCategory;
             if (minPrice !== undefined) params.minPrice = minPrice;
             if (maxPrice !== undefined) params.maxPrice = maxPrice;
 
@@ -32,6 +45,7 @@ export const useProducts = (options: ProductQueryOptions = {}) => {
             }));
         },
         placeholderData: keepPreviousData,
+        enabled,
     });
 
     // Add a new product
@@ -40,9 +54,7 @@ export const useProducts = (options: ProductQueryOptions = {}) => {
             const response = await api.post('/products', newProduct);
             return response.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
-        },
+        onSuccess: invalidateProducts,
     });
 
     // Delete a product
@@ -51,9 +63,7 @@ export const useProducts = (options: ProductQueryOptions = {}) => {
             await api.delete(`/products/${id}`);
             return id;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
-        },
+        onSuccess: invalidateProducts,
     });
 
     // Update a product
@@ -62,9 +72,7 @@ export const useProducts = (options: ProductQueryOptions = {}) => {
             const response = await api.put(`/products/${id}`, updatedProduct);
             return response.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
-        },
+        onSuccess: invalidateProducts,
     });
 
     return {

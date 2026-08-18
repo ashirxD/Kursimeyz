@@ -1,4 +1,8 @@
 const Product = require('../models/Product');
+const ProductType = require('../models/ProductType');
+const { resolveSubCategory } = require('./categories');
+const { slugify } = require('../utils/slug');
+const { getProductTypeSlugs, isProductType } = require('../utils/productTypes');
 
 const parseNonNegativeNumber = (value) => {
   if (value === undefined || value === null || value === '') return undefined;
@@ -72,13 +76,21 @@ const buildProductPayload = (body) => {
 // Get all products (optionally filtered by category)
 const getAllProducts = async (req, res) => {
   try {
-    const { category, minPrice, maxPrice } = req.query;
+    const { category, subCategory, minPrice, maxPrice } = req.query;
     const parsedMinPrice = parseNonNegativeNumber(minPrice);
     const parsedMaxPrice = parseNonNegativeNumber(maxPrice);
     let filter = {};
 
     if (category) {
       filter.category = category;
+    }
+
+    // Slugified so tabs work whether the client sends "Slim" or "slim".
+    if (subCategory) {
+      const subCategorySlug = slugify(subCategory);
+      if (subCategorySlug) {
+        filter.subCategorySlug = subCategorySlug;
+      }
     }
 
     if (parsedMinPrice !== undefined || parsedMaxPrice !== undefined) {
@@ -104,9 +116,29 @@ const getAllProducts = async (req, res) => {
 const createProduct = async (req, res) => {
   try {
     const payload = buildProductPayload(req.body);
+
+    // Types are admin-managed rows, so an unknown one is a client error rather
+    // than something to silently coerce.
+    let category = payload.category;
+    if (category) {
+      if (!(await isProductType(category))) {
+        return res.status(400).json({ message: `Unknown product type "${category}"` });
+      }
+    } else {
+      const fallback = await ProductType.findOne().sort({ order: 1, createdAt: 1 }).lean();
+      if (!fallback) {
+        return res.status(400).json({ message: 'No product types exist yet' });
+      }
+      category = fallback.slug;
+    }
+
+    // Creates the category on the fly when the admin typed a name that is new.
+    const subCategory = await resolveSubCategory(category, req.body.subCategory);
+
     const newProduct = new Product({
       ...payload,
-      category: payload.category || 'chair',
+      ...subCategory,
+      category,
     });
     await newProduct.save();
     res.status(201).json(newProduct);
@@ -128,15 +160,17 @@ const getProductById = async (req, res) => {
   }
 };
 
-// Get products grouped by category for Top Picks
+// Get products grouped by product type for Top Picks
 const getGroupedProducts = async (req, res) => {
   try {
-    const categories = ['chair', 'table', 'sofa'];
+    const slugs = await getProductTypeSlugs();
     const grouped = {};
 
-    for (const cat of categories) {
-      grouped[cat] = await Product.find({ category: cat }).limit(10).sort({ createdAt: -1 });
-    }
+    await Promise.all(
+      slugs.map(async (slug) => {
+        grouped[slug] = await Product.find({ category: slug }).limit(10).sort({ createdAt: -1 });
+      })
+    );
 
     res.json(grouped);
   } catch (error) {
@@ -164,10 +198,17 @@ const updateProduct = async (req, res) => {
     const { id } = req.params;
     const { dimensions, ...payload } = buildProductPayload(req.body);
 
+    // Categories are scoped by product type, so fall back to the stored type
+    // when the client sends a payload without one.
+    const category =
+      payload.category || (await Product.findById(id).select('category').lean())?.category;
+    const subCategory = await resolveSubCategory(category, req.body.subCategory);
+
     // $unset keeps a cleared dimensions form from leaving stale numbers behind.
+    const fields = { ...payload, ...subCategory };
     const update = dimensions
-      ? { $set: { ...payload, dimensions } }
-      : { $set: payload, $unset: { dimensions: '' } };
+      ? { $set: { ...fields, dimensions } }
+      : { $set: fields, $unset: { dimensions: '' } };
 
     const updatedProduct = await Product.findByIdAndUpdate(id, update, {
       new: true,

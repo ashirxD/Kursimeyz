@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useProduct } from "@/hooks/useProduct";
 import { useCart } from "@/hooks/useCart";
+import { useProductTypes } from "@/hooks/useProductTypes";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ProductRating from "@/components/ProductRating";
@@ -14,22 +15,10 @@ import {
   hasDiscount,
 } from "@/utils/productPricing";
 
-function getCategoryShopLink(category: string) {
-  switch (category) {
-    case "chair":
-      return { path: "/shop/chairs", label: "Chairs" };
-    case "table":
-      return { path: "/shop/tables", label: "Tables" };
-    case "sofa":
-      return { path: "/shop/sofas", label: "Sofas" };
-    default:
-      return { path: "/top-picks", label: "Top Picks" };
-  }
-}
-
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const { product, isProductLoading, productError } = useProduct(id);
+  const { productTypes } = useProductTypes();
   const { addToCart, isAdding } = useCart();
   const [added, setAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -80,7 +69,11 @@ export default function ProductDetail() {
     );
   }
 
-  const shopLink = getCategoryShopLink(product.category);
+  // Resolved from the admin's product kinds rather than a hardcoded switch.
+  const productKind = productTypes.find((type) => type.slug === product.category);
+  const shopLink = productKind
+    ? { path: `/shop/${productKind.pluralSlug}`, label: productKind.pluralName }
+    : { path: "/top-picks", label: "Top Picks" };
   const productImages = getProductImages(product);
   const discounted = hasDiscount(product);
 
@@ -106,7 +99,9 @@ export default function ProductDetail() {
         <span className="material-symbols-outlined text-[12px]">
           chevron_right
         </span>
-        <span className="text-[#1a2f1a]">{product.category}s</span>
+        <span className="text-[#1a2f1a]">
+          {product.subCategory || productKind?.pluralName || product.category}
+        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
@@ -124,7 +119,7 @@ export default function ProductDetail() {
               verified
             </span>
             <span className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]">
-              Premium {product.category}
+              Premium {productKind?.name || product.category}
             </span>
           </div>
         </div>

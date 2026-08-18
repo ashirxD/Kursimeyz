@@ -13,6 +13,9 @@ export interface Product {
   dimensions?: ProductDimensions | null;
   color: string;
   category: string;
+  /** Category display name within the product type, e.g. "Slim". */
+  subCategory?: string | null;
+  subCategorySlug?: string | null;
   averageRating?: number;
   ratingCount?: number;
 }

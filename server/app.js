@@ -9,6 +9,7 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 const apiRoutes = require('./routes/apis');
 const connectDB = require('./config/db');
+const { seedProductTypes } = require('./seed/productTypes');
 const mongoose = require("mongoose");
 
 
@@ -44,7 +45,11 @@ let server;
 
 // Connect to DB and start server
 if (process.env.MONGO_URI) {
-    connectDB().then(() => {
+    connectDB().then(async () => {
+        // The admin sidebar and shop nav are built from product types, so a
+        // fresh database needs the built-in three before anything renders.
+        await seedProductTypes();
+
         server = app.listen(PORT, () => {
             console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
         });

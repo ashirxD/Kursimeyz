@@ -10,9 +10,7 @@ const Signup = lazy(() => import("../pages/auth/signup"));
 const VerifyOtp = lazy(() => import("../pages/auth/verifyOtp"));
 const AdminLogin = lazy(() => import("../pages/auth/adminLogin"));
 const ForgotPassword = lazy(() => import("../pages/auth/forgotPassword"));
-const ChairsPage = lazy(() => import("../pages/chairs"));
-const TablesPage = lazy(() => import("../pages/tables"));
-const SofasPage = lazy(() => import("../pages/sofas"));
+const ShopPage = lazy(() => import("../pages/shop"));
 const TopPicksPage = lazy(() => import("../pages/topPicks"));
 const ProductDetailPage = lazy(() => import("../pages/topPicks/detail"));
 
@@ -63,26 +61,11 @@ export const publicRoutes = [
         ),
       },
       {
-        path: "shop/chairs",
+        // One shop page per kind of product — /shop/chairs, /shop/wardrobes, ...
+        path: "shop/:typeSlug",
         element: (
           <Suspense fallback={<LoadingSpinner />}>
-            <ChairsPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: "shop/tables",
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <TablesPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: "shop/sofas",
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <SofasPage />
+            <ShopPage />
           </Suspense>
         ),
       },

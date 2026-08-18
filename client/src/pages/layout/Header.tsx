@@ -1,21 +1,25 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
+import { useProductTypes } from "@/hooks/useProductTypes";
 import { useIsAuthenticated, useAuthStore } from "@/stores/authStore";
 import api from "@/utils/Axios";
 import BrandLogo from "@/components/BrandLogo";
-
-const shopCategories = [
-  { label: "Chairs", icon: "chair", route: "/shop/chairs" },
-  { label: "Tables", icon: "table_restaurant", route: "/shop/tables" },
-  { label: "Sofas", icon: "weekend", route: "/shop/sofas" },
-];
 
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileShopOpen, setMobileShopOpen] = useState(false);
   const { totalItems } = useCart();
+  const { productTypes } = useProductTypes();
   const isAuthenticated = useIsAuthenticated();
+
+  // Built from whatever kinds the admin has created, so a new one shows up here
+  // without a code change.
+  const shopCategories = productTypes.map((type) => ({
+    label: type.pluralName,
+    icon: type.icon,
+    route: `/shop/${type.pluralSlug}`,
+  }));
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
   const location = useLocation();
@@ -192,7 +196,7 @@ export default function Header() {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] border-t border-slate-100 bg-white/95 shadow-[0_-12px_30px_rgba(15,23,42,0.08)]">
         {mobileShopOpen && (
           <div className="absolute bottom-16 left-0 right-0 border-t border-slate-100 bg-white px-4 py-3 shadow-lg shadow-black/5">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto">
               {shopCategories.map((cat) => (
                 <Link
                   key={cat.label}

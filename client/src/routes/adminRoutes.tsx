@@ -1,17 +1,16 @@
 import { lazy, Suspense } from 'react';
+import { Navigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AdminLayout from '../pages/admin/index';
 import AdminGuard from '../components/AdminGuard';
 
 const AdminDashboard = lazy(() => import('../pages/admin/dashboard/index'));
-const AdminChairs = lazy(() => import('../pages/admin/chairs/index'));
-const AdminTables = lazy(() => import('../pages/admin/tables/index'));
+const AdminProducts = lazy(() => import('../pages/admin/products/index'));
 const AdminOrders = lazy(() => import('../pages/admin/orders/index'));
 const AdminOrderDetail = lazy(() => import('../pages/admin/orders/detail'));
 const AdminTransactions = lazy(() => import('../pages/admin/transactions/index'));
 const AdminCustomers = lazy(() => import('../pages/admin/customers/index'));
 const AdminSettings = lazy(() => import('../pages/admin/settings/index'));
-const AdminSofas = lazy(() => import('../pages/admin/sofas/index'));
 const AdminProfile = lazy(() => import('../pages/admin/profile'));
 const AdminSellerManagement = lazy(() => import('../pages/admin/SellerManagment/index'));
 export const adminRoutes = [
@@ -28,21 +27,18 @@ export const adminRoutes = [
                 ),
             },
             {
-                path: 'chairs',
+                // One page for every kind of product; the segment selects it.
+                path: 'products/:typeSlug',
                 element: (
                     <Suspense fallback={<LoadingSpinner />}>
-                        <AdminChairs />
+                        <AdminProducts />
                     </Suspense>
                 ),
             },
-            {
-                path: 'tables',
-                element: (
-                    <Suspense fallback={<LoadingSpinner />}>
-                        <AdminTables />
-                    </Suspense>
-                ),
-            },
+            // The built-in kinds used to have a route each — keep old bookmarks working.
+            { path: 'chairs', element: <Navigate to="/admin/products/chairs" replace /> },
+            { path: 'tables', element: <Navigate to="/admin/products/tables" replace /> },
+            { path: 'sofas', element: <Navigate to="/admin/products/sofas" replace /> },
             {
                 path: 'orders',
                 element: (
@@ -88,14 +84,6 @@ export const adminRoutes = [
                 element: (
                     <Suspense fallback={<LoadingSpinner />}>
                         <AdminSettings />
-                    </Suspense>
-                ),
-            },
-            {
-                path: 'sofas',
-                element: (
-                    <Suspense fallback={<LoadingSpinner />}>
-                        <AdminSofas />
                     </Suspense>
                 ),
             },
