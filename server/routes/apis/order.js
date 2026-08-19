@@ -7,6 +7,7 @@ const {
     getAllOrders,
     getDashboardStats,
     updateOrderStatus,
+    updateOrderNumber,
     getAdminOrderById,
     confirmPayment,
 } = require('../../controller/order');
@@ -24,6 +25,7 @@ router.get('/admin/dashboard-stats', admin, getDashboardStats);
 router.get('/admin/all', admin, getAllOrders);
 router.get('/admin/:id', admin, getAdminOrderById);
 router.put('/admin/:id/status', admin, updateOrderStatus);
+router.put('/admin/:id/order-number', admin, updateOrderNumber);
 router.put('/admin/:id/pay', admin, confirmPayment);
 
 module.exports = router;

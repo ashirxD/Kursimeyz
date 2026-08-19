@@ -45,11 +45,18 @@ const ProductTypeSchema = new mongoose.Schema({
     trim: true,
     default: 'category',
   },
-  // Collection cover for the dashboard grid. Falls back to a product photo.
+  // Cover shown on the dashboard grid, always kept in sync with coverImages[0].
+  // Legacy rows only have this one; the controller fills the array on read.
   coverImage: {
     type: String,
     trim: true,
     default: '',
+  },
+  // Every cover the admin uploaded for this kind, first one first. The dashboard
+  // and shop cards rotate through them; one image just means no rotation.
+  coverImages: {
+    type: [String],
+    default: [],
   },
   heroTitle: {
     type: String,

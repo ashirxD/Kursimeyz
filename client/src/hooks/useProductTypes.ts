@@ -16,7 +16,10 @@ export interface ProductType {
     name: string;
     pluralName: string;
     icon: string;
+    /** Mirrors coverImages[0]. Read coverImages instead. */
     coverImage: string;
+    /** Every cover the admin uploaded, first one first. Cards rotate through them. */
+    coverImages: string[];
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;
@@ -32,7 +35,8 @@ export interface ProductTypeInput {
     name: string;
     pluralName: string;
     icon: string;
-    coverImage: string;
+    /** coverImage is derived from this server-side. */
+    coverImages: string[];
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;

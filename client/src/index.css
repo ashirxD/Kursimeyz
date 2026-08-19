@@ -81,3 +81,47 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #bfb7ac;
 }
+
+/* Admin-themed pages — the About page and the dashboard hero. Their palettes are
+   admin-authored, so the colours arrive as inline custom properties at runtime.
+   Hover states and the full-bleed background need real CSS rules, which is what
+   these three classes are for. */
+.about-bleed {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Paints the admin's page colour edge to edge from inside the layout's centred,
+   padded container. `isolation` on the parent keeps the negative z-index behind
+   the content but still above the site background. */
+.about-bleed::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  background-color: var(--about-page-bg, transparent);
+  z-index: -1;
+}
+
+.themed-hover-surface {
+  background-color: var(--themed-surface);
+  /* Includes transform and box-shadow because this rule sits outside Tailwind's
+     layers and would otherwise override a utility like transition-all. */
+  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.themed-hover-surface:hover {
+  background-color: var(--themed-surface-hover);
+}
+
+.themed-hover-text {
+  color: var(--themed-text);
+  transition: color 0.3s ease;
+}
+
+.themed-hover-text:hover {
+  color: var(--themed-text-hover);
+}

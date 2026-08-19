@@ -6,9 +6,11 @@ interface PaymentConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   orderId: string;
+  /** The label already shown on the row this was opened from. */
+  orderLabel: string;
 }
 
-export default function PaymentConfirmationModal({ isOpen, onClose, orderId }: PaymentConfirmationModalProps) {
+export default function PaymentConfirmationModal({ isOpen, onClose, orderId, orderLabel }: PaymentConfirmationModalProps) {
   const { confirmPayment, isPending } = useConfirmPayment();
   const [paymentId, setPaymentId] = useState('');
   const [paymentDate, setPaymentDate] = useState('');
@@ -105,7 +107,7 @@ export default function PaymentConfirmationModal({ isOpen, onClose, orderId }: P
             <div>
               <h3 className="text-white font-black tracking-tight text-lg leading-none">Confirm Payment</h3>
               <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mt-1">
-                Order #{orderId.slice(-6).toUpperCase()}
+                Order {orderLabel}
               </p>
             </div>
           </div>

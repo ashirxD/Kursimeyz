@@ -14,19 +14,54 @@ const countProductsByType = async () => {
   return new Map(rows.map((row) => [row._id, row.count]));
 };
 
-const withProductCount = (type, counts) => ({
+// Enough for a rotation without turning the dashboard card into a slideshow reel.
+const MAX_COVER_IMAGES = 6;
+
+// Covers are stored first-one-first; `coverImage` mirrors coverImages[0] so
+// legacy consumers keep working. Mirrors normalizeImages in controller/products.js.
+const normalizeCoverImages = (coverImages, coverImage) => {
+  const list = Array.isArray(coverImages) ? coverImages : [];
+  const cleaned = list
+    .filter((url) => typeof url === 'string' && url.trim() !== '')
+    .map((url) => url.trim());
+
+  const deduped = [...new Set(cleaned)];
+
+  if (deduped.length === 0 && typeof coverImage === 'string' && coverImage.trim() !== '') {
+    return [coverImage.trim()];
+  }
+
+  return deduped.slice(0, MAX_COVER_IMAGES);
+};
+
+// Rows seeded or saved before covers went plural only have `coverImage`, so the
+// array is filled on the way out rather than by migrating the collection.
+const toResponse = (type, counts) => ({
   ...type,
+  coverImages: normalizeCoverImages(type.coverImages, type.coverImage),
   productCount: counts.get(type.slug) || 0,
 });
 
 // Editable copy fields. Names and slugs are handled separately because slugs are
 // immutable and names feed the auto-generated plural.
-const COPY_FIELDS = ['icon', 'coverImage', 'heroTitle', 'heroSubtitle', 'tagline'];
+const COPY_FIELDS = ['icon', 'heroTitle', 'heroSubtitle', 'tagline'];
+
+// Untouched unless the request actually carries covers, so a partial update that
+// omits them does not wipe what the admin uploaded earlier.
+const applyCoverImages = (target, body) => {
+  if (!Array.isArray(body.coverImages) && typeof body.coverImage !== 'string') return;
+
+  const covers = normalizeCoverImages(body.coverImages, body.coverImage);
+  target.coverImages = covers;
+  target.coverImage = covers[0] || '';
+};
 
 const applyCopyFields = (target, body) => {
   COPY_FIELDS.forEach((field) => {
     if (typeof body[field] === 'string') target[field] = body[field].trim();
   });
+
+  applyCoverImages(target, body);
 
   if (body.cardLayout === 'compact' || body.cardLayout === 'wide') {
     target.cardLayout = body.cardLayout;
@@ -53,7 +88,7 @@ const getProductTypes = async (req, res) => {
       countProductsByType(),
     ]);
 
-    res.json(types.map((type) => withProductCount(type, counts)));
+    res.json(types.map((type) => toResponse(type, counts)));
   } catch (error) {
     res.status(500).json({ message: 'Error fetching product types', error: error.message });
   }
@@ -73,7 +108,7 @@ const getProductTypeBySlug = async (req, res) => {
     }
 
     const counts = await countProductsByType();
-    res.json(withProductCount(type, counts));
+    res.json(toResponse(type, counts));
   } catch (error) {
     res.status(500).json({ message: 'Error fetching product type', error: error.message });
   }
@@ -120,7 +155,7 @@ const createProductType = async (req, res) => {
     if (!payload.tagline) payload.tagline = `Our ${pluralName} Collection`;
 
     const productType = await ProductType.create(payload);
-    res.status(201).json({ ...productType.toObject(), productCount: 0 });
+    res.status(201).json(toResponse(productType.toObject(), new Map()));
   } catch (error) {
     res.status(400).json({ message: 'Error creating product type', error: error.message });
   }
@@ -148,7 +183,7 @@ const updateProductType = async (req, res) => {
     await productType.save();
 
     const counts = await countProductsByType();
-    res.json(withProductCount(productType.toObject(), counts));
+    res.json(toResponse(productType.toObject(), counts));
   } catch (error) {
     res.status(400).json({ message: 'Error updating product type', error: error.message });
   }

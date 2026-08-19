@@ -1,11 +1,20 @@
 import { useMemo, useState } from 'react';
 
+/** One pickable icon: the ligature name, plus words that should find it. */
+export interface IconOption {
+    name: string;
+    keywords: string;
+}
+
 /**
  * Material Symbols the shop is likely to want for a furniture category. The
  * font ships thousands of names, but a searchable shortlist beats a free-text
  * field the admin can typo into an invisible icon.
+ *
+ * Callers picking icons for something other than a category pass their own list
+ * via `options` — see components/pageEditor/iconOptions.ts.
  */
-const ICON_OPTIONS: Array<{ name: string; keywords: string }> = [
+const ICON_OPTIONS: IconOption[] = [
     { name: 'chair', keywords: 'chair seat' },
     { name: 'chair_alt', keywords: 'chair stool seat' },
     { name: 'weekend', keywords: 'sofa couch lounge' },
@@ -41,18 +50,25 @@ interface IconPickerProps {
     label: string;
     value: string;
     onChange: (icon: string) => void;
+    /** Defaults to the furniture-category shortlist above. */
+    options?: IconOption[];
 }
 
-export default function IconPicker({ label, value, onChange }: IconPickerProps) {
+export default function IconPicker({
+    label,
+    value,
+    onChange,
+    options = ICON_OPTIONS,
+}: IconPickerProps) {
     const [search, setSearch] = useState('');
 
     const matches = useMemo(() => {
         const query = search.trim().toLowerCase();
-        if (!query) return ICON_OPTIONS;
-        return ICON_OPTIONS.filter(
+        if (!query) return options;
+        return options.filter(
             (icon) => icon.name.includes(query) || icon.keywords.includes(query),
         );
-    }, [search]);
+    }, [search, options]);
 
     return (
         <div className="space-y-1">

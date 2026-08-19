@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import CategoryTabs from "@/components/CategoryTabs";
+import CollectionCover from "@/components/CollectionCover";
 import { useCategories } from "@/hooks/useCategories";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductTypeBySlug } from "@/hooks/useProductTypes";
 import { getEffectivePrice } from "@/utils/productPricing";
-import { resolveImageUrl } from "@/utils/imageUrl";
 import ShopProductCard from "./card";
 
 const ITEMS_PER_PAGE = 6;
@@ -251,19 +251,13 @@ export default function ShopPage() {
                 to={`/shop/${type.pluralSlug}`}
                 className="group relative h-[250px] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 bg-[#1a2f1a]"
               >
-                {type.coverImage ? (
-                  <img
-                    src={resolveImageUrl(type.coverImage)}
-                    alt={type.pluralName}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-[#f4f5f0]">
-                    <span className="material-symbols-outlined text-[80px] text-[#1a2f1a]/15">
-                      {type.icon}
-                    </span>
-                  </div>
-                )}
+                <CollectionCover
+                  images={type.coverImages}
+                  icon={type.icon}
+                  alt={type.pluralName}
+                  layerClassName="duration-700 group-hover:scale-110"
+                  iconClassName="text-[80px]"
+                />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500 flex flex-col items-center justify-center">
                   <h3 className="text-white text-2xl font-black uppercase tracking-widest transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 drop-shadow-lg">
                     {type.pluralName}

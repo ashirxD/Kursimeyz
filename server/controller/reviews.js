@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const ProductReview = require('../models/ProductReview');
+const { orderLabel } = require('../utils/orderNumber');
 
 const getUserId = (req) => req.user.id || req.user._id;
 
@@ -66,7 +67,7 @@ const getPendingReviews = async (req, res) => {
             if (unratedProducts.length > 0) {
                 pendingOrders.push({
                     orderId: order._id,
-                    orderShortId: order._id.toString().slice(-6).toUpperCase(),
+                    orderShortId: orderLabel(order, 6),
                     products: unratedProducts,
                 });
             }

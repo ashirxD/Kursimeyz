@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PaymentConfirmationModal from '@/components/paymentConfirmationModal';
+import { orderLabel } from '@/utils/orderNumber';
 
 const statusStyles = {
   Pending: "bg-yellow-100 text-yellow-800",
@@ -42,6 +43,7 @@ interface RecentOrdersProps {
 const RecentOrders = ({ stats }: RecentOrdersProps) => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState('');
+  const [selectedOrderLabel, setSelectedOrderLabel] = useState('');
 
   return (
     <div className="bg-white rounded-3xl shadow-soft p-4 md:p-8 border border-white/50 flex-1 overflow-hidden">
@@ -72,7 +74,7 @@ const RecentOrders = ({ stats }: RecentOrdersProps) => {
             {stats?.recentOrders?.map((order: any) => (
               <tr key={order._id} className="group cursor-pointer">
                 <td className="py-3 pl-3 font-black text-forest-moss text-[14px] md:text-[15px] group-hover:text-clay transition-colors">
-                  #{order._id.slice(-6).toUpperCase()}
+                  {orderLabel(order)}
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex items-center gap-3">
@@ -117,6 +119,7 @@ const RecentOrders = ({ stats }: RecentOrdersProps) => {
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedOrderId(order._id);
+                        setSelectedOrderLabel(orderLabel(order));
                         setPaymentModalOpen(true);
                       }}
                       className="px-3 py-1.5 rounded-full bg-clay text-white font-black text-[9px] uppercase tracking-widest hover:bg-clay/90 transition-colors shadow-soft"
@@ -135,6 +138,7 @@ const RecentOrders = ({ stats }: RecentOrdersProps) => {
         isOpen={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
         orderId={selectedOrderId}
+        orderLabel={selectedOrderLabel}
       />
     </div>
   );

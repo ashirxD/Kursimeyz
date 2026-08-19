@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
+const { orderLabel } = require('../utils/orderNumber');
 const { createTransporter } = require('../utils/nodemailer');
 
 class EmailService {
@@ -70,7 +71,9 @@ class EmailService {
       customerEmail: this.escapeHtml(user?.email || ''),
       customerPhone: this.escapeHtml(user?.phone || order.shippingAddress?.phone || ''),
       orderId: this.escapeHtml(orderId),
-      shortOrderId: this.escapeHtml(orderId.slice(-8).toUpperCase()),
+      // Complete label, '#' included when it falls back to the id, so the
+      // templates print it verbatim rather than prefixing their own '#'.
+      shortOrderId: this.escapeHtml(orderLabel(order, 8)),
       orderDate: this.formatDate(order.createdAt),
       orderItems: this.buildOrderItemsHtml(order),
       itemsPrice: this.formatCurrency(order.itemsPrice),

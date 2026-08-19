@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Header from '@/pages/admin/layout/Header';
 import PaymentConfirmationModal from '@/components/paymentConfirmationModal';
+import { orderLabel } from "@/utils/orderNumber";
 import { useAdminOrderDetail } from '@/hooks/useAdminOrders';
 import { resolveImageUrl } from '@/utils/imageUrl';
 import jsPDF from 'jspdf';
@@ -62,14 +63,14 @@ export default function AdminOrderDetailPage() {
 
   const confirmation = order.paymentConfirmation;
   const legacyReceipt = order.paymentResult?.receipt;
+  const shortOrderId = orderLabel(order);
 
   const handleExportPDF = () => {
-    const shortOrderId = order._id.slice(-6).toUpperCase();
     const doc = new jsPDF();
 
     doc.setFontSize(20);
     doc.setTextColor(43, 62, 53);
-    doc.text(`Kursimeyz Order #${shortOrderId}`, 14, 20);
+    doc.text(`Kursimeyz Order ${shortOrderId}`, 14, 20);
 
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
@@ -163,7 +164,10 @@ export default function AdminOrderDetailPage() {
           : [['Confirmation', order.isPaid ? 'No manual confirmation details on file.' : 'Payment has not been confirmed yet.']],
     });
 
-    doc.save(`Kursimeyz-Order-${shortOrderId}.pdf`);
+    // A label may legitimately contain '#' or '/', neither of which belongs in a
+    // download filename.
+    const fileSafeId = shortOrderId.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
+    doc.save(`Kursimeyz-Order-${fileSafeId}.pdf`);
   };
 
   return (
@@ -182,7 +186,7 @@ export default function AdminOrderDetailPage() {
             </Link>
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-2xl md:text-3xl font-black text-forest-moss tracking-tight">
-                Order #{order._id.slice(-6).toUpperCase()}
+                Order {orderLabel(order)}
               </h2>
               <span
                 className={`px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest ${statusStyles[order.status] || 'bg-gray-100 text-gray-800'}`}
@@ -423,6 +427,7 @@ export default function AdminOrderDetailPage() {
           refetch();
         }}
         orderId={order._id}
+        orderLabel={shortOrderId}
       />
     </div>
   );

@@ -19,7 +19,7 @@ interface FormValues {
     name: string;
     pluralName: string;
     icon: string;
-    coverImage: string;
+    coverImages: string[];
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;
@@ -30,7 +30,7 @@ const toFormValues = (productType?: ProductType): FormValues => ({
     name: productType?.name ?? '',
     pluralName: productType?.pluralName ?? '',
     icon: productType?.icon ?? 'category',
-    coverImage: productType?.coverImage ?? '',
+    coverImages: productType?.coverImages ?? [],
     heroTitle: productType?.heroTitle ?? '',
     heroSubtitle: productType?.heroSubtitle ?? '',
     tagline: productType?.tagline ?? '',
@@ -46,6 +46,9 @@ export default function ProductTypeFormModal(props: ProductTypeFormModalProps) {
 
     return <ProductTypeForm key={props.productType?._id ?? 'new'} {...props} />;
 }
+
+/** Matches MAX_COVER_IMAGES in server/controller/productTypes.js. */
+const MAX_COVER_IMAGES = 6;
 
 const LAYOUT_OPTIONS: Array<{ value: CardLayout; label: string; hint: string }> = [
     { value: 'compact', label: 'Compact', hint: 'Portrait cards, 4 per row' },
@@ -176,14 +179,21 @@ function ProductTypeForm({ onClose, productType, onCreated }: ProductTypeFormMod
                                 onChange={(icon) => update('icon', icon)}
                             />
 
-                            <ProductImagesUploader
-                                label="Collection Cover"
-                                required={false}
-                                maxImages={1}
-                                images={values.coverImage ? [values.coverImage] : []}
-                                onChange={(images) => update('coverImage', images[0] ?? '')}
-                                onUploadingChange={setIsUploading}
-                            />
+                            <div className="space-y-1">
+                                <ProductImagesUploader
+                                    label="Collection Covers"
+                                    required={false}
+                                    maxImages={MAX_COVER_IMAGES}
+                                    images={values.coverImages}
+                                    onChange={(images) => update('coverImages', images)}
+                                    onUploadingChange={setIsUploading}
+                                />
+                                <p className="text-[9px] font-medium text-forest-moss/30 ml-4">
+                                    {values.coverImages.length > 1
+                                        ? `These ${values.coverImages.length} photos take turns on the ${plural} card in "Find Your Space".`
+                                        : `Add more than one and they take turns on the ${plural} card in "Find Your Space".`}
+                                </p>
+                            </div>
 
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">

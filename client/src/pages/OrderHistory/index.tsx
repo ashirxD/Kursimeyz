@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { usePendingReviews } from "@/hooks/usePendingReviews";
 import { useReviewPrompt } from "@/components/ReviewPromptProvider";
 import { resolveImageUrl } from "@/utils/imageUrl";
+import { orderLabel } from "@/utils/orderNumber";
 
 export default function OrderHistory() {
   const { myOrders, ordersLoading, ordersError } = useOrder();
@@ -134,7 +135,7 @@ export default function OrderHistory() {
                       Order ID
                     </p>
                     <p className="font-medium text-[#1a2f1a]/60 font-mono text-sm">
-                      #{order._id.slice(-8).toUpperCase()}
+                      {orderLabel(order, 8)}
                     </p>
                   </div>
                 </div>

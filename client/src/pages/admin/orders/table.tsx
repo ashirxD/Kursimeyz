@@ -2,6 +2,8 @@
 
 export interface Order {
     _id: string;
+    /** Admin-set label. Empty or absent means the derived one is shown. */
+    orderNumber?: string;
     user?: {
         _id: string;
         username?: string;
@@ -64,7 +66,13 @@ const statusStyles = {
     }
 };
 
-import { useUpdateOrderStatus } from "@/hooks/useAdminOrders";
+import { useUpdateOrderStatus, useUpdateOrderNumber } from "@/hooks/useAdminOrders";
+import { AxiosError } from "axios";
+import {
+    ORDER_NUMBER_MAX_LENGTH,
+    isValidOrderNumber,
+    orderLabel,
+} from "@/utils/orderNumber";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -189,11 +197,147 @@ const StatusDropdown = ({ currentStatus, orderId, onStatusChange, isLoading }: {
     );
 };
 
+/**
+ * The order's label, editable in place.
+ *
+ * The database _id cannot change — payment confirmations, review prompts and the
+ * detail-page links all point at it — so what is edited here is a separate
+ * human-readable number displayed in its place. Clearing the field puts the order
+ * back on the label derived from its id.
+ */
+const OrderNumberCell = ({ order }: { order: Order }) => {
+    const { updateOrderNumber, isPending } = useUpdateOrderNumber();
+    const [isEditing, setIsEditing] = useState(false);
+    const [draft, setDraft] = useState('');
+    const [error, setError] = useState<string | null>(null);
+
+    const stored = order.orderNumber?.trim() ?? '';
+    // What the row would show with no custom number, used as the placeholder so
+    // the admin can see what clearing the field would fall back to.
+    const derived = orderLabel({ _id: order._id });
+
+    const startEditing = () => {
+        setDraft(stored);
+        setError(null);
+        setIsEditing(true);
+    };
+
+    const cancel = () => {
+        setIsEditing(false);
+        setError(null);
+    };
+
+    const save = async () => {
+        const next = draft.trim();
+
+        if (next === stored) {
+            cancel();
+            return;
+        }
+
+        // Checked here as well as on the server, so a typo is caught without a
+        // round trip and the message names the allowed characters.
+        if (!isValidOrderNumber(next)) {
+            setError(`Up to ${ORDER_NUMBER_MAX_LENGTH} letters, numbers, spaces or - _ / # .`);
+            return;
+        }
+
+        try {
+            await updateOrderNumber({ orderId: order._id, orderNumber: next });
+            setIsEditing(false);
+            setError(null);
+        } catch (failure) {
+            const detail =
+                failure instanceof AxiosError
+                    ? (failure.response?.data as { message?: string } | undefined)?.message
+                    : undefined;
+            setError(detail || 'Could not save that number.');
+        }
+    };
+
+    if (!isEditing) {
+        return (
+            <div className="flex items-center gap-2">
+                <span className="text-sm font-black text-forest-moss/80">
+                    {orderLabel(order)}
+                </span>
+                <button
+                    type="button"
+                    onClick={startEditing}
+                    title="Edit order number"
+                    className="size-6 rounded-full flex items-center justify-center text-forest-moss/30 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:bg-oatmeal hover:text-forest-moss transition-all"
+                >
+                    <span className="material-symbols-outlined text-[14px]!">edit</span>
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-1">
+            <div className="flex items-center gap-1">
+                <input
+                    autoFocus
+                    type="text"
+                    value={draft}
+                    disabled={isPending}
+                    maxLength={ORDER_NUMBER_MAX_LENGTH}
+                    placeholder={derived}
+                    onChange={(e) => {
+                        setDraft(e.target.value);
+                        setError(null);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            save();
+                        }
+                        if (e.key === 'Escape') {
+                            e.preventDefault();
+                            cancel();
+                        }
+                    }}
+                    className="w-32 bg-white px-2.5 py-1.5 rounded-lg border border-clay/40 focus:outline-none focus:ring-2 focus:ring-clay/30 font-black text-sm text-forest-moss disabled:opacity-50"
+                />
+                <button
+                    type="button"
+                    onClick={save}
+                    disabled={isPending}
+                    title="Save"
+                    className="size-7 rounded-full bg-forest-moss text-white flex items-center justify-center hover:bg-forest-moss-light transition-all disabled:opacity-50"
+                >
+                    <span className="material-symbols-outlined text-[14px]!">check</span>
+                </button>
+                <button
+                    type="button"
+                    onClick={cancel}
+                    disabled={isPending}
+                    title="Cancel"
+                    className="size-7 rounded-full bg-white border border-forest-moss/10 text-forest-moss/50 flex items-center justify-center hover:text-forest-moss transition-all disabled:opacity-50"
+                >
+                    <span className="material-symbols-outlined text-[14px]!">close</span>
+                </button>
+            </div>
+
+            {error ? (
+                <p className="text-[9px] font-bold text-red-500 max-w-[220px] leading-snug">
+                    {error}
+                </p>
+            ) : (
+                <p className="text-[9px] font-bold text-forest-moss/35 leading-snug">
+                    Enter to save · empty reverts to {derived}
+                </p>
+            )}
+        </div>
+    );
+};
+
 export default function OrdersTable({ orders }: OrdersTableProps) {
     const navigate = useNavigate();
     const { updateStatus, isLoading } = useUpdateOrderStatus();
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState('');
+    const [selectedOrderLabel, setSelectedOrderLabel] = useState('');
 
     const handleStatusChange = (orderId: string, newStatus: string) => {
         console.log('Table handleStatusChange called:', { orderId, newStatus });
@@ -257,7 +401,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                             return (
                             <tr key={order._id} className="group hover:bg-oatmeal/30 transition-colors">
                                 <td className="px-8 py-5">
-                                    <span className="text-sm font-black text-forest-moss/80">#{order._id.slice(-6).toUpperCase()}</span>
+                                    <OrderNumberCell order={order} />
                                 </td>
                                 <td className="px-6 py-5">
                                     <div className="flex items-center gap-3">
@@ -311,6 +455,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                                         <button
                                             onClick={() => {
                                                 setSelectedOrderId(order._id);
+                                                setSelectedOrderLabel(orderLabel(order));
                                                 setPaymentModalOpen(true);
                                             }}
                                             className="px-3 py-1.5 rounded-full bg-clay text-white font-black text-[9px] uppercase tracking-widest hover:bg-clay/90 transition-colors shadow-soft"
@@ -339,6 +484,7 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                 isOpen={paymentModalOpen}
                 onClose={() => setPaymentModalOpen(false)}
                 orderId={selectedOrderId}
+                orderLabel={selectedOrderLabel}
             />
         </div>
     );

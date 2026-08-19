@@ -64,6 +64,16 @@ export default function Sidebar() {
       path: "/admin/seller-management",
     },
     {
+      name: "Home Hero",
+      icon: "web",
+      path: "/admin/home",
+    },
+    {
+      name: "About Page",
+      icon: "article",
+      path: "/admin/about",
+    },
+    {
       name: "Settings",
       icon: "settings",
       path: "/admin/settings",

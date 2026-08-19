@@ -11,6 +11,8 @@ const AdminOrderDetail = lazy(() => import('../pages/admin/orders/detail'));
 const AdminTransactions = lazy(() => import('../pages/admin/transactions/index'));
 const AdminCustomers = lazy(() => import('../pages/admin/customers/index'));
 const AdminSettings = lazy(() => import('../pages/admin/settings/index'));
+const AdminAbout = lazy(() => import('../pages/admin/about/index'));
+const AdminHome = lazy(() => import('../pages/admin/home/index'));
 const AdminProfile = lazy(() => import('../pages/admin/profile'));
 const AdminSellerManagement = lazy(() => import('../pages/admin/SellerManagment/index'));
 export const adminRoutes = [
@@ -76,6 +78,22 @@ export const adminRoutes = [
                 element: (
                     <Suspense fallback={<LoadingSpinner />}>
                         <AdminSellerManagement />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'home',
+                element: (
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <AdminHome />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'about',
+                element: (
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <AdminAbout />
                     </Suspense>
                 ),
             },

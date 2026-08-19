@@ -1,6 +1,15 @@
 const mongoose = require('mongoose');
 
 const OrderSchema = new mongoose.Schema({
+    // Human-readable reference an admin can set, e.g. "ORD-1042". Shown wherever
+    // the order is identified, in place of the tail of `_id`. Empty means never
+    // customised, so existing orders keep their derived label with no migration.
+    // See utils/orderNumber.js for validation and how the label is chosen.
+    orderNumber: {
+        type: String,
+        trim: true,
+        default: '',
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -84,5 +93,13 @@ const OrderSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+// Two orders sharing a number would make the label useless for looking one up.
+// Partial, so the many orders with no custom number do not all collide on ''.
+// The controller also checks case-insensitively; this is the backstop for a race.
+OrderSchema.index(
+    { orderNumber: 1 },
+    { unique: true, partialFilterExpression: { orderNumber: { $gt: '' } } }
+);
 
 module.exports = mongoose.model('Order', OrderSchema);

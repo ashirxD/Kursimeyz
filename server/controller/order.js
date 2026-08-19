@@ -4,6 +4,11 @@ const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const { getEffectivePrice } = require('../utils/productPricing');
+const {
+    MAX_LENGTH: ORDER_NUMBER_MAX_LENGTH,
+    normalizeOrderNumber,
+    orderNumberFilter,
+} = require('../utils/orderNumber');
 const PaymentConfirmation = require('../models/PaymentConfirmation');
 const emailService = require('../services/emailService');
 
@@ -232,6 +237,7 @@ const getAllOrders = async (req, res) => {
             // Build order search conditions
             query.$or = [
                 { user: { $in: userIds } },
+                { orderNumber: { $regex: search, $options: 'i' } },
                 { status: { $regex: search, $options: 'i' } },
                 { 'shippingAddress.city': { $regex: search, $options: 'i' } },
                 { 'shippingAddress.phone': { $regex: search, $options: 'i' } }
@@ -382,6 +388,72 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
+// @desc    Set or clear an order's human-readable number (Admin only)
+// @route   PUT /api/order/admin/:id/order-number
+// @access  Private/Admin
+const updateOrderNumber = async (req, res) => {
+    try {
+        const orderNumber = normalizeOrderNumber(req.body.orderNumber);
+
+        if (orderNumber === null) {
+            return res.status(400).json({
+                success: false,
+                message: `Use up to ${ORDER_NUMBER_MAX_LENGTH} letters, numbers, spaces or - _ / # .`,
+            });
+        }
+
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found',
+            });
+        }
+
+        // Case-insensitive, and ignoring this order, so re-saving the same number
+        // or only changing its capitalisation is not reported as a clash.
+        if (orderNumber) {
+            const clash = await Order.findOne({
+                ...orderNumberFilter(orderNumber),
+                _id: { $ne: order._id },
+            }).select('_id');
+
+            if (clash) {
+                return res.status(409).json({
+                    success: false,
+                    message: `"${orderNumber}" is already used by another order.`,
+                });
+            }
+        }
+
+        // An empty string clears it, putting the order back on its derived label.
+        order.orderNumber = orderNumber;
+
+        const updatedOrder = await order.save();
+
+        res.status(200).json({
+            success: true,
+            data: updatedOrder,
+        });
+    } catch (err) {
+        // The partial unique index catches a duplicate that slipped past the check
+        // above between the two queries.
+        if (err.code === 11000) {
+            return res.status(409).json({
+                success: false,
+                message: 'That order number was just taken by another order.',
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: 'Server Error',
+            error: err.message,
+        });
+    }
+};
+
 // @desc    Get single order by ID (Admin only)
 // @route   GET /api/order/admin/:id
 // @access  Private/Admin
@@ -471,6 +543,7 @@ module.exports = {
     getAllOrders,
     getDashboardStats,
     updateOrderStatus,
+    updateOrderNumber,
     getAdminOrderById,
     confirmPayment,
 };

@@ -138,7 +138,7 @@ export default function OrderReviewModal({
               Rate Your Order
             </h3>
             <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mt-1">
-              Order #{order.orderShortId} · {step + 1} of {products.length}
+              Order {order.orderShortId} · {step + 1} of {products.length}
             </p>
           </div>
           <button

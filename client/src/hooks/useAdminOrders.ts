@@ -51,6 +51,33 @@ export const useUpdateOrderStatus = () => {
   };
 };
 
+/**
+ * Sets or clears an order's human-readable number. An empty string clears it,
+ * putting the order back on the label derived from its id.
+ */
+export const useUpdateOrderNumber = () => {
+  const queryClient = useQueryClient();
+
+  const updateOrderNumberMutation = useMutation({
+    mutationFn: async ({ orderId, orderNumber }: { orderId: string; orderNumber: string }) => {
+      const response = await api.put(`/order/admin/${orderId}/order-number`, { orderNumber });
+      return response.data;
+    },
+    onSuccess: (_data, variables) => {
+      // The label appears on the list, the dashboard and the detail page, so all
+      // three have to be refetched rather than just the row that was edited.
+      queryClient.invalidateQueries({ queryKey: ['admin', 'all-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'order', variables.orderId] });
+    },
+  });
+
+  return {
+    updateOrderNumber: updateOrderNumberMutation.mutateAsync,
+    isPending: updateOrderNumberMutation.isPending,
+  };
+};
+
 export interface PaymentConfirmationData {
   _id: string;
   transactionReference?: string;
@@ -62,6 +89,8 @@ export interface PaymentConfirmationData {
 
 export interface AdminOrderDetail {
   _id: string;
+  /** Admin-set label. Empty or absent means the derived one is shown. */
+  orderNumber?: string;
   user: {
     _id: string;
     username: string;
