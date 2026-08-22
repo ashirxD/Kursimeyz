@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/Axios';
 import { CATEGORIES_QUERY_KEY } from '@/hooks/useCategories';
+import { MATERIALS_QUERY_KEY } from '@/hooks/useMaterials';
 import type { Product } from '@/types/product';
 
 export interface ProductQueryOptions {
@@ -20,10 +21,12 @@ export const useProducts = (options: ProductQueryOptions = {}) => {
     const queryClient = useQueryClient();
     const { category, subCategory, minPrice, maxPrice, enabled = true } = options;
 
-    // Saving a product can mint a new category, so both caches go stale together.
+    // Saving a product can mint a new category and a new material, so all three
+    // caches go stale together.
     const invalidateProducts = () => {
         queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
         queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });
+        queryClient.invalidateQueries({ queryKey: MATERIALS_QUERY_KEY });
     };
 
     // Fetch products (optionally filtered by category and price)

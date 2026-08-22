@@ -4,6 +4,8 @@ const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const { getEffectivePrice } = require('../utils/productPricing');
+const { resolveFinish } = require('../utils/productFinish');
+const { resolveShippingPrice } = require('../utils/shipping');
 const {
     MAX_LENGTH: ORDER_NUMBER_MAX_LENGTH,
     normalizeOrderNumber,
@@ -81,7 +83,6 @@ const createOrder = async (req, res) => {
         items,
         shippingAddress,
         paymentMethod,
-        shippingPrice,
     } = req.body;
 
     try {
@@ -109,15 +110,20 @@ const createOrder = async (req, res) => {
 
         const pricedItems = items.map((item) => ({
             product: item.product,
+            // Copied, not referenced: an order records the finish that was bought,
+            // so editing the product later cannot rewrite its history.
+            finish: resolveFinish(productsById.get(String(item.product))),
             quantity: Math.max(1, Number(item.quantity) || 1),
             price: getEffectivePrice(productsById.get(String(item.product))),
         }));
 
         const itemsPrice = pricedItems.reduce((total, item) => total + item.price * item.quantity, 0);
-        const parsedShippingPrice = Number(shippingPrice);
-        const resolvedShippingPrice = Number.isFinite(parsedShippingPrice) && parsedShippingPrice >= 0
-            ? parsedShippingPrice
-            : 0;
+        // Shipping is read from the city's configured rate for the same reason
+        // item prices are re-read above: whatever the client sent is a display
+        // value, not an authority. An unlisted city costs nothing here and is
+        // flagged so an admin can agree a rate with the customer.
+        const { shippingPrice: resolvedShippingPrice, isCustomCity } =
+            await resolveShippingPrice(shippingAddress?.city);
         const totalPrice = itemsPrice + resolvedShippingPrice;
 
         // Simulating "Paid" status if payment method is "Card"
@@ -131,6 +137,7 @@ const createOrder = async (req, res) => {
             paymentMethod,
             itemsPrice,
             shippingPrice: resolvedShippingPrice,
+            isCustomShippingCity: isCustomCity,
             totalPrice,
             isPaid,
             paidAt,

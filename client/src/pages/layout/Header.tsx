@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCart } from "@/hooks/useCart";
+import { useCategories } from "@/hooks/useCategories";
 import { useProductTypes } from "@/hooks/useProductTypes";
 import { useIsAuthenticated, useAuthStore } from "@/stores/authStore";
 import api from "@/utils/Axios";
@@ -8,24 +9,74 @@ import BrandLogo from "@/components/BrandLogo";
 
 export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  // Which product type's sub-categories the flyout is showing, and where it
+  // sits so it lines up with that type's row.
+  const [hoveredTypeSlug, setHoveredTypeSlug] = useState<string | null>(null);
+  const [flyoutTop, setFlyoutTop] = useState(0);
   const [mobileShopOpen, setMobileShopOpen] = useState(false);
+  const [mobileTypeSlug, setMobileTypeSlug] = useState<string | null>(null);
   const { totalItems } = useCart();
   const { productTypes } = useProductTypes();
+  // Unscoped: one request covers every type's sub-categories.
+  const { categories } = useCategories();
   const isAuthenticated = useIsAuthenticated();
 
   // Built from whatever kinds the admin has created, so a new one shows up here
-  // without a code change.
-  const shopCategories = productTypes.map((type) => ({
-    label: type.pluralName,
-    icon: type.icon,
-    route: `/shop/${type.pluralSlug}`,
-  }));
+  // without a code change. Sub-categories with no products are dropped, the same
+  // way the shop page's tabs drop them.
+  const shopCategories = useMemo(() => {
+    const byType = new Map<string, typeof categories>();
+    categories
+      .filter((category) => category.productCount > 0)
+      .forEach((category) => {
+        const list = byType.get(category.productType) ?? [];
+        list.push(category);
+        byType.set(category.productType, list);
+      });
+
+    return productTypes.map((type) => ({
+      slug: type.slug,
+      label: type.pluralName,
+      icon: type.icon,
+      route: `/shop/${type.pluralSlug}`,
+      subCategories: (byType.get(type.slug) ?? []).map((category) => ({
+        id: category._id,
+        name: category.name,
+        route: `/shop/${type.pluralSlug}?category=${category.slug}`,
+      })),
+    }));
+  }, [productTypes, categories]);
+
+  // Only set once a type is hovered — the sub-category panel stays hidden until then.
+  const activeType = shopCategories.find((type) => type.slug === hoveredTypeSlug);
+
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
   const location = useLocation();
 
   const isActivePath = (path: string) => location.pathname === path;
   const isShopActive = location.pathname.startsWith("/shop");
+
+  const closeDropdown = () => {
+    setDropdownOpen(false);
+    setHoveredTypeSlug(null);
+  };
+
+  /**
+   * Opens the sub-category flyout level with the row, so the pointer only has
+   * to travel sideways to reach it. Offsets by the panel's own padding so the
+   * first sub-category lines up with the row, and by the list's scroll position
+   * because offsetTop ignores it.
+   */
+  const openTypeFlyout = (slug: string, row: HTMLAnchorElement) => {
+    setHoveredTypeSlug(slug);
+    setFlyoutTop(row.offsetTop - (row.parentElement?.scrollTop ?? 0) - 8);
+  };
+
+  const closeMobileShop = () => {
+    setMobileShopOpen(false);
+    setMobileTypeSlug(null);
+  };
 
   const handleLogout = async () => {
     try {
@@ -78,7 +129,7 @@ export default function Header() {
           <div
             className="relative"
             onMouseEnter={() => setDropdownOpen(true)}
-            onMouseLeave={() => setDropdownOpen(false)}
+            onMouseLeave={closeDropdown}
           >
             <button className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group flex items-center gap-1 cursor-pointer">
               Shop
@@ -93,7 +144,8 @@ export default function Header() {
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
             </button>
 
-            {/* Dropdown */}
+            {/* Dropdown: the product types. Hovering one that has
+                sub-categories opens a second panel beside it. */}
             <div
               className={`absolute top-full left-1/2 -translate-x-1/2 pt-3 transition-all duration-300 ${
                 dropdownOpen
@@ -101,22 +153,65 @@ export default function Header() {
                   : "opacity-0 invisible -translate-y-2"
               }`}
             >
-              <div className="bg-white rounded-2xl shadow-xl shadow-black/8 border border-slate-100 p-2 min-w-[200px]">
-                {shopCategories.map((cat) => (
-                  <Link
-                    key={cat.label}
-                    to={cat.route}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#1a2f1a]/70 hover:bg-[#f4f5f0] hover:text-[#1a2f1a] transition-all group/item"
+              <div className="relative">
+                <div className="bg-white rounded-2xl shadow-xl shadow-black/8 border border-slate-100 p-2 w-[260px] max-h-[70vh] overflow-y-auto">
+                  {shopCategories.map((cat) => {
+                    const isActive = activeType?.slug === cat.slug;
+                    return (
+                      <Link
+                        key={cat.slug}
+                        to={cat.route}
+                        onClick={closeDropdown}
+                        onMouseEnter={(event) =>
+                          openTypeFlyout(cat.slug, event.currentTarget)
+                        }
+                        onFocus={(event) =>
+                          openTypeFlyout(cat.slug, event.currentTarget)
+                        }
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all group/item ${
+                          isActive
+                            ? "bg-[#f4f5f0] text-[#1a2f1a]"
+                            : "text-[#1a2f1a]/70 hover:bg-[#f4f5f0] hover:text-[#1a2f1a]"
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-[20px] text-[#ff6b35] group-hover/item:scale-110 transition-transform">
+                          {cat.icon}
+                        </span>
+                        <span className="text-[13px] font-bold truncate">
+                          {cat.label}
+                        </span>
+                        <span className="material-symbols-outlined text-[16px] ml-auto opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all">
+                          {cat.subCategories.length > 0
+                            ? "chevron_right"
+                            : "arrow_forward"}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                {/* Sub-categories, only while a type with any is hovered.
+                    The padding is the bridge the pointer crosses, so the
+                    dropdown keeps hover the whole way. */}
+                {activeType && activeType.subCategories.length > 0 && (
+                  <div
+                    className="absolute left-full pl-2"
+                    style={{ top: flyoutTop }}
                   >
-                    <span className="material-symbols-outlined text-[20px] text-[#ff6b35] group-hover/item:scale-110 transition-transform">
-                      {cat.icon}
-                    </span>
-                    <span className="text-[13px] font-bold">{cat.label}</span>
-                    <span className="material-symbols-outlined text-[16px] ml-auto opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all">
-                      arrow_forward
-                    </span>
-                  </Link>
-                ))}
+                    <div className="bg-white rounded-2xl shadow-xl shadow-black/8 border border-slate-100 p-2 w-[220px] max-h-[70vh] overflow-y-auto">
+                      {activeType.subCategories.map((sub) => (
+                        <Link
+                          key={sub.id}
+                          to={sub.route}
+                          onClick={closeDropdown}
+                          className="block px-4 py-2.5 rounded-xl text-[13px] font-bold text-[#1a2f1a]/70 hover:bg-[#f4f5f0] hover:text-[#1a2f1a] transition-all truncate"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -196,22 +291,63 @@ export default function Header() {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] border-t border-slate-100 bg-white/95 shadow-[0_-12px_30px_rgba(15,23,42,0.08)]">
         {mobileShopOpen && (
           <div className="absolute bottom-16 left-0 right-0 border-t border-slate-100 bg-white px-4 py-3 shadow-lg shadow-black/5">
-            <div className="grid grid-cols-3 gap-2 max-h-[40vh] overflow-y-auto">
-              {shopCategories.map((cat) => (
-                <Link
-                  key={cat.label}
-                  to={cat.route}
-                  onClick={() => setMobileShopOpen(false)}
-                  className="flex flex-col items-center justify-center gap-1 h-16 rounded-2xl bg-[#f7f8f3] text-[#1a2f1a] transition-colors hover:bg-[#ff6b35]/15"
-                >
-                  <span className="material-symbols-outlined text-[22px] text-[#ff6b35]">
-                    {cat.icon}
-                  </span>
-                  <span className="text-[10px] font-black uppercase tracking-wide">
-                    {cat.label}
-                  </span>
-                </Link>
-              ))}
+            {/* Same two levels as desktop, as an accordion: the row opens the
+                whole collection, the chevron reveals sub-categories. */}
+            <div className="max-h-[50vh] overflow-y-auto space-y-1.5">
+              {shopCategories.map((cat) => {
+                const isOpen = mobileTypeSlug === cat.slug;
+                return (
+                  <div
+                    key={cat.slug}
+                    className="rounded-2xl bg-[#f7f8f3] overflow-hidden"
+                  >
+                    <div className="flex items-center">
+                      <Link
+                        to={cat.route}
+                        onClick={closeMobileShop}
+                        className="flex flex-1 min-w-0 items-center gap-3 px-3 py-3 text-[#1a2f1a]"
+                      >
+                        <span className="material-symbols-outlined text-[22px] text-[#ff6b35]">
+                          {cat.icon}
+                        </span>
+                        <span className="text-[11px] font-black uppercase tracking-wide truncate">
+                          {cat.label}
+                        </span>
+                      </Link>
+                      {cat.subCategories.length > 0 && (
+                        <button
+                          type="button"
+                          aria-label={`Toggle ${cat.label} sub-categories`}
+                          aria-expanded={isOpen}
+                          onClick={() =>
+                            setMobileTypeSlug(isOpen ? null : cat.slug)
+                          }
+                          className="px-3 py-3 text-[#1a2f1a]/50"
+                        >
+                          <span className="material-symbols-outlined text-[22px]">
+                            {isOpen ? "expand_less" : "expand_more"}
+                          </span>
+                        </button>
+                      )}
+                    </div>
+
+                    {isOpen && cat.subCategories.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 px-3 pb-3">
+                        {cat.subCategories.map((sub) => (
+                          <Link
+                            key={sub.id}
+                            to={sub.route}
+                            onClick={closeMobileShop}
+                            className="px-3 py-1.5 rounded-full bg-white border border-[#1a2f1a]/10 text-[11px] font-bold text-[#1a2f1a]/70"
+                          >
+                            {sub.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -220,7 +356,7 @@ export default function Header() {
           <Link
             to="/dashboard"
             className={mobileTabClass(isActivePath("/dashboard") || isActivePath("/"))}
-            onClick={() => setMobileShopOpen(false)}
+            onClick={closeMobileShop}
           >
             <span className="material-symbols-outlined text-[22px]">home</span>
             <span className="text-[10px] font-black uppercase tracking-wide">
@@ -231,7 +367,12 @@ export default function Header() {
           <button
             type="button"
             className={mobileTabClass(isShopActive)}
-            onClick={() => setMobileShopOpen((open) => !open)}
+            onClick={() =>
+              setMobileShopOpen((open) => {
+                if (open) setMobileTypeSlug(null);
+                return !open;
+              })
+            }
           >
             <span className="material-symbols-outlined text-[22px]">
               storefront
@@ -244,7 +385,7 @@ export default function Header() {
           <Link
             to="/about"
             className={mobileTabClass(isActivePath("/about"))}
-            onClick={() => setMobileShopOpen(false)}
+            onClick={closeMobileShop}
           >
             <span className="material-symbols-outlined text-[22px]">info</span>
             <span className="text-[10px] font-black uppercase tracking-wide">
@@ -255,7 +396,7 @@ export default function Header() {
           <Link
             to="/orders"
             className={mobileTabClass(isActivePath("/orders"))}
-            onClick={() => setMobileShopOpen(false)}
+            onClick={closeMobileShop}
           >
             <span className="material-symbols-outlined text-[22px]">
               receipt_long

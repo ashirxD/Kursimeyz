@@ -4,6 +4,8 @@ import { usePendingReviews } from "@/hooks/usePendingReviews";
 import { useReviewPrompt } from "@/components/ReviewPromptProvider";
 import { resolveImageUrl } from "@/utils/imageUrl";
 import { orderLabel } from "@/utils/orderNumber";
+import ProductFinishSummary from "@/components/ProductFinishSummary";
+import { resolveFinish } from "@/utils/productFinish";
 
 export default function OrderHistory() {
   const { myOrders, ordersLoading, ordersError } = useOrder();
@@ -192,6 +194,14 @@ export default function OrderHistory() {
                           <h4 className="font-bold text-[#1a2f1a]">
                             {item.product?.name || "Sanctuary Addition"}
                           </h4>
+                          {/* The order's own snapshot, so this stays what was
+                              actually bought even if the product changes later. */}
+                          <ProductFinishSummary
+                            finish={resolveFinish(item)}
+                            size="xs"
+                            showLabels={false}
+                            className="mt-1.5"
+                          />
                           <div className="flex items-center gap-4 mt-1">
                             <p className="text-xs font-medium text-[#1a2f1a]/40">
                               Qty: {item.quantity}
@@ -231,6 +241,17 @@ export default function OrderHistory() {
                         <p className="text-[#1a2f1a]/60 font-medium mt-2">
                           {order.shippingAddress.phone}
                         </p>
+                        {order.isCustomShippingCity && (
+                          <p className="flex gap-2 pt-3 text-[12px] font-medium text-[#ff6b35]">
+                            <span className="material-symbols-outlined text-[16px] shrink-0">
+                              info
+                            </span>
+                            <span>
+                              Shipping for this city is confirmed separately, so
+                              it isn't included in the total above.
+                            </span>
+                          </p>
+                        )}
                       </div>
                     </div>
 

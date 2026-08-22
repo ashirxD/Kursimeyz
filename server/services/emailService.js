@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const { orderLabel } = require('../utils/orderNumber');
+const { FINISH_PARTS, isFinishEmpty, normalizeFinish } = require('../utils/productFinish');
 const { createTransporter } = require('../utils/nodemailer');
 
 class EmailService {
@@ -31,15 +32,49 @@ class EmailService {
     });
   }
 
+  /**
+   * The body/fabric line under an item's name.
+   *
+   * A cropped swatch is an ordinary https image, so it renders in a mail client;
+   * a flat colour is a background-coloured span, which degrades to nothing
+   * visible where inline styles are stripped. Either way the material name is
+   * plain text, so the information survives regardless.
+   */
+  buildFinishHtml(finish) {
+    const parts = FINISH_PARTS.map((part) => {
+      const { color, material } = finish[part];
+      if (!color.hex && !color.image && !material) return '';
+
+      const label = part === 'body' ? 'Body' : 'Fabric';
+
+      const swatch = color.image
+        ? `<img src="${this.escapeHtml(color.image)}" width="12" height="12" alt="" style="width:12px;height:12px;border-radius:50%;vertical-align:middle;border:1px solid rgba(0,0,0,0.12);" />`
+        : color.hex
+          ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color:${this.escapeHtml(color.hex)};border:1px solid rgba(0,0,0,0.12);vertical-align:middle;"></span>`
+          : '';
+
+      const text = material ? this.escapeHtml(material) : this.escapeHtml(color.hex);
+
+      return `<span style="white-space:nowrap;">${swatch} ${label}: ${text}</span>`;
+    }).filter(Boolean);
+
+    if (parts.length === 0) return '';
+
+    return `<div style="margin-top:4px;font-size:12px;color:#6a7e69;">${parts.join('&nbsp;&nbsp;·&nbsp;&nbsp;')}</div>`;
+  }
+
   buildOrderItemsHtml(order) {
     return (order.items || []).map((item) => {
       const productName = item.product?.name || 'Product';
       const quantity = Number(item.quantity || 0);
       const price = Number(item.price || item.product?.price || 0);
+      // The order's own snapshot, so an old email reprint shows what was bought.
+      const finish = normalizeFinish(item.finish);
+      const finishHtml = isFinishEmpty(finish) ? '' : this.buildFinishHtml(finish);
 
       return `
         <tr>
-          <td>${this.escapeHtml(productName)}</td>
+          <td>${this.escapeHtml(productName)}${finishHtml}</td>
           <td class="center">${quantity}</td>
           <td class="right">${this.formatCurrency(price)}</td>
           <td class="right">${this.formatCurrency(price * quantity)}</td>
@@ -57,6 +92,14 @@ class EmailService {
       .filter(Boolean)
       .map((line) => this.escapeHtml(line))
       .join('<br>');
+  }
+
+  // An unlisted city was ordered from, so no rate was charged: say so rather
+  // than printing "Rs. 0" and reading as free delivery.
+  formatShippingPrice(order) {
+    return order.isCustomShippingCity
+      ? 'To be confirmed'
+      : this.formatCurrency(order.shippingPrice);
   }
 
   getPaymentStatus(order) {
@@ -77,7 +120,7 @@ class EmailService {
       orderDate: this.formatDate(order.createdAt),
       orderItems: this.buildOrderItemsHtml(order),
       itemsPrice: this.formatCurrency(order.itemsPrice),
-      shippingPrice: this.formatCurrency(order.shippingPrice),
+      shippingPrice: this.escapeHtml(this.formatShippingPrice(order)),
       totalPrice: this.formatCurrency(order.totalPrice),
       paymentMethod: this.escapeHtml(order.paymentMethod),
       paymentStatus: this.escapeHtml(this.getPaymentStatus(order)),

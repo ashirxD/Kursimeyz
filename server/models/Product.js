@@ -10,6 +10,29 @@ const DimensionsSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// A colour the admin chose. Usually just a hex, but when they circled a spot on a
+// photo of the real material, `image` holds that cropped circle and is shown
+// instead — `hex` is then the average of the circle, kept as a fallback for
+// anywhere an image will not do (emails, PDFs, tiny dots).
+const SwatchSchema = new mongoose.Schema(
+  {
+    hex: { type: String, trim: true, default: '' },
+    image: { type: String, trim: true, default: '' },
+  },
+  { _id: false }
+);
+
+// One half of the finish: what this part is made of, and what colour it is.
+const FinishPartSchema = new mongoose.Schema(
+  {
+    color: { type: SwatchSchema, default: () => ({}) },
+    // Free text, e.g. "Solid Oak" or "Linen". Past values are offered as
+    // suggestions in the product form; see controller/products.js getMaterials.
+    material: { type: String, trim: true, default: '' },
+  },
+  { _id: false }
+);
+
 const ProductSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -44,9 +67,19 @@ const ProductSchema = new mongoose.Schema({
     type: DimensionsSchema,
     default: undefined,
   },
+  // Body and fabric each carry their own colour and material. Empty parts are
+  // simply not shown. See utils/productFinish.js.
+  finish: {
+    body: { type: FinishPartSchema, default: () => ({}) },
+    fabric: { type: FinishPartSchema, default: () => ({}) },
+  },
+  // Mirrors finish.fabric.color.hex, the way `image` mirrors images[0]. Kept so
+  // the cart, checkout summary and any older reader keep working, and so products
+  // saved before the finish existed still have their colour somewhere.
   color: {
     type: String,
-    required: true,
+    trim: true,
+    default: '',
   },
   // The kind of furniture this is — a ProductType slug. Admins can add types at
   // runtime, so this is validated against that collection in the controller

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "@/utils/Axios";
 import type { ProductDimensions } from "@/utils/productPricing";
+import type { ProductFinish } from "@/utils/productFinish";
 
 export interface Product {
   _id: string;
@@ -11,7 +12,9 @@ export interface Product {
   images?: string[];
   description: string;
   dimensions?: ProductDimensions | null;
-  color: string;
+  finish?: ProductFinish | null;
+  /** Legacy single colour, mirroring finish.fabric.color.hex. */
+  color?: string;
   category: string;
   /** Category display name within the product type, e.g. "Slim". */
   subCategory?: string | null;

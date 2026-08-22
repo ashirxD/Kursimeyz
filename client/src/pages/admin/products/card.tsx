@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import ProductFormModal from '@/components/ProductFormModal';
+import ProductFinishSummary from '@/components/ProductFinishSummary';
+import { resolveFinish } from '@/utils/productFinish';
 import { useProducts } from '@/hooks/useProducts';
 import type { ProductType } from '@/hooks/useProductTypes';
 import type { Product } from '@/types/product';
@@ -38,6 +40,7 @@ export default function AdminProductCard({
     const imageCount = getProductImages(product).length;
     const discounted = hasDiscount(product);
     const dimensions = formatDimensions(product.dimensions);
+    const finish = resolveFinish(product);
 
     const editModal = (
         <ProductFormModal
@@ -95,9 +98,11 @@ export default function AdminProductCard({
                                 <h3 className="text-2xl font-black text-forest-moss tracking-tight">
                                     {product.name}
                                 </h3>
-                                <div
-                                    className="size-5 rounded-full border border-black/5 shadow-inner shrink-0"
-                                    style={{ backgroundColor: product.color }}
+                                <ProductFinishSummary
+                                    finish={finish}
+                                    size="md"
+                                    showLabels={false}
+                                    className="shrink-0"
                                 />
                             </div>
 
@@ -179,9 +184,11 @@ export default function AdminProductCard({
                         <h3 className="text-xl font-black text-forest-moss tracking-tight">
                             {product.name}
                         </h3>
-                        <div
-                            className="size-4 rounded-full border border-black/5 shadow-inner shrink-0"
-                            style={{ backgroundColor: product.color }}
+                        <ProductFinishSummary
+                            finish={finish}
+                            size="sm"
+                            showLabels={false}
+                            className="shrink-0"
                         />
                     </div>
                     {product.subCategory && (

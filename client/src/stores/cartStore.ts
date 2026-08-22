@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { ProductFinish } from "@/utils/productFinish";
 
 export interface CartItem {
   productId: string;
@@ -7,6 +8,7 @@ export interface CartItem {
   price: number;
   image: string;
   color?: string;
+  finish?: ProductFinish | null;
   quantity: number;
 }
 

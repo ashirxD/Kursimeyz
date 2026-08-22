@@ -19,7 +19,6 @@ export function buildProductFormCopy(
         namePlaceholder: `e.g. Nordic ${name}`,
         pricePlaceholder: String(Math.max(1, Math.round(productType.defaultMaxPrice / 3))),
         categoryPlaceholder: 'e.g. Slim',
-        colorLabel: 'Color',
         colorPresets: productType.colorPresets,
         descriptionLabel: 'Description',
         descriptionPlaceholder: `Tell us about this ${lower}...`,

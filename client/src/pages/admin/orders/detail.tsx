@@ -3,6 +3,13 @@ import { Link, useParams } from 'react-router-dom';
 import Header from '@/pages/admin/layout/Header';
 import PaymentConfirmationModal from '@/components/paymentConfirmationModal';
 import { orderLabel } from "@/utils/orderNumber";
+import ProductFinishSummary from "@/components/ProductFinishSummary";
+import {
+  FINISH_PARTS,
+  finishPartLabel,
+  isFinishPartEmpty,
+  resolveFinish,
+} from "@/utils/productFinish";
 import { useAdminOrderDetail } from '@/hooks/useAdminOrders';
 import { resolveImageUrl } from '@/utils/imageUrl';
 import jsPDF from 'jspdf';
@@ -33,6 +40,18 @@ const formatCurrency = (amount: number) =>
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+
+/**
+ * The finish as one line of text, for the PDF — which cannot draw swatches, so
+ * the material names (or failing those, the hex codes) have to carry it.
+ */
+const describeFinish = (item: { finish?: unknown; color?: string }) => {
+  const finish = resolveFinish(item as Parameters<typeof resolveFinish>[0]);
+
+  return FINISH_PARTS.filter(({ key }) => !isFinishPartEmpty(finish[key]))
+    .map(({ key, label }) => `${label}: ${finishPartLabel(finish[key])}`)
+    .join('  ·  ');
+};
 
 export default function AdminOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -117,7 +136,9 @@ export default function AdminOrderDetailPage() {
       styles: { fontSize: 8, cellPadding: 3 },
       head: [['Product', 'Category', 'Qty', 'Unit Price', 'Line Total']],
       body: order.items.map((item) => [
-        item.product?.name || 'Unknown Product',
+        [item.product?.name || 'Unknown Product', describeFinish(item)]
+          .filter(Boolean)
+          .join('\n'),
         item.product?.category || 'Product',
         item.quantity.toString(),
         formatCurrency(item.price),
@@ -136,7 +157,7 @@ export default function AdminOrderDetailPage() {
         ['Payment Status', order.isPaid ? 'Paid' : 'Unpaid'],
         ['Paid At', formatDate(order.paidAt)],
         ['Items Total', formatCurrency(order.itemsPrice)],
-        ['Shipping', formatCurrency(order.shippingPrice)],
+        ['Shipping', order.isCustomShippingCity ? 'To be confirmed' : formatCurrency(order.shippingPrice)],
         ['Grand Total', formatCurrency(order.totalPrice)],
       ],
     });
@@ -246,6 +267,12 @@ export default function AdminOrderDetailPage() {
                 {order.shippingAddress.city}, {order.shippingAddress.zipCode}
               </p>
               <p className="text-forest-moss font-black">{order.shippingAddress.phone}</p>
+              {order.isCustomShippingCity && (
+                <p className="flex items-center gap-2 pt-2 text-xs text-clay">
+                  <span className="material-symbols-outlined text-base!">info</span>
+                  Custom city — agree a delivery rate with the customer.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -280,6 +307,13 @@ export default function AdminOrderDetailPage() {
                   <p className="text-[10px] font-bold text-forest-moss-light/50 uppercase tracking-widest">
                     Qty: {item.quantity}
                   </p>
+                  {/* The order's own snapshot, so it stays what was actually
+                      bought even after the product is edited. */}
+                  <ProductFinishSummary
+                    finish={resolveFinish(item)}
+                    size="xs"
+                    className="mt-1.5"
+                  />
                 </div>
                 <p className="text-sm font-black text-forest-moss">
                   {formatCurrency(item.price * item.quantity)}
@@ -294,7 +328,11 @@ export default function AdminOrderDetailPage() {
             </div>
             <div className="flex justify-between text-sm font-bold text-forest-moss-light/70">
               <span>Shipping</span>
-              <span>{formatCurrency(order.shippingPrice)}</span>
+              {order.isCustomShippingCity ? (
+                <span className="text-clay">To be confirmed</span>
+              ) : (
+                <span>{formatCurrency(order.shippingPrice)}</span>
+              )}
             </div>
             <div className="flex justify-between text-base font-black text-forest-moss pt-2 border-t border-forest-moss/10">
               <span>Total</span>

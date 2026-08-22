@@ -29,6 +29,26 @@ const OrderSchema = new mongoose.Schema({
             price: {
                 type: Number,
                 required: true
+            },
+            // What the product's finish was when the order was placed. An order is
+            // a record of what was bought, so editing the product later must not
+            // rewrite it — same reason `price` is copied here rather than read
+            // from the product. Shape matches utils/productFinish.js.
+            finish: {
+                body: {
+                    color: {
+                        hex: { type: String, trim: true, default: '' },
+                        image: { type: String, trim: true, default: '' }
+                    },
+                    material: { type: String, trim: true, default: '' }
+                },
+                fabric: {
+                    color: {
+                        hex: { type: String, trim: true, default: '' },
+                        image: { type: String, trim: true, default: '' }
+                    },
+                    material: { type: String, trim: true, default: '' }
+                }
             }
         }
     ],
@@ -62,6 +82,13 @@ const OrderSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 0.0
+    },
+    // The customer typed a city that is not on the shipping list, so no rate was
+    // known when the order was placed. `shippingPrice` is 0 until an admin agrees
+    // one with them — see utils/shipping.js.
+    isCustomShippingCity: {
+        type: Boolean,
+        default: false
     },
     totalPrice: {
         type: Number,

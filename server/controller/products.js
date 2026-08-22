@@ -3,6 +3,11 @@ const ProductType = require('../models/ProductType');
 const { resolveSubCategory } = require('./categories');
 const { slugify } = require('../utils/slug');
 const { getProductTypeSlugs, isProductType } = require('../utils/productTypes');
+const {
+    FINISH_PARTS,
+    mirrorLegacyColor,
+    normalizeFinish,
+} = require('../utils/productFinish');
 
 const parseNonNegativeNumber = (value) => {
   if (value === undefined || value === null || value === '') return undefined;
@@ -59,6 +64,7 @@ const buildProductPayload = (body) => {
   const { name, price, image, images, description, color, category, discountPrice, dimensions } = body;
 
   const gallery = normalizeImages(images, image);
+  const finish = normalizeFinish(body.finish);
 
   return {
     name,
@@ -66,11 +72,66 @@ const buildProductPayload = (body) => {
     image: gallery[0] || image,
     images: gallery,
     description,
-    color,
+    finish,
+    // Kept in sync so the cart, checkout and any older reader still find a colour.
+    color: mirrorLegacyColor(finish, color),
     category,
     discountPrice: normalizeDiscountPrice(discountPrice, price),
     dimensions: normalizeDimensions(dimensions),
   };
+};
+
+// @desc    Materials the admin has used before, offered as form suggestions
+// @route   GET /api/products/materials
+// @access  Public (only the admin form asks for it)
+//
+// Read straight off the products rather than kept in their own collection: the
+// list is then always accurate, with no upserts to run and no orphans to clean up.
+const getMaterials = async (req, res) => {
+  try {
+    const [body, fabric] = await Promise.all(
+      FINISH_PARTS.map((part) => Product.distinct(`finish.${part}.material`))
+    );
+
+    // Spellings that differ only in case are one material, so "Linen" and "LINEN"
+    // must not both be offered. Which one survives cannot be left to the order
+    // distinct() happens to return, or the admin sees a different spelling from
+    // one load to the next — so the nicest spelling wins, deterministically:
+    // Title Case beats all-lowercase, and both beat SHOUTING.
+    const titleCaseScore = (value) =>
+      value
+        .split(/\s+/)
+        .filter(Boolean)
+        .reduce((score, word) => {
+          const startsCapitalised = /^[A-Z]/.test(word) ? 1 : 0;
+          const shouted = word.slice(1).replace(/[^A-Z]/g, '').length;
+          return score + startsCapitalised - shouted;
+        }, 0);
+
+    const preferred = (a, b) => {
+      const difference = titleCaseScore(b) - titleCaseScore(a);
+      return difference !== 0 ? difference : a.localeCompare(b);
+    };
+
+    const tidy = (values) => {
+      const byKey = new Map();
+
+      values
+        .filter((value) => typeof value === 'string' && value.trim() !== '')
+        .map((value) => value.trim())
+        .forEach((value) => {
+          const key = value.toLowerCase();
+          const current = byKey.get(key);
+          if (!current || preferred(value, current) < 0) byKey.set(key, value);
+        });
+
+      return [...byKey.values()].sort((a, b) => a.localeCompare(b));
+    };
+
+    res.json({ body: tidy(body), fabric: tidy(fabric) });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching materials', error: error.message });
+  }
 };
 
 // Get all products (optionally filtered by category)
@@ -226,6 +287,7 @@ const updateProduct = async (req, res) => {
 };
 
 module.exports = {
+  getMaterials,
   getAllProducts,
   createProduct,
   getProductById,

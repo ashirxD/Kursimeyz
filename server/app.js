@@ -10,6 +10,7 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const apiRoutes = require('./routes/apis');
 const connectDB = require('./config/db');
 const { seedProductTypes } = require('./seed/productTypes');
+const { seedShippingCities } = require('./seed/shippingCities');
 const mongoose = require("mongoose");
 
 
@@ -49,6 +50,9 @@ if (process.env.MONGO_URI) {
         // The admin sidebar and shop nav are built from product types, so a
         // fresh database needs the built-in three before anything renders.
         await seedProductTypes();
+        // Checkout needs somewhere to read delivery rates from before the first
+        // order; without these every city would be treated as a custom one.
+        await seedShippingCities();
 
         server = app.listen(PORT, () => {
             console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);

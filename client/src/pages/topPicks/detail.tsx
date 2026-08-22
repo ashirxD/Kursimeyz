@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import ProductRating from "@/components/ProductRating";
 import ProductImageGallery from "@/components/ProductImageGallery";
+import ProductFinishSummary from "@/components/ProductFinishSummary";
+import { isFinishEmpty, resolveFinish } from "@/utils/productFinish";
 import {
   DIMENSION_LABELS,
   getDiscountPercent,
@@ -76,6 +78,8 @@ export default function ProductDetail() {
     : { path: "/top-picks", label: "Top Picks" };
   const productImages = getProductImages(product);
   const discounted = hasDiscount(product);
+  // Folds in the legacy single colour for products saved before the finish.
+  const finish = resolveFinish(product);
 
   return (
     <div className="pt-24 pb-16 px-6 md:px-10 max-w-[1440px] mx-auto">
@@ -162,20 +166,16 @@ export default function ProductDetail() {
             </div>
 
             <div className="flex flex-wrap gap-12">
-              <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
-                  Essence
-                </h3>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="size-10 rounded-full border-4 border-white shadow-xl"
-                    style={{ backgroundColor: product.color }}
-                  />
-                  <span className="font-bold text-[#1a2f1a] capitalize">
-                    {product.color}
-                  </span>
+              {!isFinishEmpty(finish) && (
+                <div className="space-y-4">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
+                    Essence
+                  </h3>
+                  {/* Stacked, so body and fabric each get their own line with the
+                      material spelled out beside the swatch. */}
+                  <ProductFinishSummary finish={finish} size="lg" layout="stacked" />
                 </div>
-              </div>
+              )}
 
               <div className="space-y-4">
                 <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40">

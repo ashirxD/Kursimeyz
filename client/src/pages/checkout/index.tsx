@@ -1,8 +1,10 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
+import CitySelect from "@/components/CitySelect";
 import { useCart } from "@/hooks/useCart";
 import { useOrder, type OrderPayload } from "@/hooks/useOrder";
+import { findShippingCity, useShippingCities } from "@/hooks/useShippingCities";
 import api from "@/utils/Axios";
 import { resolveImageUrl } from "@/utils/imageUrl";
 import {
@@ -80,6 +82,7 @@ const walletConfig = {
 export default function CheckoutPage() {
   const { cart } = useCart();
   const { createOrder, createOrderAsync, isCreating, createError } = useOrder();
+  const { cities } = useShippingCities();
   const navigate = useNavigate();
 
   const [address, setAddress] = useState({
@@ -132,7 +135,14 @@ export default function CheckoutPage() {
       0,
     ) || 0;
   const savings = listTotal - subtotal;
-  const shipping = subtotal > 0 ? 50 : 0;
+
+  // The rate comes from the city the customer picked. One they typed themselves
+  // has no rate yet, so nothing is charged for delivery and it is agreed over
+  // WhatsApp instead. The server resolves this the same way when the order is
+  // placed, so what is shown here is a quote, not the authority.
+  const selectedCity = findShippingCity(cities, address.city);
+  const isCustomCity = address.city.trim().length > 0 && !selectedCity;
+  const shipping = selectedCity?.shippingPrice ?? 0;
   const total = subtotal + shipping;
 
   const getWalletAccountNumber = (method: WalletMethod) =>
@@ -272,11 +282,11 @@ export default function CheckoutPage() {
                     setAddress({ ...address, street: value })
                   }
                 />
-                <CheckoutInput
+                <CitySelect
                   label="City"
-                  type="text"
                   placeholder="e.g. Lahore"
                   value={address.city}
+                  cities={cities}
                   onChange={(value) => setAddress({ ...address, city: value })}
                 />
                 <CheckoutInput
@@ -298,6 +308,10 @@ export default function CheckoutPage() {
                   }
                 />
               </div>
+
+              {isCustomCity && (
+                <CustomCityNotice whatsappNumber={paymentSettings.whatsappNumber} />
+              )}
             </section>
 
             <section>
@@ -477,7 +491,15 @@ export default function CheckoutPage() {
                 )}
                 <div className="flex justify-between text-[#1a2f1a]/60 font-medium">
                   <span>Shipping</span>
-                  <span>Rs. {shipping}</span>
+                  {isCustomCity ? (
+                    <span className="font-bold text-[#ff6b35]">
+                      To be confirmed
+                    </span>
+                  ) : selectedCity ? (
+                    <span>Rs. {shipping}</span>
+                  ) : (
+                    <span className="text-[#1a2f1a]/40">Enter your city</span>
+                  )}
                 </div>
                 <div className="pt-4 flex justify-between text-2xl font-black text-[#1a2f1a]">
                   <span>Total</span>
@@ -525,6 +547,46 @@ export default function CheckoutPage() {
     </>
   );
 }
+
+/**
+ * Shown when the customer types a city the shop has no rate for. The order is
+ * still accepted at no delivery charge; this is where they are told the rate
+ * gets agreed separately, so the total they see is not mistaken for the final one.
+ */
+const CustomCityNotice = ({ whatsappNumber }: { whatsappNumber: string }) => {
+  const digits = whatsappNumber.replace(/\D/g, "");
+
+  return (
+    <div className="mt-6 p-5 rounded-2xl bg-[#ff6b35]/5 border border-[#ff6b35]/20 flex gap-4">
+      <span className="material-symbols-outlined text-[22px] text-[#ff6b35] shrink-0">
+        local_shipping
+      </span>
+      <div className="space-y-2">
+        <p className="text-[13px] font-bold text-[#1a2f1a]">
+          Shipping rates may vary for this city
+        </p>
+        <p className="text-[12px] font-medium text-[#1a2f1a]/60 leading-relaxed">
+          We don't have a fixed delivery rate here yet, so no shipping is added
+          to your total. Place your order and we'll confirm the charge with you,
+          or ask us first on WhatsApp.
+        </p>
+        {digits && (
+          <a
+            href={`https://wa.me/${digits}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-[12px] font-black uppercase tracking-widest text-[#ff6b35] hover:underline"
+          >
+            Chat on WhatsApp
+            <span className="material-symbols-outlined text-[16px]">
+              arrow_forward
+            </span>
+          </a>
+        )}
+      </div>
+    </div>
+  );
+};
 
 interface CheckoutInputProps {
   label: string;

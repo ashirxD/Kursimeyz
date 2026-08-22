@@ -74,6 +74,16 @@ export default function Sidebar() {
       path: "/admin/about",
     },
     {
+      name: "Footer",
+      icon: "bottom_panel_open",
+      path: "/admin/footer",
+    },
+    {
+      name: "Shipping",
+      icon: "local_shipping",
+      path: "/admin/shipping",
+    },
+    {
       name: "Settings",
       icon: "settings",
       path: "/admin/settings",

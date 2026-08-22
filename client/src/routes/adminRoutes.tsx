@@ -11,8 +11,10 @@ const AdminOrderDetail = lazy(() => import('../pages/admin/orders/detail'));
 const AdminTransactions = lazy(() => import('../pages/admin/transactions/index'));
 const AdminCustomers = lazy(() => import('../pages/admin/customers/index'));
 const AdminSettings = lazy(() => import('../pages/admin/settings/index'));
+const AdminShipping = lazy(() => import('../pages/admin/shipping/index'));
 const AdminAbout = lazy(() => import('../pages/admin/about/index'));
 const AdminHome = lazy(() => import('../pages/admin/home/index'));
+const AdminFooter = lazy(() => import('../pages/admin/footer/index'));
 const AdminProfile = lazy(() => import('../pages/admin/profile'));
 const AdminSellerManagement = lazy(() => import('../pages/admin/SellerManagment/index'));
 export const adminRoutes = [
@@ -94,6 +96,22 @@ export const adminRoutes = [
                 element: (
                     <Suspense fallback={<LoadingSpinner />}>
                         <AdminAbout />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'footer',
+                element: (
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <AdminFooter />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'shipping',
+                element: (
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <AdminShipping />
                     </Suspense>
                 ),
             },

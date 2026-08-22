@@ -3,6 +3,7 @@ const multer = require('multer');
 const router = express.Router();
 const uploadController = require('../../controller/upload');
 const uploadMiddleware = require('../../utils/multer');
+const { protect, admin } = require('../../middleware/auth');
 
 const toUploadError = (err, res) => {
   if (err instanceof multer.MulterError) {
@@ -35,10 +36,11 @@ const handleMultiUpload = (req, res, next) => {
   });
 };
 
-// POST /api/upload - Handles single image upload
-router.post('/', handleUpload, uploadController.uploadImage);
+// POST /api/upload - Handles single image upload. Admin-only: an open upload
+// endpoint lets anyone fill the bucket, or host whatever they like from it.
+router.post('/', protect, admin, handleUpload, uploadController.uploadImage);
 
 // POST /api/upload/multiple - Handles a batch of gallery images
-router.post('/multiple', handleMultiUpload, uploadController.uploadImages);
+router.post('/multiple', protect, admin, handleMultiUpload, uploadController.uploadImages);
 
 module.exports = router;

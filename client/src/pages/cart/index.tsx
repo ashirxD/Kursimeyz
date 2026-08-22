@@ -1,6 +1,8 @@
 import { useCart } from "@/hooks/useCart";
 import { Link } from "react-router-dom";
 import { resolveImageUrl } from "@/utils/imageUrl";
+import ProductFinishSummary from "@/components/ProductFinishSummary";
+import { resolveFinish, type ProductFinish } from "@/utils/productFinish";
 import {
   getCoverImage,
   getEffectivePrice,
@@ -9,7 +11,12 @@ import {
 } from "@/utils/productPricing";
 
 interface CartLineItem {
-  product?: PricedProduct & { _id: string; name?: string; color?: string };
+  product?: PricedProduct & {
+    _id: string;
+    name?: string;
+    color?: string;
+    finish?: ProductFinish | null;
+  };
   quantity: number;
 }
 
@@ -28,8 +35,8 @@ export default function CartPage() {
     0,
   );
   const savings = listTotal - subtotal;
-  const shipping = subtotal > 0 ? 50 : 0;
-  const total = subtotal + shipping;
+  // Delivery depends on the city, which is only asked for at checkout.
+  const total = subtotal;
 
   if (isLoading) {
     return (
@@ -91,9 +98,12 @@ export default function CartPage() {
                         <h3 className="text-lg font-bold text-[#1a2f1a]">
                           {product.name || "Unknown Product"}
                         </h3>
-                        <p className="text-sm text-[#1a2f1a]/40 font-medium">
-                          {product.color}
-                        </p>
+                        <ProductFinishSummary
+                          finish={resolveFinish(product)}
+                          size="xs"
+                          showLabels={false}
+                          className="mt-1"
+                        />
                       </div>
                       <div className="text-right shrink-0">
                         <p
@@ -179,7 +189,7 @@ export default function CartPage() {
                 )}
                 <div className="flex justify-between text-[#white]/60 font-medium">
                   <span>Shipping</span>
-                  <span>Rs. {shipping}</span>
+                  <span className="text-white/40">Calculated at checkout</span>
                 </div>
                 <div className="pt-4 border-t border-white/10 flex justify-between text-xl font-black">
                   <span>Total</span>

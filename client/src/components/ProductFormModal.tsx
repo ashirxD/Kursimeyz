@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import CategoryCombobox from '@/components/CategoryCombobox';
+import MaterialInput from '@/components/MaterialInput';
 import ModalPortal from '@/components/ModalPortal';
-import ProductColorPicker from '@/components/ProductColorPicker';
 import ProductDimensionsInput from '@/components/ProductDimensionsInput';
 import ProductImagesUploader from '@/components/ProductImagesUploader';
+import SwatchPicker from '@/components/SwatchPicker';
 import { useCategories } from '@/hooks/useCategories';
+import { useMaterials } from '@/hooks/useMaterials';
+import {
+    emptyFinish,
+    resolveFinish,
+    type FinishPart,
+    type ProductFinish,
+} from '@/utils/productFinish';
 import { validateProductForm } from '@/utils/productFormValidation';
 import {
     getDiscountPercent,
@@ -19,7 +27,7 @@ export interface ProductFormCopy {
     namePlaceholder: string;
     pricePlaceholder: string;
     categoryPlaceholder: string;
-    colorLabel: string;
+    /** Swatch shortcuts offered for both the body and fabric colours. */
     colorPresets: string[];
     descriptionLabel: string;
     descriptionPlaceholder: string;
@@ -33,7 +41,8 @@ export interface ProductFormValues {
     discountPrice: number | null;
     images: string[];
     description: string;
-    color: string;
+    /** Body and fabric colour + material. See utils/productFinish.ts. */
+    finish: ProductFinish;
     dimensions: ProductDimensions;
     /** Category name; the server slugifies it and creates it if it is new. */
     subCategory: string;
@@ -59,13 +68,18 @@ const emptyDimensions = (): ProductDimensions => ({ unit: 'cm' });
 
 const toFormValues = (product: Product | undefined, defaultColor: string): ProductFormValues => {
     if (!product) {
+        const finish = emptyFinish();
+        // The type's first swatch seeds the fabric colour, which is where a
+        // product's single colour used to live.
+        finish.fabric.color = { hex: defaultColor, image: '' };
+
         return {
             name: '',
             price: 0,
             discountPrice: null,
             images: [],
             description: '',
-            color: defaultColor,
+            finish,
             dimensions: emptyDimensions(),
             subCategory: '',
         };
@@ -77,7 +91,8 @@ const toFormValues = (product: Product | undefined, defaultColor: string): Produ
         discountPrice: product.discountPrice ?? null,
         images: getProductImages(product),
         description: product.description,
-        color: product.color,
+        // Folds in the legacy single colour for products saved before the finish.
+        finish: resolveFinish(product),
         dimensions: product.dimensions
             ? { ...product.dimensions, unit: product.dimensions.unit ?? 'cm' }
             : emptyDimensions(),
@@ -108,10 +123,18 @@ function ProductForm({
     const [values, setValues] = useState<ProductFormValues>(() => toFormValues(product, defaultColor));
     const [isUploading, setIsUploading] = useState(false);
     const { categories, isLoading: isLoadingCategories } = useCategories(productType);
+    const { materials, isLoading: isLoadingMaterials } = useMaterials();
 
     const update = <K extends keyof ProductFormValues>(key: K, value: ProductFormValues[K]) => {
         setValues((current) => ({ ...current, [key]: value }));
     };
+
+    // Written out per part rather than keyed, so the finish stays fully typed.
+    const setBody = (body: FinishPart) =>
+        setValues((current) => ({ ...current, finish: { ...current.finish, body } }));
+
+    const setFabric = (fabric: FinishPart) =>
+        setValues((current) => ({ ...current, finish: { ...current.finish, fabric } }));
 
     const discountPercent = getDiscountPercent({
         price: values.price,
@@ -236,12 +259,56 @@ function ProductForm({
                                 onChange={(dimensions) => update('dimensions', dimensions)}
                             />
 
-                            <ProductColorPicker
-                                label={copy.colorLabel}
-                                presets={copy.colorPresets}
-                                value={values.color}
-                                onChange={(color) => update('color', color)}
-                            />
+                            <div className="space-y-4 border-t border-forest-moss/5 pt-4">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-forest-moss/40 ml-4">
+                                    Finish
+                                </p>
+
+                                <SwatchPicker
+                                    label="Body Colour"
+                                    presets={copy.colorPresets}
+                                    value={values.finish.body.color}
+                                    helper="The frame or structure. Leave it empty if this product has no separate body."
+                                    onChange={(color) => setBody({ ...values.finish.body, color })}
+                                />
+
+                                <MaterialInput
+                                    label="Body Material"
+                                    value={values.finish.body.material}
+                                    suggestions={materials.body}
+                                    isLoading={isLoadingMaterials}
+                                    placeholder="e.g. Solid Oak"
+                                    onChange={(material) =>
+                                        setBody({ ...values.finish.body, material })
+                                    }
+                                />
+
+                                <SwatchPicker
+                                    label="Fabric Colour"
+                                    presets={copy.colorPresets}
+                                    value={values.finish.fabric.color}
+                                    helper="The upholstery or covering."
+                                    onChange={(color) =>
+                                        setFabric({ ...values.finish.fabric, color })
+                                    }
+                                />
+
+                                <MaterialInput
+                                    label="Fabric Material"
+                                    value={values.finish.fabric.material}
+                                    suggestions={materials.fabric}
+                                    isLoading={isLoadingMaterials}
+                                    placeholder="e.g. Linen"
+                                    onChange={(material) =>
+                                        setFabric({ ...values.finish.fabric, material })
+                                    }
+                                />
+
+                                <p className="text-[9px] font-medium text-forest-moss/30 ml-4">
+                                    Both appear on the product page and on every order that
+                                    includes it. Materials you type are remembered as suggestions.
+                                </p>
+                            </div>
 
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">

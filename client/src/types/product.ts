@@ -1,4 +1,5 @@
 import type { ProductDimensions } from '@/utils/productPricing';
+import type { ProductFinish } from '@/utils/productFinish';
 
 /**
  * A product as the admin screens use it — `id` normalized from Mongo's `_id`.
@@ -13,7 +14,10 @@ export interface Product {
     images?: string[];
     description: string;
     dimensions?: ProductDimensions | null;
-    color: string;
+    /** Body and fabric colour + material. Absent on products saved before it. */
+    finish?: ProductFinish | null;
+    /** Legacy single colour, mirroring finish.fabric.color.hex. */
+    color?: string;
     /** ProductType slug, e.g. "chair". */
     category?: string;
     /** Category display name within that type, e.g. "Slim". */

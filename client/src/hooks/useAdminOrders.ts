@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/Axios';
+import type { ProductFinish } from '@/utils/productFinish';
 
 export const useAllOrders = (search?: string) => {
   const ordersQuery = useQuery({
@@ -108,6 +109,8 @@ export interface AdminOrderDetail {
     };
     quantity: number;
     price: number;
+    /** Copied from the product when the order was placed. */
+    finish?: ProductFinish | null;
   }>;
   shippingAddress: {
     street: string;
@@ -118,6 +121,8 @@ export interface AdminOrderDetail {
   paymentMethod: string;
   itemsPrice: number;
   shippingPrice: number;
+  /** The city was not on the shipping list, so no rate was charged. */
+  isCustomShippingCity?: boolean;
   totalPrice: number;
   isPaid: boolean;
   paidAt?: string;
