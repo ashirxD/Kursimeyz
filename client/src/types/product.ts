@@ -24,6 +24,8 @@ export interface Product {
     subCategory?: string | null;
     /** Slug of the same category — what the shop tabs filter on. */
     subCategorySlug?: string | null;
+    /** On the admin-curated Top Picks shelf on the storefront home. */
+    isTopPick?: boolean;
     averageRating?: number;
     ratingCount?: number;
 }

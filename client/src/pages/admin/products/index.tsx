@@ -96,13 +96,16 @@ export default function AdminProductsPage() {
               <h2 className="text-2xl md:text-3xl font-black text-forest-moss tracking-tight">
                 {productType.pluralName} Collection
               </h2>
+              {/* Labelled rather than an icon alone: it edits the whole
+                  collection, which is easy to miss as a bare pencil. */}
               <button
                 type="button"
                 onClick={() => setIsEditTypeOpen(true)}
                 title={`Edit ${productType.pluralName}`}
-                className="size-8 rounded-full flex items-center justify-center text-forest-moss/30 hover:text-forest-moss hover:bg-white transition-all"
+                className="shrink-0 flex items-center gap-1.5 pl-3 pr-4 py-2 rounded-full bg-white text-forest-moss border border-forest-moss/10 font-black text-xs uppercase tracking-widest shadow-soft hover:bg-forest-moss hover:text-white hover:border-forest-moss transition-all"
               >
-                <span className="material-symbols-outlined !text-lg">edit</span>
+                <span className="material-symbols-outlined !text-xl">edit</span>
+                Edit
               </button>
             </div>
             <p className="text-forest-moss-light/70 font-bold text-xs md:text-sm">

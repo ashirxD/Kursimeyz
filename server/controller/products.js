@@ -43,6 +43,26 @@ const normalizeDiscountPrice = (discountPrice, price) => {
   return parsedDiscount;
 };
 
+// Accepts the JSON boolean the admin screens send, and the string a query
+// param would arrive as. Anything else is "not stated", which callers treat as
+// leave-alone rather than false.
+const parseBoolean = (value) => {
+  if (typeof value === 'boolean') return value;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return undefined;
+};
+
+// The flag and its timestamp always move together: `topPickedAt` is what orders
+// the shelf, so it is stamped on the way in and cleared on the way out. Returns
+// null when the caller said nothing about the flag.
+const topPickFields = (value) => {
+  const isTopPick = parseBoolean(value);
+  if (isTopPick === undefined) return null;
+
+  return { isTopPick, topPickedAt: isTopPick ? new Date() : null };
+};
+
 const normalizeDimensions = (dimensions) => {
   if (!dimensions || typeof dimensions !== 'object') return undefined;
 
@@ -199,6 +219,8 @@ const createProduct = async (req, res) => {
     const newProduct = new Product({
       ...payload,
       ...subCategory,
+      // A product can be marked on the way in; left off when unstated.
+      ...(topPickFields(req.body.isTopPick) || {}),
       category,
     });
     await newProduct.save();
@@ -239,6 +261,66 @@ const getGroupedProducts = async (req, res) => {
   }
 };
 
+// @desc    The admin-curated shelf, newest pick first
+// @route   GET /api/products/top-picks
+// @access  Public
+//
+// Its own route rather than a flag on the list endpoint: the storefront home
+// asks for this on every visit, so it gets a query that hits one index and
+// carries no category or price filtering to reason about.
+const getTopPicks = async (req, res) => {
+  try {
+    const requested = Number(req.query.limit);
+    // Capped so a carousel can never be handed an unbounded list.
+    const limit = Number.isFinite(requested) && requested > 0 ? Math.min(requested, 60) : 60;
+
+    const products = await Product.find({ isTopPick: true })
+      .sort({ topPickedAt: -1, createdAt: -1 })
+      .limit(limit);
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching top picks', error: error.message });
+  }
+};
+
+// @desc    Mark or unmark a product as a Top Pick
+// @route   PATCH /api/products/:id/top-pick
+// @access  Admin
+//
+// Separate from updateProduct so the star on an admin card is one request that
+// cannot touch anything else on the product.
+const setTopPick = async (req, res) => {
+  try {
+    const fields = topPickFields(req.body.isTopPick);
+    if (!fields) {
+      return res.status(400).json({ message: 'isTopPick must be true or false' });
+    }
+
+    const current = await Product.findById(req.params.id).select('isTopPick').lean();
+    if (!current) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Re-sending the state a product is already in must not restamp
+    // topPickedAt, or a double-click would quietly reshuffle the shelf.
+    const update =
+      Boolean(current.isTopPick) === fields.isTopPick
+        ? { isTopPick: fields.isTopPick }
+        : fields;
+
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $set: update },
+      { new: true, runValidators: true }
+    );
+
+    res.json(product);
+  } catch (error) {
+    res.status(400).json({ message: 'Error updating top pick', error: error.message });
+  }
+};
+
 // Delete a product by ID
 const deleteProduct = async (req, res) => {
   try {
@@ -266,7 +348,10 @@ const updateProduct = async (req, res) => {
     const subCategory = await resolveSubCategory(category, req.body.subCategory);
 
     // $unset keeps a cleared dimensions form from leaving stale numbers behind.
-    const fields = { ...payload, ...subCategory };
+    // Left untouched unless the client actually sent the flag, so saving the
+    // product form never silently pulls a product off the shelf.
+    const topPick = topPickFields(req.body.isTopPick);
+    const fields = { ...payload, ...subCategory, ...(topPick || {}) };
     const update = dimensions
       ? { $set: { ...fields, dimensions } }
       : { $set: fields, $unset: { dimensions: '' } };
@@ -292,6 +377,8 @@ module.exports = {
   createProduct,
   getProductById,
   getGroupedProducts,
+  getTopPicks,
+  setTopPick,
   deleteProduct,
   updateProduct
 };

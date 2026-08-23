@@ -28,8 +28,9 @@ export default function Dashboard() {
         )
       )}
 
-      {/* Top Picks Selection */}
-      <TopPicks limit={5} isDashboard={true} />
+      {/* Top Picks — the shelf the admin curated with the star on their product
+          cards. Carousels itself when there are more picks than fit. */}
+      <TopPicks isDashboard={true} />
 
       {/* Find Your Space Section */}
       <section ref={findYourSpaceRef} id="find-your-space" className="py-16 border-t border-slate-50">

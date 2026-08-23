@@ -82,16 +82,16 @@ export default function ProductDetail() {
   const finish = resolveFinish(product);
 
   return (
-    <div className="pt-24 pb-16 px-6 md:px-10 max-w-[1440px] mx-auto">
+    <div className="pt-20 pb-12 px-5 md:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumbs */}
-      <div className="flex items-center gap-2 mb-12 text-[10px] font-black uppercase tracking-[0.2em] text-[#1a2f1a]/40">
+      <div className="flex items-center gap-1.5 mb-6 text-[9px] font-black uppercase tracking-[0.18em] text-[#1a2f1a]/40">
         <Link
           to="/dashboard"
           className="hover:text-[#ff311b] transition-colors"
         >
           Home
         </Link>
-        <span className="material-symbols-outlined text-[12px]">
+        <span className="material-symbols-outlined text-[10px]">
           chevron_right
         </span>
         <Link
@@ -100,7 +100,7 @@ export default function ProductDetail() {
         >
           {shopLink.label}
         </Link>
-        <span className="material-symbols-outlined text-[12px]">
+        <span className="material-symbols-outlined text-[10px]">
           chevron_right
         </span>
         <span className="text-[#1a2f1a]">
@@ -108,9 +108,9 @@ export default function ProductDetail() {
         </span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-start">
         {/* Left: Product Gallery */}
-        <div className="relative">
+        <div className="relative w-full max-w-[460px] mx-auto">
           <ProductImageGallery
             key={product._id}
             images={productImages}
@@ -118,28 +118,28 @@ export default function ProductDetail() {
           />
 
           {/* Floating Category Badge */}
-          <div className="absolute top-8 left-8 z-10 bg-white/80 backdrop-blur-md px-6 py-2 rounded-full shadow-lg shadow-black/5 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#ff311b]">
+          <div className="absolute top-5 left-5 z-10 bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full shadow-md shadow-black/5 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[14px] text-[#ff311b]">
               verified
             </span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]">
+            <span className="text-[9px] font-black uppercase tracking-widest text-[#1a2f1a]">
               Premium {productKind?.name || product.category}
             </span>
           </div>
         </div>
 
         {/* Right: Product Info */}
-        <div className="flex flex-col h-full pt-4">
-          <div className="mb-10">
-            <h1 className="text-[44px] lg:text-[64px] font-black text-[#1a2f1a] tracking-tight leading-[0.95] mb-6">
+        <div className="flex flex-col h-full pt-1">
+          <div className="mb-6">
+            <h1 className="text-[30px] lg:text-[40px] font-black text-[#1a2f1a] tracking-tight leading-[1] mb-3">
               {product.name}
             </h1>
-            <div className="flex flex-wrap items-center gap-6">
-              <span className="bg-[#ff311b]/10 text-[#ff311b] px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="bg-[#ff311b]/10 text-[#ff311b] px-3.5 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">
                 In Stock
               </span>
               {discounted && (
-                <span className="bg-[#ff311b] text-white px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
+                <span className="bg-[#ff311b] text-white px-3.5 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">
                   {getDiscountPercent(product)}% Off
                 </span>
               )}
@@ -147,56 +147,56 @@ export default function ProductDetail() {
                 <ProductRating
                   averageRating={product.averageRating}
                   ratingCount={product.ratingCount}
-                  size="md"
+                  size="sm"
                 />
               ) : (
-                <span className="text-sm font-bold text-[#1a2f1a]/40">No reviews yet</span>
+                <span className="text-[11px] font-bold text-[#1a2f1a]/40">No reviews yet</span>
               )}
             </div>
           </div>
 
-          <div className="space-y-12 mb-16">
-            <div className="space-y-4">
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
+          <div className="space-y-6 mb-8">
+            <div className="space-y-2">
+              <h3 className="text-[9px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
                 Philosophy
               </h3>
-              <p className="text-xl text-[#1a2f1a]/70 font-medium leading-relaxed max-w-lg">
+              <p className="text-[15px] text-[#1a2f1a]/70 font-medium leading-relaxed max-w-md">
                 {product.description}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-12">
+            <div className="flex flex-wrap gap-8">
               {!isFinishEmpty(finish) && (
-                <div className="space-y-4">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
+                <div className="space-y-2">
+                  <h3 className="text-[9px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
                     Essence
                   </h3>
                   {/* Stacked, so body and fabric each get their own line with the
                       material spelled out beside the swatch. */}
-                  <ProductFinishSummary finish={finish} size="lg" layout="stacked" />
+                  <ProductFinishSummary finish={finish} size="md" layout="stacked" />
                 </div>
               )}
 
-              <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
+              <div className="space-y-2">
+                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
                   Investment
                 </h3>
-                <div className="flex flex-wrap items-baseline gap-3">
+                <div className="flex flex-wrap items-baseline gap-2">
                   <p
-                    className={`text-3xl font-black ${
+                    className={`text-2xl font-black ${
                       discounted ? "text-[#ff311b]" : "text-[#1a2f1a]"
                     }`}
                   >
                     Rs. {getEffectivePrice(product)}
                   </p>
                   {discounted && (
-                    <p className="text-lg font-bold text-[#1a2f1a]/40 line-through">
+                    <p className="text-base font-bold text-[#1a2f1a]/40 line-through">
                       Rs. {product.price}
                     </p>
                   )}
                 </div>
                 {discounted && (
-                  <p className="text-[12px] font-bold text-[#ff311b]">
+                  <p className="text-[11px] font-bold text-[#ff311b]">
                     You save Rs. {product.price - getEffectivePrice(product)}
                   </p>
                 )}
@@ -204,24 +204,24 @@ export default function ProductDetail() {
             </div>
 
             {hasDimensions(product.dimensions) && (
-              <div className="space-y-4">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
+              <div className="space-y-2">
+                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
                   Dimensions
                 </h3>
-                <dl className="flex flex-wrap gap-3">
+                <dl className="flex flex-wrap gap-2">
                   {DIMENSION_LABELS.filter(
                     ({ key }) => Number(product.dimensions?.[key]) > 0,
                   ).map(({ key, label }) => (
                     <div
                       key={key}
-                      className="bg-[#f4f5f0] rounded-2xl px-6 py-4 min-w-[110px]"
+                      className="bg-[#f4f5f0] rounded-xl px-4 py-2.5 min-w-[86px]"
                     >
-                      <dt className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40 mb-1">
+                      <dt className="text-[9px] font-black uppercase tracking-widest text-[#1a2f1a]/40 mb-0.5">
                         {label}
                       </dt>
-                      <dd className="text-xl font-black text-[#1a2f1a]">
+                      <dd className="text-base font-black text-[#1a2f1a]">
                         {product.dimensions?.[key]}
-                        <span className="text-[12px] font-bold text-[#1a2f1a]/40 ml-1">
+                        <span className="text-[10px] font-bold text-[#1a2f1a]/40 ml-1">
                           {product.dimensions?.unit ?? "cm"}
                         </span>
                       </dd>
@@ -232,36 +232,36 @@ export default function ProductDetail() {
             )}
           </div>
 
-          <div className="mt-auto space-y-6">
+          <div className="mt-auto space-y-3">
             <div className="flex items-center gap-2">
-              <div className="bg-[#f4f5f0] p-2 rounded-2xl flex items-center">
+              <div className="bg-[#f4f5f0] p-1.5 rounded-xl flex items-center">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="size-12 rounded-xl text-[#1a2f1a] hover:bg-white hover:shadow-sm transition-all flex items-center justify-center"
+                  className="size-10 rounded-lg text-[#1a2f1a] hover:bg-white hover:shadow-sm transition-all flex items-center justify-center"
                 >
-                  <span className="material-symbols-outlined">remove</span>
+                  <span className="material-symbols-outlined text-[20px]">remove</span>
                 </button>
-                <div className="w-16 text-center text-xl font-black text-[#1a2f1a]">
+                <div className="w-12 text-center text-lg font-black text-[#1a2f1a]">
                   {quantity}
                 </div>
                 <button
                   onClick={() => setQuantity((q) => q + 1)}
-                  className="size-12 rounded-xl text-[#1a2f1a] hover:bg-white hover:shadow-sm transition-all flex items-center justify-center"
+                  className="size-10 rounded-lg text-[#1a2f1a] hover:bg-white hover:shadow-sm transition-all flex items-center justify-center"
                 >
-                  <span className="material-symbols-outlined">add</span>
+                  <span className="material-symbols-outlined text-[20px]">add</span>
                 </button>
               </div>
 
               <button
                 onClick={handleAddToCart}
                 disabled={isAdding}
-                className={`flex-1 h-14 rounded-[1.5rem] font-black uppercase tracking-widest transition-all transform active:scale-95 shadow-xl flex items-center justify-center gap-3 ${
+                className={`flex-1 h-12 rounded-[1.25rem] text-[12px] font-black uppercase tracking-widest transition-all transform active:scale-95 shadow-lg flex items-center justify-center gap-2 ${
                   added
                     ? "bg-[#ff311b] text-[#1a2f1a]"
                     : "bg-[#1a2f1a] text-white hover:bg-black"
                 }`}
               >
-                <span className="material-symbols-outlined text-[20px]">
+                <span className="material-symbols-outlined text-[18px]">
                   {added ? "check_circle" : "shopping_bag"}
                 </span>
                 <span>
@@ -270,7 +270,7 @@ export default function ProductDetail() {
               </button>
             </div>
 
-            <p className="text-[11px] text-[#1a2f1a]/40 font-medium text-center italic">
+            <p className="text-[10px] text-[#1a2f1a]/40 font-medium text-center italic">
               * Complimented with free luxury shipping across Pakistan.
             </p>
           </div>

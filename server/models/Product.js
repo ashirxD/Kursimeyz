@@ -114,6 +114,19 @@ const ProductSchema = new mongoose.Schema({
     default: 0,
     min: 0,
   },
+  // The admin-curated shelf on the storefront home. Marking is deliberate
+  // rather than derived from sales or ratings, so the shop can lead with
+  // whatever it wants to sell today.
+  isTopPick: {
+    type: Boolean,
+    default: false,
+  },
+  // When the product was marked. Orders the shelf newest-pick-first, so a
+  // fresh pick lands at the front without the admin arranging anything.
+  topPickedAt: {
+    type: Date,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -122,5 +135,7 @@ const ProductSchema = new mongoose.Schema({
 
 // Every shop and admin listing filters by type, then optionally by category.
 ProductSchema.index({ category: 1, subCategorySlug: 1 });
+// The home shelf reads marked products newest-first on every page load.
+ProductSchema.index({ isTopPick: 1, topPickedAt: -1 });
 
 module.exports = mongoose.model('Product', ProductSchema);

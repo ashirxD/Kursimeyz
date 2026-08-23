@@ -35,12 +35,48 @@ export default function AdminProductCard({
 }: AdminProductCardProps) {
     const [isEditOpen, setIsEditOpen] = useState(false);
     // Mutations only — the list page already owns the fetch.
-    const { updateProduct, isUpdating } = useProducts({ enabled: false });
+    const { updateProduct, isUpdating, setTopPick, isSettingTopPick } = useProducts({
+        enabled: false,
+    });
 
     const imageCount = getProductImages(product).length;
     const discounted = hasDiscount(product);
     const dimensions = formatDimensions(product.dimensions);
     const finish = resolveFinish(product);
+
+    // Marking is one click on the card rather than a field inside the edit form:
+    // curating the home shelf is a pass across the whole grid, not a product edit.
+    const topPickButton = (
+        <button
+            type="button"
+            onClick={() =>
+                setTopPick({ id: product.id, isTopPick: !product.isTopPick }).catch(
+                    (error) => console.error('Failed to update top pick:', error)
+                )
+            }
+            disabled={isSettingTopPick}
+            aria-pressed={Boolean(product.isTopPick)}
+            title={
+                product.isTopPick
+                    ? 'Remove from the storefront Top Picks'
+                    : 'Show this on the storefront Top Picks shelf'
+            }
+            className={`absolute bottom-4 right-4 size-10 rounded-full backdrop-blur shadow-soft flex items-center justify-center transition-all disabled:opacity-50 ${
+                product.isTopPick
+                    ? 'bg-clay text-white'
+                    : 'bg-white/90 text-forest-moss/40 hover:text-clay'
+            }`}
+        >
+            <span
+                className="material-symbols-outlined !text-lg"
+                style={{
+                    fontVariationSettings: product.isTopPick ? "'FILL' 1" : "'FILL' 0",
+                }}
+            >
+                star
+            </span>
+        </button>
+    );
 
     const editModal = (
         <ProductFormModal
@@ -89,6 +125,8 @@ export default function AdminProductCard({
                                 <span className="text-[11px] font-black">{imageCount}</span>
                             </div>
                         )}
+
+                        {topPickButton}
                     </div>
 
                     {/* Content Section */}
@@ -178,6 +216,8 @@ export default function AdminProductCard({
                             <span className="text-[11px] font-black">{imageCount}</span>
                         </div>
                     )}
+
+                    {topPickButton}
                 </div>
                 <div className="p-6 space-y-3">
                     <div className="flex items-center justify-between">

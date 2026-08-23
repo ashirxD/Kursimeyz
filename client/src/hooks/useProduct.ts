@@ -19,6 +19,8 @@ export interface Product {
   /** Category display name within the product type, e.g. "Slim". */
   subCategory?: string | null;
   subCategorySlug?: string | null;
+  /** On the admin-curated Top Picks shelf on the storefront home. */
+  isTopPick?: boolean;
   averageRating?: number;
   ratingCount?: number;
 }

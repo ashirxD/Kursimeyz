@@ -22,7 +22,8 @@ export const useProducts = (options: ProductQueryOptions = {}) => {
     const { category, subCategory, minPrice, maxPrice, enabled = true } = options;
 
     // Saving a product can mint a new category and a new material, so all three
-    // caches go stale together.
+    // caches go stale together. The Top Picks shelf is cached under this same
+    // ['products'] prefix, so it is refetched by the same call.
     const invalidateProducts = () => {
         queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
         queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });
@@ -69,6 +70,16 @@ export const useProducts = (options: ProductQueryOptions = {}) => {
         onSuccess: invalidateProducts,
     });
 
+    // Mark or unmark a Top Pick. Its own tiny endpoint rather than a full
+    // product update, so the star on a card cannot disturb any other field.
+    const setTopPickMutation = useMutation({
+        mutationFn: async ({ id, isTopPick }: { id: string; isTopPick: boolean }) => {
+            const response = await api.patch(`/products/${id}/top-pick`, { isTopPick });
+            return response.data;
+        },
+        onSuccess: invalidateProducts,
+    });
+
     // Update a product
     const updateProductMutation = useMutation({
         mutationFn: async ({ id, ...updatedProduct }: Product) => {
@@ -86,6 +97,8 @@ export const useProducts = (options: ProductQueryOptions = {}) => {
         isAdding: addProductMutation.isPending,
         updateProduct: updateProductMutation.mutateAsync,
         isUpdating: updateProductMutation.isPending,
+        setTopPick: setTopPickMutation.mutateAsync,
+        isSettingTopPick: setTopPickMutation.isPending,
         deleteProduct: deleteProductMutation.mutateAsync,
         isDeleting: deleteProductMutation.isPending,
     };
