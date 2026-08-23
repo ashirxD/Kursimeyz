@@ -8,6 +8,7 @@ import ProductRating from "@/components/ProductRating";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductFinishSummary from "@/components/ProductFinishSummary";
 import { isFinishEmpty, resolveFinish } from "@/utils/productFinish";
+import { splitDescriptionBlocks } from "@/utils/productDescription";
 import {
   DIMENSION_LABELS,
   getDiscountPercent,
@@ -80,6 +81,9 @@ export default function ProductDetail() {
   const discounted = hasDiscount(product);
   // Folds in the legacy single colour for products saved before the finish.
   const finish = resolveFinish(product);
+  // Each detail the admin added is its own paragraph; newlines inside one are
+  // kept by whitespace-pre-line rather than collapsed into a run-on line.
+  const descriptionBlocks = splitDescriptionBlocks(product.description);
 
   return (
     <div className="pt-20 pb-12 px-5 md:px-8 max-w-[1200px] mx-auto">
@@ -156,14 +160,23 @@ export default function ProductDetail() {
           </div>
 
           <div className="space-y-6 mb-8">
-            <div className="space-y-2">
-              <h3 className="text-[9px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
-                Philosophy
-              </h3>
-              <p className="text-[15px] text-[#1a2f1a]/70 font-medium leading-relaxed max-w-md">
-                {product.description}
-              </p>
-            </div>
+            {descriptionBlocks.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#1a2f1a]/40">
+                  Philosophy
+                </h3>
+                <div className="space-y-2 max-w-md">
+                  {descriptionBlocks.map((block, index) => (
+                    <p
+                      key={index}
+                      className="text-[15px] text-[#1a2f1a]/70 font-medium leading-relaxed whitespace-pre-line"
+                    >
+                      {block}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-wrap gap-8">
               {!isFinishEmpty(finish) && (
@@ -269,10 +282,6 @@ export default function ProductDetail() {
                 </span>
               </button>
             </div>
-
-            <p className="text-[10px] text-[#1a2f1a]/40 font-medium text-center italic">
-              * Complimented with free luxury shipping across Pakistan.
-            </p>
           </div>
         </div>
       </div>

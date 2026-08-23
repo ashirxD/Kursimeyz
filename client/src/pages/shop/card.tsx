@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
-import ProductRating from "@/components/ProductRating";
+import ProductCoverImage from "@/components/ProductCoverImage";
 import ProductPrice from "@/components/ProductPrice";
+import ProductRating from "@/components/ProductRating";
 import type { Product } from "@/types/product";
-import { resolveImageUrl } from "@/utils/imageUrl";
 import {
   formatDimensions,
   getDiscountPercent,
@@ -15,14 +15,25 @@ import {
 interface ShopProductCardProps {
   product: Product;
   badge?: "NEW" | "SALE";
+  /** The collection's Material Symbols icon, drawn if the photo is unavailable. */
+  placeholderIcon?: string;
 }
 
 /**
  * The shopper-facing product card, shared by every kind of product. The chairs,
  * tables and sofas pages each had a byte-identical copy of this before types
  * became data.
+ *
+ * The photo is the hero: a fixed 4/3 frame on a warm off-white, contained rather
+ * than cropped so a wardrobe and a stool both read as themselves and neither
+ * breaks the row. Everything below it is a plain column — name, description,
+ * price, rating, dimensions — each line only drawn when the product has one.
  */
-export default function ShopProductCard({ product, badge }: ShopProductCardProps) {
+export default function ShopProductCard({
+  product,
+  badge,
+  placeholderIcon,
+}: ShopProductCardProps) {
   const { addToCart, isAdding } = useCart();
   const [added, setAdded] = useState(false);
   const productUrl = `/product/${product.id}`;
@@ -46,104 +57,104 @@ export default function ShopProductCard({ product, badge }: ShopProductCardProps
     );
   };
 
-  const addToCartButtonClass = `px-6 py-2.5 ${
-    added ? "bg-[#ff311b] text-[#1a2f1a]" : "bg-[#1a2f1a] hover:bg-black text-white"
-  } text-[12px] font-black uppercase tracking-widest rounded-full shadow-xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50`;
+  const addToCartButtonClass = `px-5 py-2.5 ${
+    added ? "bg-[#ff311b] text-white" : "bg-[#1a2f1a] hover:bg-black text-white"
+  } text-[11px] font-black uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60`;
 
   return (
-    <div className="group flex flex-col">
-      <div className="relative bg-[#f4f5f0] rounded-2xl overflow-hidden aspect-square flex items-center justify-center transition-all duration-500 group-hover:shadow-lg group-hover:shadow-black/5">
+    <article className="group flex flex-col h-full min-w-0">
+      {/* Image frame — identical dimensions on every card, whatever the photo is. */}
+      <div className="relative aspect-[4/3] rounded-[20px] overflow-hidden bg-[#faf9f6] border border-[#1a2f1a]/[0.06] transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_16px_32px_-16px_rgba(26,47,26,0.18)] group-hover:border-[#1a2f1a]/10">
+        <Link
+          to={productUrl}
+          aria-label={product.name}
+          className="absolute inset-0 block"
+        >
+          <ProductCoverImage
+            images={images}
+            alt={product.name}
+            icon={placeholderIcon}
+            padClassName="p-5 sm:p-6"
+            layerClassName="group-hover:scale-[1.03]"
+          />
+        </Link>
+
         {resolvedBadge && (
-          <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#ff311b] text-white">
+          <span className="absolute top-3 left-3 z-20 pointer-events-none px-2.5 py-1 rounded-full bg-[#ff311b] text-white text-[9px] font-black uppercase tracking-[0.12em] shadow-sm shadow-[#ff311b]/20">
             {resolvedBadge}
-          </div>
+          </span>
         )}
 
+        {/* Real information, not decoration: this product has more to look at. */}
         {images.length > 1 && (
-          <div className="absolute top-4 right-4 z-20 px-2.5 py-1 rounded-full bg-white/80 backdrop-blur-md text-[#1a2f1a] flex items-center gap-1">
-            <span className="material-symbols-outlined text-[13px]">
+          <span className="absolute top-3 right-3 z-20 pointer-events-none pl-2 pr-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[#1a2f1a]/70 flex items-center gap-1 shadow-sm shadow-black/5">
+            <span className="material-symbols-outlined text-[12px]">
               photo_library
             </span>
             <span className="text-[10px] font-black">{images.length}</span>
-          </div>
+          </span>
         )}
 
-        {/* Add to Cart overlay — desktop hover only */}
-        <div className="absolute inset-0 hidden md:flex items-center justify-center translate-y-full group-hover:translate-y-0 transition-transform duration-500 z-10 pointer-events-none group-hover:pointer-events-auto">
+        {/* Add to Cart — desktop hover only; the mobile button lives below. */}
+        <div className="absolute inset-x-0 bottom-0 z-20 hidden md:flex justify-center p-4 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none group-hover:pointer-events-auto">
           <button
             onClick={handleAddToCart}
             disabled={isAdding || added}
-            className={`${addToCartButtonClass} pointer-events-auto`}
+            className={`${addToCartButtonClass} shadow-lg shadow-black/10`}
           >
-            <span className="material-symbols-outlined text-[16px]">
+            <span className="material-symbols-outlined text-[15px]">
               {added ? "check_circle" : "shopping_bag"}
             </span>
             {isAdding ? "Adding..." : added ? "Added!" : "Add to Cart"}
           </button>
         </div>
-
-        <Link
-          to={productUrl}
-          className="relative flex items-center justify-center w-full h-full p-6"
-        >
-          <img
-            src={resolveImageUrl(images[0])}
-            alt={product.name}
-            className={`w-full h-full object-contain transition-all duration-700 group-hover:scale-110 ${
-              images.length > 1 ? "group-hover:opacity-0" : ""
-            }`}
-          />
-          {/* Second shot previews on hover, the way most storefronts do it. */}
-          {images.length > 1 && (
-            <img
-              src={resolveImageUrl(images[1])}
-              alt={`${product.name} alternate view`}
-              className="absolute inset-0 w-full h-full object-contain p-6 opacity-0 transition-all duration-700 group-hover:opacity-100 group-hover:scale-110"
-            />
-          )}
-        </Link>
       </div>
 
-      <Link to={productUrl} className="mt-4 flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h3 className="text-[15px] font-bold text-[#1a2f1a] truncate group-hover:text-[#ff311b] transition-colors">
+      {/* Image → name → description → price → rating → dimensions. */}
+      <div className="flex flex-col flex-1 pt-4 px-0.5">
+        <Link to={productUrl} className="block min-w-0">
+          <h3 className="text-[16px] font-bold text-[#1a2f1a] leading-snug truncate group-hover:text-[#ff311b] transition-colors">
             {product.name}
           </h3>
-          <p className="text-[12px] text-[#1a2f1a]/40 font-medium mt-0.5 truncate">
-            {product.description}
-          </p>
-          {dimensions && (
-            <p className="text-[11px] text-[#1a2f1a]/30 font-bold mt-0.5 truncate">
-              {dimensions}
+          {product.description && (
+            <p className="text-[13px] text-[#1a2f1a]/40 font-medium mt-1 truncate">
+              {product.description}
             </p>
           )}
-          <div className="mt-1">
-            <ProductRating
-              averageRating={product.averageRating}
-              ratingCount={product.ratingCount}
-            />
-          </div>
+        </Link>
+
+        <div className="mt-2.5">
+          <ProductPrice product={product} size="lg" showPercent={false} />
         </div>
-        <ProductPrice
-          product={product}
-          size="md"
-          layout="stacked"
-          showPercent={false}
-          className="shrink-0"
-        />
-      </Link>
+
+        {/* Both omit themselves when the product has nothing to say, so no card
+            carries an empty row — and the dimensions sit on the floor of the
+            card, keeping that line level across a row of mismatched products. */}
+        <div className="mt-1.5">
+          <ProductRating
+            averageRating={product.averageRating}
+            ratingCount={product.ratingCount}
+          />
+        </div>
+
+        {dimensions && (
+          <p className="mt-auto pt-3 text-[11px] font-bold tracking-wide text-[#1a2f1a]/30 truncate">
+            {dimensions}
+          </p>
+        )}
+      </div>
 
       {/* Add to Cart — mobile */}
       <button
         onClick={handleAddToCart}
         disabled={isAdding || added}
-        className={`md:hidden mt-3 w-full ${addToCartButtonClass}`}
+        className={`md:hidden mt-4 w-full ${addToCartButtonClass}`}
       >
-        <span className="material-symbols-outlined text-[16px]">
+        <span className="material-symbols-outlined text-[15px]">
           {added ? "check_circle" : "shopping_bag"}
         </span>
         {isAdding ? "Adding..." : added ? "Added!" : "Add to Cart"}
       </button>
-    </div>
+    </article>
   );
 }

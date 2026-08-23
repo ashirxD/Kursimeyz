@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import CategoryTabs from "@/components/CategoryTabs";
 import CollectionCover from "@/components/CollectionCover";
-import { useCategories } from "@/hooks/useCategories";
+import { hasUsableCategories, useCategories } from "@/hooks/useCategories";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductTypeBySlug } from "@/hooks/useProductTypes";
@@ -121,13 +121,13 @@ export default function ShopPage() {
       </nav>
 
       {/* Hero */}
-      <div className="mb-12">
-        <h1 className="text-[40px] lg:text-[52px] font-black text-[#1a2f1a] tracking-tight leading-[1.05] mb-4">
+      <div className="mb-10">
+        <h1 className="text-[32px] lg:text-[40px] font-black text-[#1a2f1a] tracking-tight leading-[1.05] mb-3">
           {productType.heroTitle ||
             `Find your perfect ${productType.name.toLowerCase()}`}
         </h1>
         {productType.heroSubtitle && (
-          <p className="text-base text-[#1a2f1a]/40 font-medium max-w-[520px] leading-relaxed">
+          <p className="text-[15px] text-[#1a2f1a]/40 font-medium max-w-[480px] leading-relaxed">
             {productType.heroSubtitle}
           </p>
         )}
@@ -171,28 +171,39 @@ export default function ShopPage() {
               </button>
             )}
           </div>
+
+          {/* Categories read as the second filter, so they live with the
+              first one rather than floating above the grid. */}
+          {hasUsableCategories(categories) && (
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-[#1a2f1a]">Category</h3>
+                <span className="material-symbols-outlined text-[16px] text-[#1a2f1a]/30">
+                  category
+                </span>
+              </div>
+              <CategoryTabs
+                categories={categories}
+                value={activeCategory}
+                onChange={handleCategoryChange}
+                orientation="vertical"
+              />
+            </div>
+          )}
         </aside>
 
         {/* ─── Product Grid ─── */}
         <div className="flex-1 min-w-0">
-          <CategoryTabs
-            categories={categories}
-            value={activeCategory}
-            onChange={handleCategoryChange}
-          />
-
           {isLoading ? (
             /* Skeleton Loader */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="bg-slate-100 rounded-2xl aspect-square mb-4"></div>
-                  <div className="flex justify-between gap-4">
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-slate-100 rounded-full w-3/4"></div>
-                      <div className="h-3 bg-slate-100 rounded-full w-1/2"></div>
-                    </div>
-                    <div className="h-4 bg-slate-100 rounded-full w-12"></div>
+                  <div className="bg-[#f4f5f0] rounded-[20px] aspect-[4/3]"></div>
+                  <div className="pt-4 space-y-2.5">
+                    <div className="h-4 bg-[#f4f5f0] rounded-full w-3/4"></div>
+                    <div className="h-3 bg-[#f4f5f0] rounded-full w-1/2"></div>
+                    <div className="h-5 bg-[#f4f5f0] rounded-full w-20"></div>
                   </div>
                 </div>
               ))}
@@ -212,9 +223,13 @@ export default function ShopPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
                 {visibleProducts.map((product) => (
-                  <ShopProductCard key={product.id} product={product} />
+                  <ShopProductCard
+                    key={product.id}
+                    product={product}
+                    placeholderIcon={productType.icon}
+                  />
                 ))}
               </div>
 

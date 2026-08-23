@@ -11,6 +11,15 @@ export interface Category {
     productCount: number;
 }
 
+/**
+ * Whether any category is worth offering as a filter. A category with no
+ * products is not shown, so a list of only-empty categories is the same view
+ * as "All" — callers that draw chrome around CategoryTabs gate it on this.
+ */
+export function hasUsableCategories(categories: Category[]): boolean {
+    return categories.some((category) => category.productCount > 0);
+}
+
 export const CATEGORIES_QUERY_KEY = ['categories'];
 
 /**

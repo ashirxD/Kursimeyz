@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import MaterialInput from '@/components/MaterialInput';
 import ModalPortal from '@/components/ModalPortal';
+import ProductDescriptionInput from '@/components/ProductDescriptionInput';
 import ProductDimensionsInput from '@/components/ProductDimensionsInput';
 import ProductImagesUploader from '@/components/ProductImagesUploader';
 import SwatchPicker from '@/components/SwatchPicker';
@@ -146,6 +147,10 @@ function ProductForm({
         if (!validateProductForm(e.currentTarget, values.name, values.price, values.discountPrice)) return;
         if (values.images.length === 0) {
             alert('Please upload at least one image!');
+            return;
+        }
+        if (!values.description.trim()) {
+            alert('Please write at least one description detail!');
             return;
         }
 
@@ -310,19 +315,12 @@ function ProductForm({
                                 </p>
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">
-                                    {copy.descriptionLabel}
-                                </label>
-                                <textarea
-                                    required
-                                    rows={3}
-                                    className="w-full bg-white px-5 py-4 rounded-3xl border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm resize-none"
-                                    placeholder={copy.descriptionPlaceholder}
-                                    value={values.description}
-                                    onChange={(e) => update('description', e.target.value)}
-                                />
-                            </div>
+                            <ProductDescriptionInput
+                                label={copy.descriptionLabel}
+                                placeholder={copy.descriptionPlaceholder}
+                                value={values.description}
+                                onChange={(description) => update('description', description)}
+                            />
 
                             <button
                                 disabled={isSubmitting || isUploading}
