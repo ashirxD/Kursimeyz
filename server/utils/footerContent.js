@@ -33,7 +33,7 @@ const DEFAULT_FOOTER_CONTENT = {
     theme: {
         backgroundColor: '#1a2f1a',
         // Headings, hover states and the contact glyphs.
-        accentColor: '#ff6b35',
+        accentColor: '#ff311b',
         // Everything else, drawn at a few different opacities.
         textColor: '#ffffff',
     },

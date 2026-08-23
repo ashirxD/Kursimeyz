@@ -64,7 +64,7 @@ export default function CartPage() {
           </p>
           <Link
             to="/dashboard"
-            className="px-10 py-4 bg-[#ff6b35] text-[#1a2f1a] rounded-full font-black uppercase tracking-widest hover:scale-[1.05] transition-all shadow-lg shadow-[#ff6b35]/20"
+            className="px-10 py-4 bg-[#ff311b] text-[#1a2f1a] rounded-full font-black uppercase tracking-widest hover:scale-[1.05] transition-all shadow-lg shadow-[#ff311b]/20"
           >
             Start Shopping
           </Link>
@@ -108,7 +108,7 @@ export default function CartPage() {
                       <div className="text-right shrink-0">
                         <p
                           className={`text-lg font-black ${
-                            discounted ? "text-[#ff6b35]" : "text-[#1a2f1a]"
+                            discounted ? "text-[#ff311b]" : "text-[#1a2f1a]"
                           }`}
                         >
                           Rs. {itemTotal}
@@ -182,7 +182,7 @@ export default function CartPage() {
                   <span>Rs. {subtotal}</span>
                 </div>
                 {savings > 0 && (
-                  <div className="flex justify-between text-[#ff6b35] font-bold">
+                  <div className="flex justify-between text-[#ff311b] font-bold">
                     <span>Discount savings</span>
                     <span>- Rs. {savings}</span>
                   </div>
@@ -199,7 +199,7 @@ export default function CartPage() {
 
               <Link
                 to="/checkout"
-                className="w-full py-5 bg-[#ff6b35] text-[#1a2f1a] rounded-full font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/20 flex items-center justify-center gap-3 mb-6"
+                className="w-full py-5 bg-[#ff311b] text-[#1a2f1a] rounded-full font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/20 flex items-center justify-center gap-3 mb-6"
               >
                 <span>Checkout Now</span>
                 <span className="material-symbols-outlined">arrow_forward</span>

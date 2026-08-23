@@ -61,7 +61,7 @@ export default function Dashboard() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
               </div>
-              <h3 className="text-xl font-black text-[#1a2f1a] group-hover:text-[#ff6b35] transition-colors duration-300 uppercase tracking-widest text-[16px]">
+              <h3 className="text-xl font-black text-[#1a2f1a] group-hover:text-[#ff311b] transition-colors duration-300 uppercase tracking-widest text-[16px]">
                 {type.pluralName}
               </h3>
               {type.tagline && (

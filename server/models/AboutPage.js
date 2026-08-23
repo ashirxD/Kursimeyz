@@ -44,7 +44,7 @@ const ContactLinkSchema = new mongoose.Schema(
 
 const ThemeSchema = new mongoose.Schema(
   {
-    accentColor: { type: String, trim: true, default: '#ff6b35' },
+    accentColor: { type: String, trim: true, default: '#ff311b' },
     headingColor: { type: String, trim: true, default: '#1a2f1a' },
     bodyColor: { type: String, trim: true, default: '#1a2f1a' },
     // Empty means inherit the site background instead of painting over it.

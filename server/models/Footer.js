@@ -41,7 +41,7 @@ const FooterSchema = new mongoose.Schema(
         enabled: { type: Boolean, default: true },
         theme: {
             backgroundColor: { type: String, trim: true, default: '#1a2f1a' },
-            accentColor: { type: String, trim: true, default: '#ff6b35' },
+            accentColor: { type: String, trim: true, default: '#ff311b' },
             textColor: { type: String, trim: true, default: '#ffffff' },
         },
         brand: {

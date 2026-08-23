@@ -27,7 +27,7 @@ const DEFAULT_ABOUT_CONTENT = {
   theme: {
     // Eyebrow dots, the second title line, value icons, the story badge and the
     // primary contact button.
-    accentColor: '#ff6b35',
+    accentColor: '#ff311b',
     // Every heading, plus the stat numbers.
     headingColor: '#1a2f1a',
     // Paragraphs and small labels, each at its own opacity.

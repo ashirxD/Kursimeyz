@@ -46,7 +46,7 @@ export default function ForgotPasswordForm({
 
   const isPage = variant === "page";
   const inputClass = isPage
-    ? "w-full h-11 lg:h-12 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff6b35] focus:ring-4 focus:ring-[#ff6b35]/10 transition-all duration-300 outline-none shadow-sm"
+    ? "w-full h-11 lg:h-12 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff311b] focus:ring-4 focus:ring-[#ff311b]/10 transition-all duration-300 outline-none shadow-sm"
     : "w-full bg-white px-5 py-3.5 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm";
   const labelClass = isPage
     ? "text-[#1a2f1a] text-[11px] font-black uppercase tracking-widest ml-1 opacity-60"
@@ -267,7 +267,7 @@ export default function ForgotPasswordForm({
           onClick={onBack || (() => navigate(returnTo))}
           className={
             isPage
-              ? "text-[#1a2f1a] font-black hover:text-[#ff6b35] transition-colors text-center"
+              ? "text-[#1a2f1a] font-black hover:text-[#ff311b] transition-colors text-center"
               : "text-xs font-bold text-forest-moss-light hover:text-forest-moss transition-colors text-center w-full"
           }
         >

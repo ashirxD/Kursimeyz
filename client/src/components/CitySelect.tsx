@@ -73,7 +73,7 @@ export default function CitySelect({
           onKeyDown={(e) => {
             if (e.key === "Escape") setIsOpen(false);
           }}
-          className="w-full h-14 pl-6 pr-12 rounded-2xl border border-slate-100 bg-[#f4f5f0]/50 focus:bg-white focus:border-[#ff6b35] transition-all outline-none font-bold text-[#1a2f1a]"
+          className="w-full h-14 pl-6 pr-12 rounded-2xl border border-slate-100 bg-[#f4f5f0]/50 focus:bg-white focus:border-[#ff311b] transition-all outline-none font-bold text-[#1a2f1a]"
         />
         <button
           type="button"
@@ -103,7 +103,7 @@ export default function CitySelect({
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-[#f4f5f0] transition-colors"
               >
-                <span className="material-symbols-outlined text-[18px] text-[#ff6b35]">
+                <span className="material-symbols-outlined text-[18px] text-[#ff311b]">
                   location_on
                 </span>
                 <span className="text-[13px] font-bold text-[#1a2f1a] truncate">

@@ -45,7 +45,7 @@ const LIMITS = {
 
 // Presets are shortcuts, not limits — every picker still takes any hex.
 const SURFACE_PRESETS = ['#1a2f1a', '#3a4d39', '#4b3621', '#111827', '#2b2b2b'];
-const ACCENT_PRESETS = ['#ff6b35', '#d27d53', '#8a9a5b', '#54b1a4', '#e8ecd7'];
+const ACCENT_PRESETS = ['#ff311b', '#d27d53', '#8a9a5b', '#54b1a4', '#e8ecd7'];
 const INK_PRESETS = ['#ffffff', '#f2ece0', '#e8ecd7', '#f4f5f0', '#1a2f1a'];
 
 const HREF_HELPER = "A page on your site like /about, or a full https:// address.";

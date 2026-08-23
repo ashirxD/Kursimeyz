@@ -37,10 +37,10 @@ const LIMITS = {
 };
 
 // Presets are shortcuts, not limits — every picker still takes any hex.
-const ACCENT_PRESETS = ['#ff6b35', '#d27d53', '#8a9a5b', '#54b1a4', '#4b3621'];
+const ACCENT_PRESETS = ['#ff311b', '#d27d53', '#8a9a5b', '#54b1a4', '#4b3621'];
 const INK_PRESETS = ['#1a2f1a', '#3a4d39', '#4b3621', '#1f2937', '#111827'];
 const SURFACE_PRESETS = ['#f8fafc', '#ffffff', '#f2ece0', '#f4f5f0', '#e8ecd7'];
-const BADGE_PRESETS = ['#ffffff', '#d27d53', '#ff6b35', '#8a9a5b', '#1a2f1a'];
+const BADGE_PRESETS = ['#ffffff', '#d27d53', '#ff311b', '#8a9a5b', '#1a2f1a'];
 
 const BADGE_POSITION_OPTIONS: Array<{ value: HeroBadgePosition; label: string }> = [
     { value: 'top-left', label: 'Top L' },

@@ -151,7 +151,7 @@ export default function ShopPage() {
               max={priceCeiling}
               value={Math.min(sliderValue, priceCeiling)}
               onChange={(e) => setSelectedMaxPrice(Number(e.target.value))}
-              className="w-full accent-[#ff6b35] cursor-pointer"
+              className="w-full accent-[#ff311b] cursor-pointer"
             />
             <div className="flex justify-between mt-2 text-[12px] font-bold text-[#1a2f1a]/50">
               <span>Rs. 0</span>

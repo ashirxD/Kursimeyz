@@ -74,7 +74,7 @@ export default function OrderHistory() {
         </div>
         <Link
           to="/dashboard"
-          className="inline-flex items-center gap-2 text-[#ff6b35] font-black uppercase tracking-widest hover:underline"
+          className="inline-flex items-center gap-2 text-[#ff311b] font-black uppercase tracking-widest hover:underline"
         >
           <span className="material-symbols-outlined text-xl">add</span>
           New Order
@@ -149,7 +149,7 @@ export default function OrderHistory() {
                     {order.status}
                   </span>
                   {order.isPaid && (
-                    <span className="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#ff6b35]/10 text-[#ff6b35]">
+                    <span className="px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#ff311b]/10 text-[#ff311b]">
                       Paid
                     </span>
                   )}
@@ -242,7 +242,7 @@ export default function OrderHistory() {
                           {order.shippingAddress.phone}
                         </p>
                         {order.isCustomShippingCity && (
-                          <p className="flex gap-2 pt-3 text-[12px] font-medium text-[#ff6b35]">
+                          <p className="flex gap-2 pt-3 text-[12px] font-medium text-[#ff311b]">
                             <span className="material-symbols-outlined text-[16px] shrink-0">
                               info
                             </span>
@@ -270,7 +270,7 @@ export default function OrderHistory() {
                           {order.paymentMethod}
                         </p>
                         <p
-                          className={`text-xs font-black uppercase tracking-widest ${order.isPaid ? "text-[#ff6b35]" : "text-orange-500"}`}
+                          className={`text-xs font-black uppercase tracking-widest ${order.isPaid ? "text-[#ff311b]" : "text-orange-500"}`}
                         >
                           {order.isPaid ? "Completed" : "Pending"}
                         </p>

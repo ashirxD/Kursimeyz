@@ -39,7 +39,7 @@ const HomePageSchema = new mongoose.Schema(
             enabled: { type: Boolean, default: true },
             kicker: {
                 text: { type: String, trim: true, default: '' },
-                dotColor: { type: String, trim: true, default: '#ff6b35' },
+                dotColor: { type: String, trim: true, default: '#ff311b' },
                 textColor: { type: String, trim: true, default: '#1a2f1a' },
             },
             headlineLines: { type: [HeadlineLineSchema], default: [] },
@@ -52,7 +52,7 @@ const HomePageSchema = new mongoose.Schema(
                 // 'scroll' jumps to the collections grid; 'link' follows href.
                 action: { type: String, enum: ['scroll', 'link'], default: 'scroll' },
                 href: { type: String, trim: true, default: '' },
-                backgroundColor: { type: String, trim: true, default: '#ff6b35' },
+                backgroundColor: { type: String, trim: true, default: '#ff311b' },
                 textColor: { type: String, trim: true, default: '#ffffff' },
             },
             image: {

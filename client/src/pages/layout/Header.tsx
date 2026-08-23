@@ -113,7 +113,7 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             Home
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff311b] transition-all group-hover:w-full"></span>
           </Link>
 
           {/* Top Picks */}
@@ -122,7 +122,7 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             Top Picks
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff311b] transition-all group-hover:w-full"></span>
           </Link> */}
 
           {/* Shop with dropdown */}
@@ -141,7 +141,7 @@ export default function Header() {
               >
                 expand_more
               </span>
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff311b] transition-all group-hover:w-full"></span>
             </button>
 
             {/* Dropdown: the product types. Hovering one that has
@@ -174,7 +174,7 @@ export default function Header() {
                             : "text-[#1a2f1a]/70 hover:bg-[#f4f5f0] hover:text-[#1a2f1a]"
                         }`}
                       >
-                        <span className="material-symbols-outlined text-[20px] text-[#ff6b35] group-hover/item:scale-110 transition-transform">
+                        <span className="material-symbols-outlined text-[20px] text-[#ff311b] group-hover/item:scale-110 transition-transform">
                           {cat.icon}
                         </span>
                         <span className="text-[13px] font-bold truncate">
@@ -222,7 +222,7 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             About
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff311b] transition-all group-hover:w-full"></span>
           </Link>
 
           {/* Contact */}
@@ -231,7 +231,7 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             Contact
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff311b] transition-all group-hover:w-full"></span>
           </Link> */}
 
           {/* My Orders */}
@@ -240,7 +240,7 @@ export default function Header() {
             className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group"
           >
             My Orders
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff6b35] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ff311b] transition-all group-hover:w-full"></span>
           </Link>
         </nav>
 
@@ -276,7 +276,7 @@ export default function Header() {
           ) : (
             <Link
               to="/login"
-              className="h-11 px-4 sm:px-6 bg-[#ff6b35] hover:bg-[#f05a28] text-white rounded-full flex items-center gap-2 sm:gap-3 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#ff6b35]/30 font-bold text-[12px] sm:text-[13px] uppercase tracking-widest"
+              className="h-11 px-4 sm:px-6 bg-[#ff311b] hover:bg-[#e52c18] text-white rounded-full flex items-center gap-2 sm:gap-3 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#ff311b]/30 font-bold text-[12px] sm:text-[13px] uppercase tracking-widest"
             >
               <span className="material-symbols-outlined text-[20px]">
                 login
@@ -307,7 +307,7 @@ export default function Header() {
                         onClick={closeMobileShop}
                         className="flex flex-1 min-w-0 items-center gap-3 px-3 py-3 text-[#1a2f1a]"
                       >
-                        <span className="material-symbols-outlined text-[22px] text-[#ff6b35]">
+                        <span className="material-symbols-outlined text-[22px] text-[#ff311b]">
                           {cat.icon}
                         </span>
                         <span className="text-[11px] font-black uppercase tracking-wide truncate">

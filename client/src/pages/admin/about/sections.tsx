@@ -39,7 +39,7 @@ const LIMITS = {
 };
 
 // Presets are shortcuts, not limits — every picker still takes any hex.
-const ACCENT_PRESETS = ['#ff6b35', '#d27d53', '#8a9a5b', '#54b1a4', '#4b3621'];
+const ACCENT_PRESETS = ['#ff311b', '#d27d53', '#8a9a5b', '#54b1a4', '#4b3621'];
 const INK_PRESETS = ['#1a2f1a', '#3a4d39', '#4b3621', '#1f2937', '#111827'];
 const SURFACE_PRESETS = ['#f4f5f0', '#f2ece0', '#e8ecd7', '#f5e8e1', '#ffffff'];
 const PANEL_PRESETS = ['#1a2f1a', '#3a4d39', '#4b3621', '#d27d53', '#111827'];

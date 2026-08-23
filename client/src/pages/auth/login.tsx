@@ -54,10 +54,10 @@ const Login = () => {
 
           {/* Content */}
           <div className="max-w-md">
-            <div className="w-10 h-1 bg-[#ff6b35] mb-6 rounded-full"></div>
+            <div className="w-10 h-1 bg-[#ff311b] mb-6 rounded-full"></div>
             <blockquote className="text-[36px] lg:text-[40px] font-black leading-[1.1] mb-5 tracking-tight">
               Design isn't just about how it looks, but how it{" "}
-              <span className="text-[#ff6b35]">feels</span>.
+              <span className="text-[#ff311b]">feels</span>.
             </blockquote>
             <p className="text-white/70 text-base font-medium">
               Experience comfort in its purest, most sustainable form.
@@ -77,7 +77,7 @@ const Login = () => {
         </Link>
 
         {/* Decorative background circle */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff6b35]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff311b]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] pointer-events-none" />
 
         <div className="w-full max-w-[400px] flex flex-col gap-6 lg:gap-8 relative z-10 overflow-y-auto lg:overflow-visible max-h-full py-4 px-2 custom-scrollbar">
           {/* Mobile Logo */}
@@ -120,7 +120,7 @@ const Login = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-11 lg:h-12 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff6b35] focus:ring-4 focus:ring-[#ff6b35]/10 transition-all duration-300 outline-none shadow-sm"
+                className="w-full h-11 lg:h-12 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff311b] focus:ring-4 focus:ring-[#ff311b]/10 transition-all duration-300 outline-none shadow-sm"
                 placeholder="name@example.com"
                 disabled={isLoggingIn}
               />
@@ -137,7 +137,7 @@ const Login = () => {
                 </label>
                 <Link
                   to="/forgot-password?returnTo=/login"
-                  className="text-[#ff6b35] hover:text-[#f05a28] text-xs lg:text-sm font-black transition-colors"
+                  className="text-[#ff311b] hover:text-[#e52c18] text-xs lg:text-sm font-black transition-colors"
                 >
                   Forgot?
                 </Link>
@@ -148,7 +148,7 @@ const Login = () => {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-11 lg:h-12 px-4 pr-14 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff6b35] focus:ring-4 focus:ring-[#ff6b35]/10 transition-all duration-300 outline-none shadow-sm"
+                  className="w-full h-11 lg:h-12 px-4 pr-14 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff311b] focus:ring-4 focus:ring-[#ff311b]/10 transition-all duration-300 outline-none shadow-sm"
                   placeholder="••••••••"
                   disabled={isLoggingIn}
                 />
@@ -199,7 +199,7 @@ const Login = () => {
             Don't have an account?{" "}
             <Link
               to="/signup"
-              className="text-[#ff6b35] font-black hover:underline underline-offset-4"
+              className="text-[#ff311b] font-black hover:underline underline-offset-4"
             >
               Create Account
             </Link>

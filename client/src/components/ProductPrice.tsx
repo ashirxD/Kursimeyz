@@ -53,7 +53,7 @@ export default function ProductPrice({
         layout === 'stacked' ? 'flex-col items-end gap-0.5' : 'flex-wrap items-baseline gap-x-2 gap-y-0.5'
       } ${className}`}
     >
-      <span className={`${classes.current} font-black text-[#ff6b35] whitespace-nowrap`}>
+      <span className={`${classes.current} font-black text-[#ff311b] whitespace-nowrap`}>
         Rs. {current}
       </span>
       <span className={`${classes.original} font-bold text-[#1a2f1a]/40 line-through whitespace-nowrap`}>
@@ -61,7 +61,7 @@ export default function ProductPrice({
       </span>
       {showPercent && percent > 0 && (
         <span
-          className={`${classes.badge} font-black uppercase tracking-widest rounded-full bg-[#ff6b35]/10 text-[#ff6b35] whitespace-nowrap`}
+          className={`${classes.badge} font-black uppercase tracking-widest rounded-full bg-[#ff311b]/10 text-[#ff311b] whitespace-nowrap`}
         >
           {percent}% off
         </span>

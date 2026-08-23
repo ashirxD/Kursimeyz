@@ -242,7 +242,7 @@ export default function CheckoutPage() {
         </h2>
         <Link
           to="/dashboard"
-          className="text-[#ff6b35] font-black uppercase tracking-widest hover:underline"
+          className="text-[#ff311b] font-black uppercase tracking-widest hover:underline"
         >
           Go back to shop
         </Link>
@@ -376,7 +376,7 @@ export default function CheckoutPage() {
                     Selected Wallet Account
                   </p>
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#ff6b35]">
+                    <span className="material-symbols-outlined text-[#ff311b]">
                       account_balance_wallet
                     </span>
                     <span className="text-xl font-black text-[#1a2f1a] tracking-wide">
@@ -396,7 +396,7 @@ export default function CheckoutPage() {
                     Bank Transfer Details
                   </p>
                   <div className="flex items-start gap-3">
-                    <span className="material-symbols-outlined text-[#ff6b35] mt-0.5">
+                    <span className="material-symbols-outlined text-[#ff311b] mt-0.5">
                       account_balance
                     </span>
                     <div className="space-y-1">
@@ -462,7 +462,7 @@ export default function CheckoutPage() {
                       <p
                         className={`font-black text-sm ${
                           hasDiscount(item.product)
-                            ? "text-[#ff6b35]"
+                            ? "text-[#ff311b]"
                             : "text-[#1a2f1a]"
                         }`}
                       >
@@ -484,7 +484,7 @@ export default function CheckoutPage() {
                   <span>Rs. {subtotal}</span>
                 </div>
                 {savings > 0 && (
-                  <div className="flex justify-between text-[#ff6b35] font-bold">
+                  <div className="flex justify-between text-[#ff311b] font-bold">
                     <span>Discount savings</span>
                     <span>- Rs. {savings}</span>
                   </div>
@@ -492,7 +492,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-[#1a2f1a]/60 font-medium">
                   <span>Shipping</span>
                   {isCustomCity ? (
-                    <span className="font-bold text-[#ff6b35]">
+                    <span className="font-bold text-[#ff311b]">
                       To be confirmed
                     </span>
                   ) : selectedCity ? (
@@ -557,8 +557,8 @@ const CustomCityNotice = ({ whatsappNumber }: { whatsappNumber: string }) => {
   const digits = whatsappNumber.replace(/\D/g, "");
 
   return (
-    <div className="mt-6 p-5 rounded-2xl bg-[#ff6b35]/5 border border-[#ff6b35]/20 flex gap-4">
-      <span className="material-symbols-outlined text-[22px] text-[#ff6b35] shrink-0">
+    <div className="mt-6 p-5 rounded-2xl bg-[#ff311b]/5 border border-[#ff311b]/20 flex gap-4">
+      <span className="material-symbols-outlined text-[22px] text-[#ff311b] shrink-0">
         local_shipping
       </span>
       <div className="space-y-2">
@@ -575,7 +575,7 @@ const CustomCityNotice = ({ whatsappNumber }: { whatsappNumber: string }) => {
             href={`https://wa.me/${digits}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[12px] font-black uppercase tracking-widest text-[#ff6b35] hover:underline"
+            className="inline-flex items-center gap-1.5 text-[12px] font-black uppercase tracking-widest text-[#ff311b] hover:underline"
           >
             Chat on WhatsApp
             <span className="material-symbols-outlined text-[16px]">
@@ -613,7 +613,7 @@ const CheckoutInput = ({
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full h-14 px-6 rounded-2xl border border-slate-100 bg-[#f4f5f0]/50 focus:bg-white focus:border-[#ff6b35] transition-all outline-none font-bold text-[#1a2f1a]"
+      className="w-full h-14 px-6 rounded-2xl border border-slate-100 bg-[#f4f5f0]/50 focus:bg-white focus:border-[#ff311b] transition-all outline-none font-bold text-[#1a2f1a]"
     />
   </div>
 );
@@ -638,13 +638,13 @@ const PaymentButton = ({
     onClick={onClick}
     className={`h-24 px-8 rounded-4xl border-2 flex items-center gap-4 transition-all ${
       selected
-        ? "border-[#ff6b35] bg-[#ff6b35]/5"
+        ? "border-[#ff311b] bg-[#ff311b]/5"
         : "border-slate-100 hover:border-[#1a2f1a]/20"
     }`}
   >
     <span
       className={`material-symbols-outlined text-3xl ${
-        selected ? "text-[#ff6b35]" : "text-[#1a2f1a]/20"
+        selected ? "text-[#ff311b]" : "text-[#1a2f1a]/20"
       }`}
     >
       {icon}
@@ -681,7 +681,7 @@ const WalletPaymentButton = ({
       disabled={disabled}
       className={`min-h-24 px-8 py-5 rounded-4xl border-2 flex items-center gap-4 transition-all text-left ${
         selected
-          ? "border-[#ff6b35] bg-[#ff6b35]/5"
+          ? "border-[#ff311b] bg-[#ff311b]/5"
           : "border-slate-100 hover:border-[#1a2f1a]/20"
       } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-slate-100`}
     >
@@ -727,13 +727,13 @@ const BankPaymentButton = ({
     onClick={onClick}
     className={`min-h-24 px-8 py-5 rounded-4xl border-2 flex items-center gap-4 transition-all text-left ${
       selected
-        ? "border-[#ff6b35] bg-[#ff6b35]/5"
+        ? "border-[#ff311b] bg-[#ff311b]/5"
         : "border-slate-100 hover:border-[#1a2f1a]/20"
     }`}
   >
     <span
       className={`material-symbols-outlined text-3xl ${
-        selected ? "text-[#ff6b35]" : "text-[#1a2f1a]/20"
+        selected ? "text-[#ff311b]" : "text-[#1a2f1a]/20"
       }`}
     >
       account_balance
@@ -773,8 +773,8 @@ const WalletInstructionsModal = ({
   <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
     <div className="relative bg-white w-full max-w-md rounded-4xl shadow-2xl p-7 border border-white">
       <div className="flex items-center gap-4 mb-5">
-        <div className="size-12 rounded-2xl bg-[#ff6b35]/10 flex items-center justify-center">
-          <span className="material-symbols-outlined text-[#ff6b35] text-3xl">
+        <div className="size-12 rounded-2xl bg-[#ff311b]/10 flex items-center justify-center">
+          <span className="material-symbols-outlined text-[#ff311b] text-3xl">
             account_balance_wallet
           </span>
         </div>
@@ -863,8 +863,8 @@ const WalletRedirectModal = ({
   return (
     <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-4xl shadow-2xl p-7 border border-white text-center">
-        <div className="size-24 bg-[#ff6b35]/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-          <span className="material-symbols-outlined text-[48px] text-[#ff6b35] font-black">
+        <div className="size-24 bg-[#ff311b]/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+          <span className="material-symbols-outlined text-[48px] text-[#ff311b] font-black">
             check_circle
           </span>
         </div>
@@ -898,7 +898,7 @@ const WalletRedirectModal = ({
               </span>
             </button>
           </div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-[#ff6b35] mt-2 min-h-4">
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#ff311b] mt-2 min-h-4">
             {copied ? "Copied" : ""}
           </p>
         </div>

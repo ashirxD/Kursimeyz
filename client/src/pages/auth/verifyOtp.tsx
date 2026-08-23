@@ -100,7 +100,7 @@ const VerifyOtp = () => {
           <BrandLogo imageClassName="h-12 w-auto max-w-[220px]" />
 
           <div className="max-w-md">
-            <div className="w-10 h-1 bg-[#ff6b35] mb-6 rounded-full" />
+            <div className="w-10 h-1 bg-[#ff311b] mb-6 rounded-full" />
             <h2 className="text-[36px] lg:text-[40px] font-black leading-[1.1] mb-5 tracking-tight">
               One quick check before you settle in.
             </h2>
@@ -113,7 +113,7 @@ const VerifyOtp = () => {
       </div>
 
       <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 lg:p-12 bg-[#fdfcf8] h-full relative">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff6b35]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff311b]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] pointer-events-none" />
 
         <div className="w-full max-w-[400px] flex flex-col gap-6 relative z-10 px-2">
           <div className="flex md:hidden mb-2">
@@ -148,7 +148,7 @@ const VerifyOtp = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-11 lg:h-12 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff6b35] focus:ring-4 focus:ring-[#ff6b35]/10 transition-all duration-300 outline-none shadow-sm"
+                className="w-full h-11 lg:h-12 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff311b] focus:ring-4 focus:ring-[#ff311b]/10 transition-all duration-300 outline-none shadow-sm"
                 placeholder="name@example.com"
                 disabled={isVerifying}
               />
@@ -168,7 +168,7 @@ const VerifyOtp = () => {
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                className="w-full h-12 lg:h-14 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-xl font-black tracking-[0.45em] placeholder:tracking-normal placeholder:text-slate-300 focus:border-[#ff6b35] focus:ring-4 focus:ring-[#ff6b35]/10 transition-all duration-300 outline-none shadow-sm text-center"
+                className="w-full h-12 lg:h-14 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-xl font-black tracking-[0.45em] placeholder:tracking-normal placeholder:text-slate-300 focus:border-[#ff311b] focus:ring-4 focus:ring-[#ff311b]/10 transition-all duration-300 outline-none shadow-sm text-center"
                 placeholder="000000"
                 disabled={isVerifying}
               />
@@ -191,7 +191,7 @@ const VerifyOtp = () => {
               type="button"
               onClick={handleResend}
               disabled={isResending || isVerifying}
-              className="text-[#1a2f1a] font-black hover:text-[#ff6b35] transition-colors disabled:opacity-50"
+              className="text-[#1a2f1a] font-black hover:text-[#ff311b] transition-colors disabled:opacity-50"
             >
               {isResending ? "Sending..." : "Resend OTP"}
             </button>
@@ -199,7 +199,7 @@ const VerifyOtp = () => {
               Already verified?{" "}
               <Link
                 to="/login"
-                className="text-[#ff6b35] font-black hover:underline underline-offset-4"
+                className="text-[#ff311b] font-black hover:underline underline-offset-4"
               >
                 Log In
               </Link>

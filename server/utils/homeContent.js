@@ -32,7 +32,7 @@ const DEFAULT_HOME_CONTENT = {
         enabled: true,
         kicker: {
             text: 'New Collection 2026',
-            dotColor: '#ff6b35',
+            dotColor: '#ff311b',
             // Drawn at 40% opacity, matching the original design.
             textColor: '#1a2f1a',
         },
@@ -40,7 +40,7 @@ const DEFAULT_HOME_CONTENT = {
         headlineLines: [
             { text: 'Sit Back.', color: '#1a2f1a' },
             { text: 'Breathe.', color: '#d27d53' },
-            { text: 'Belong.', color: '#ff6b35' },
+            { text: 'Belong.', color: '#ff311b' },
         ],
         subtitle:
             'Handcrafted chairs designed for your peace of mind. Experience comfort that connects you back to nature.',
@@ -53,7 +53,7 @@ const DEFAULT_HOME_CONTENT = {
             action: 'scroll',
             // Only used when action is 'link'.
             href: '',
-            backgroundColor: '#ff6b35',
+            backgroundColor: '#ff311b',
             // Explicit rather than derived: the original is white on orange, which
             // auto-contrast would have flipped to dark.
             textColor: '#ffffff',

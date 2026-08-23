@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 export default function OrderSuccessPage() {
   return (
     <div className="pt-32 pb-16 px-6 md:px-10 max-w-[1440px] mx-auto flex flex-col items-center justify-center text-center">
-      <div className="size-24 bg-[#ff6b35]/10 rounded-full flex items-center justify-center mb-8 animate-bounce">
-        <span className="material-symbols-outlined text-[48px] text-[#ff6b35] font-black">
+      <div className="size-24 bg-[#ff311b]/10 rounded-full flex items-center justify-center mb-8 animate-bounce">
+        <span className="material-symbols-outlined text-[48px] text-[#ff311b] font-black">
           check_circle
         </span>
       </div>
@@ -39,7 +39,7 @@ export default function OrderSuccessPage() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-2">
-            <span className="material-symbols-outlined text-[#ff6b35]">
+            <span className="material-symbols-outlined text-[#ff311b]">
               mail
             </span>
             <p className="text-xs font-bold text-[#1a2f1a]">
@@ -47,7 +47,7 @@ export default function OrderSuccessPage() {
             </p>
           </div>
           <div className="space-y-2">
-            <span className="material-symbols-outlined text-[#ff6b35]">
+            <span className="material-symbols-outlined text-[#ff311b]">
               inventory_2
             </span>
             <p className="text-xs font-bold text-[#1a2f1a]">
@@ -55,7 +55,7 @@ export default function OrderSuccessPage() {
             </p>
           </div>
           <div className="space-y-2">
-            <span className="material-symbols-outlined text-[#ff6b35]">
+            <span className="material-symbols-outlined text-[#ff311b]">
               local_shipping
             </span>
             <p className="text-xs font-bold text-[#1a2f1a]">

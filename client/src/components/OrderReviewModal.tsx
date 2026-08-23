@@ -207,7 +207,7 @@ export default function OrderReviewModal({
               rows={3}
               maxLength={500}
               disabled={isBusy}
-              className="w-full bg-[#f4f5f0]/50 px-4 py-3 rounded-xl border border-[#1a2f1a]/10 focus:outline-none focus:ring-2 focus:ring-[#ff6b35]/20 font-medium text-sm text-[#1a2f1a] placeholder:text-[#1a2f1a]/30 resize-none"
+              className="w-full bg-[#f4f5f0]/50 px-4 py-3 rounded-xl border border-[#1a2f1a]/10 focus:outline-none focus:ring-2 focus:ring-[#ff311b]/20 font-medium text-sm text-[#1a2f1a] placeholder:text-[#1a2f1a]/30 resize-none"
             />
           </div>
 
@@ -223,7 +223,7 @@ export default function OrderReviewModal({
               type="button"
               onClick={handleNext}
               disabled={isBusy}
-              className="w-full bg-[#ff6b35] text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#f05a28] transition-all disabled:opacity-50"
+              className="w-full bg-[#ff311b] text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#e52c18] transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

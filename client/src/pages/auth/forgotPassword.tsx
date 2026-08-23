@@ -19,7 +19,7 @@ const ForgotPassword = () => {
         <div className="relative z-10 flex flex-col justify-between h-full px-16 py-20 text-white">
           <BrandLogo imageClassName="h-12 w-auto max-w-[220px]" />
           <div className="max-w-md">
-            <div className="w-10 h-1 bg-[#ff6b35] mb-6 rounded-full" />
+            <div className="w-10 h-1 bg-[#ff311b] mb-6 rounded-full" />
             <h2 className="text-[36px] lg:text-[40px] font-black leading-[1.1] mb-5 tracking-tight">
               Reset your access in a few steps.
             </h2>
@@ -31,7 +31,7 @@ const ForgotPassword = () => {
       </div>
 
       <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 lg:p-12 bg-[#fdfcf8] h-full relative">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff6b35]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff311b]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] pointer-events-none" />
 
         <div className="w-full max-w-[400px] flex flex-col gap-6 lg:gap-8 relative z-10 overflow-y-auto lg:overflow-visible max-h-full py-4 px-2 custom-scrollbar">
           <div className="flex md:hidden mb-2">
@@ -53,7 +53,7 @@ const ForgotPassword = () => {
             Remember your password?{" "}
             <Link
               to={returnTo}
-              className="text-[#ff6b35] font-black hover:underline underline-offset-4"
+              className="text-[#ff311b] font-black hover:underline underline-offset-4"
             >
               Log In
             </Link>

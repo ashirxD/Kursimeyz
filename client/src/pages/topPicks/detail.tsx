@@ -87,7 +87,7 @@ export default function ProductDetail() {
       <div className="flex items-center gap-2 mb-12 text-[10px] font-black uppercase tracking-[0.2em] text-[#1a2f1a]/40">
         <Link
           to="/dashboard"
-          className="hover:text-[#ff6b35] transition-colors"
+          className="hover:text-[#ff311b] transition-colors"
         >
           Home
         </Link>
@@ -96,7 +96,7 @@ export default function ProductDetail() {
         </span>
         <Link
           to={shopLink.path}
-          className="hover:text-[#ff6b35] transition-colors"
+          className="hover:text-[#ff311b] transition-colors"
         >
           {shopLink.label}
         </Link>
@@ -119,7 +119,7 @@ export default function ProductDetail() {
 
           {/* Floating Category Badge */}
           <div className="absolute top-8 left-8 z-10 bg-white/80 backdrop-blur-md px-6 py-2 rounded-full shadow-lg shadow-black/5 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-[#ff6b35]">
+            <span className="material-symbols-outlined text-[16px] text-[#ff311b]">
               verified
             </span>
             <span className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]">
@@ -135,11 +135,11 @@ export default function ProductDetail() {
               {product.name}
             </h1>
             <div className="flex flex-wrap items-center gap-6">
-              <span className="bg-[#ff6b35]/10 text-[#ff6b35] px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
+              <span className="bg-[#ff311b]/10 text-[#ff311b] px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
                 In Stock
               </span>
               {discounted && (
-                <span className="bg-[#ff6b35] text-white px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
+                <span className="bg-[#ff311b] text-white px-5 py-1.5 rounded-full text-[13px] font-black tracking-widest uppercase">
                   {getDiscountPercent(product)}% Off
                 </span>
               )}
@@ -184,7 +184,7 @@ export default function ProductDetail() {
                 <div className="flex flex-wrap items-baseline gap-3">
                   <p
                     className={`text-3xl font-black ${
-                      discounted ? "text-[#ff6b35]" : "text-[#1a2f1a]"
+                      discounted ? "text-[#ff311b]" : "text-[#1a2f1a]"
                     }`}
                   >
                     Rs. {getEffectivePrice(product)}
@@ -196,7 +196,7 @@ export default function ProductDetail() {
                   )}
                 </div>
                 {discounted && (
-                  <p className="text-[12px] font-bold text-[#ff6b35]">
+                  <p className="text-[12px] font-bold text-[#ff311b]">
                     You save Rs. {product.price - getEffectivePrice(product)}
                   </p>
                 )}
@@ -257,7 +257,7 @@ export default function ProductDetail() {
                 disabled={isAdding}
                 className={`flex-1 h-14 rounded-[1.5rem] font-black uppercase tracking-widest transition-all transform active:scale-95 shadow-xl flex items-center justify-center gap-3 ${
                   added
-                    ? "bg-[#ff6b35] text-[#1a2f1a]"
+                    ? "bg-[#ff311b] text-[#1a2f1a]"
                     : "bg-[#1a2f1a] text-white hover:bg-black"
                 }`}
               >

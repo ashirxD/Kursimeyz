@@ -67,7 +67,7 @@ export default function ProductImageGallery({ images, alt }: ProductImageGallery
               aria-current={index === safeIndex}
               className={`shrink-0 size-20 rounded-2xl overflow-hidden bg-[#f4f5f0] p-2 ring-2 transition-all ${
                 index === safeIndex
-                  ? 'ring-[#ff6b35]'
+                  ? 'ring-[#ff311b]'
                   : 'ring-transparent hover:ring-[#1a2f1a]/10'
               }`}
             >
