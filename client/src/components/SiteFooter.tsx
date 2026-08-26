@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import BrandLogo from "@/components/BrandLogo";
 import SocialIcon from "@/components/SocialIcon";
+import { SOCIAL_LABELS } from "@/components/socialPlatforms";
 import type { FooterContent, FooterLink } from "@/hooks/useFooter";
 import { useProductTypes } from "@/hooks/useProductTypes";
 import { withAlpha } from "@/utils/themeColor";
@@ -78,7 +79,7 @@ export default function SiteFooter({
                   <SocialChip
                     key={`${item.platform}-${item.href}`}
                     href={item.href}
-                    label={item.platform}
+                    label={SOCIAL_LABELS[item.platform]}
                     ink={ink}
                     accent={accent}
                     isPreview={isPreview}

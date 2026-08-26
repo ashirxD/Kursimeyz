@@ -347,7 +347,7 @@ export function SocialEditor({ value, onChange }: SectionProps) {
                             value={item.href}
                             maxLength={LIMITS.href}
                             placeholder="https://instagram.com/yourshop"
-                            helper="A link is needed — an icon with nowhere to go is dropped on save."
+                            helper="A link is needed — an icon with nowhere to go is dropped on save. https:// is added for you."
                             onChange={(href) => updateItem(index, { ...item, href })}
                         />
                     </RepeatableRow>

@@ -4,12 +4,16 @@ import Header from '@/pages/admin/layout/Header';
 import PaymentConfirmationModal from '@/components/paymentConfirmationModal';
 import { orderLabel } from "@/utils/orderNumber";
 import ProductFinishSummary from "@/components/ProductFinishSummary";
+import { resolveFinish } from "@/utils/productFinish";
 import {
-  FINISH_PARTS,
-  finishPartLabel,
-  isFinishPartEmpty,
-  resolveFinish,
-} from "@/utils/productFinish";
+  FINISH_COLUMN_WIDTH,
+  drawFinishRows,
+  finishRows,
+  finishRowsHeight,
+  loadSwatchImages,
+  swatchImageUrls,
+  type FinishRow,
+} from "@/utils/pdfFinish";
 import { useAdminOrderDetail } from '@/hooks/useAdminOrders';
 import { resolveImageUrl } from '@/utils/imageUrl';
 import jsPDF from 'jspdf';
@@ -41,22 +45,13 @@ const formatCurrency = (amount: number) =>
     maximumFractionDigits: 0,
   }).format(amount);
 
-/**
- * The finish as one line of text, for the PDF — which cannot draw swatches, so
- * the material names (or failing those, the hex codes) have to carry it.
- */
-const describeFinish = (item: { finish?: unknown; color?: string }) => {
-  const finish = resolveFinish(item as Parameters<typeof resolveFinish>[0]);
-
-  return FINISH_PARTS.filter(({ key }) => !isFinishPartEmpty(finish[key]))
-    .map(({ key, label }) => `${label}: ${finishPartLabel(finish[key])}`)
-    .join('  ·  ');
-};
-
 export default function AdminOrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const { order, isLoading, isError, refetch } = useAdminOrderDetail(orderId);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  // Set while the swatch photos are being fetched, which is the only part of
+  // the export that waits on anything.
+  const [isExporting, setIsExporting] = useState(false);
 
   if (isLoading) {
     return (
@@ -84,7 +79,26 @@ export default function AdminOrderDetailPage() {
   const legacyReceipt = order.paymentResult?.receipt;
   const shortOrderId = orderLabel(order);
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+
+    try {
+      await buildAndSavePDF();
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const buildAndSavePDF = async () => {
+    // Resolved before the document is built: the swatch photos are fetched over
+    // the network, and the table reserves each Finish cell from the very rows
+    // its draw hook will paint into it.
+    const itemFinishes: FinishRow[][] = order.items.map((item) =>
+      finishRows(item as Parameters<typeof resolveFinish>[0])
+    );
+    const swatchImages = await loadSwatchImages(swatchImageUrls(itemFinishes));
+
     const doc = new jsPDF();
 
     doc.setFontSize(20);
@@ -129,21 +143,50 @@ export default function AdminOrderDetailPage() {
       ]],
     });
 
+    // Kept next to the table it describes: the hooks below address the Finish
+    // column by index, so the two must not drift apart.
+    const FINISH_COLUMN = 1;
+    const FINISH_FONT_SIZE = 8;
+
     autoTable(doc, {
       startY: ((doc as any).lastAutoTable?.finalY || 36) + 8,
       theme: 'grid',
       headStyles: { fillColor: [43, 62, 53] },
       styles: { fontSize: 8, cellPadding: 3 },
-      head: [['Product', 'Category', 'Qty', 'Unit Price', 'Line Total']],
-      body: order.items.map((item) => [
-        [item.product?.name || 'Unknown Product', describeFinish(item)]
-          .filter(Boolean)
-          .join('\n'),
+      columnStyles: { [FINISH_COLUMN]: { cellWidth: FINISH_COLUMN_WIDTH } },
+      head: [['Product', 'Finish', 'Category', 'Qty', 'Unit Price', 'Line Total']],
+      body: order.items.map((item, index) => [
+        item.product?.name || 'Unknown Product',
+        // Drawn by hand in didDrawCell — a swatch is a filled shape, not text —
+        // so the cell is left empty and given the height that drawing needs.
+        itemFinishes[index].length === 0 ? '—' : '',
         item.product?.category || 'Product',
         item.quantity.toString(),
         formatCurrency(item.price),
         formatCurrency(item.price * item.quantity),
       ]),
+      didParseCell: (data) => {
+        if (data.section !== 'body' || data.column.index !== FINISH_COLUMN) return;
+
+        const rows = itemFinishes[data.row.index] ?? [];
+        if (rows.length === 0) return;
+
+        data.cell.styles.minCellHeight =
+          finishRowsHeight(rows) + data.cell.padding('vertical');
+      },
+      didDrawCell: (data) => {
+        if (data.section !== 'body' || data.column.index !== FINISH_COLUMN) return;
+
+        const rows = itemFinishes[data.row.index] ?? [];
+        if (rows.length === 0) return;
+
+        drawFinishRows(doc, rows, swatchImages, {
+          x: data.cell.x + data.cell.padding('left'),
+          y: data.cell.y + data.cell.padding('top'),
+          width: data.cell.width - data.cell.padding('horizontal'),
+          fontSize: FINISH_FONT_SIZE,
+        });
+      },
     });
 
     autoTable(doc, {
@@ -223,10 +266,11 @@ export default function AdminOrderDetailPage() {
           <div className="flex flex-wrap items-center gap-3 self-start">
             <button
               onClick={handleExportPDF}
-              className="px-6 py-3 bg-forest-moss text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-forest-moss-light transition-colors shadow-soft flex items-center gap-2"
+              disabled={isExporting}
+              className="px-6 py-3 bg-forest-moss text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-forest-moss-light transition-colors shadow-soft flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-lg!">picture_as_pdf</span>
-              Export PDF
+              {isExporting ? 'Preparing' : 'Export PDF'}
             </button>
 
             {!order.isPaid && (

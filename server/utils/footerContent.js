@@ -182,7 +182,11 @@ const normalizeFooterContent = (body) => {
                             SOCIAL_PLATFORMS,
                             SOCIAL_PLATFORMS[0]
                         ),
-                        href: pickHref(value.href, '', LIMITS.href),
+                        // Typed by hand far more often than pasted, so a bare
+                        // 'instagram.com/yourshop' is accepted rather than dropped.
+                        href: pickHref(value.href, '', LIMITS.href, {
+                            assumeHttps: true,
+                        }),
                     };
                 },
                 isEmpty: (item) => item.href === '',

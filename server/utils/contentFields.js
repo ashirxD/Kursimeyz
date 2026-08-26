@@ -17,6 +17,10 @@ const IMAGE_URL = /^https?:\/\//i;
 // Everything a button legitimately needs, and nothing that executes.
 // Scheme-anchored, so javascript: and data: URLs never reach a rendered href.
 const SAFE_HREF = /^(?:https?:\/\/|mailto:|tel:|\/)/i;
+// A scheme-less web address like 'instagram.com/yourshop'. Anchored on a domain
+// label, so nothing carrying a scheme of its own (javascript:, data:) can match
+// and get an https:// glued onto the front of it.
+const BARE_DOMAIN = /^[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)+(?:[/?#].*)?$/i;
 
 const asObject = (value) => (value && typeof value === 'object' ? value : {});
 
@@ -65,14 +69,22 @@ const pickImage = (value, fallback, maxLength) => {
     return IMAGE_URL.test(trimmed) ? trimmed : fallback;
 };
 
-/** A link destination, or '' for "no destination". Unsafe schemes are rejected. */
-const pickHref = (value, fallback, maxLength) => {
+/**
+ * A link destination, or '' for "no destination". Unsafe schemes are rejected.
+ *
+ * `assumeHttps` also accepts a bare domain, prefixing 'https://' — for the fields
+ * an admin types an address into by hand rather than pasting a full URL, where
+ * dropping 'instagram.com/yourshop' as unusable is the wrong answer.
+ */
+const pickHref = (value, fallback, maxLength, { assumeHttps = false } = {}) => {
     if (typeof value !== 'string') return fallback;
 
     const trimmed = value.trim().slice(0, maxLength);
     if (trimmed === '') return '';
+    if (SAFE_HREF.test(trimmed)) return trimmed;
+    if (assumeHttps && BARE_DOMAIN.test(trimmed)) return `https://${trimmed}`;
 
-    return SAFE_HREF.test(trimmed) ? trimmed : fallback;
+    return fallback;
 };
 
 /**
