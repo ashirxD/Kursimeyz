@@ -3,25 +3,50 @@ const { randomUUID } = require('crypto');
 const { PutObjectCommand } = require('@aws-sdk/client-s3');
 const { getS3Client, getBucketName, getRegion } = require('../config/s3');
 
-const ALLOWED_MIME_TYPES = new Set([
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-  'image/webp',
-]);
-
-const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
-
-const MIME_TO_EXT = {
-  'image/jpeg': '.jpg',
-  'image/png': '.png',
-  'image/webp': '.webp',
+// Admins can upload any image format. Some browsers/OSes report an empty or
+// generic MIME type for newer formats (HEIC, AVIF, ...), so a known image
+// extension is accepted too.
+const IMAGE_EXTENSION_TO_MIME = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.jfif': 'image/jpeg',
+  '.png': 'image/png',
+  '.apng': 'image/apng',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.heic': 'image/heic',
+  '.heif': 'image/heif',
+  '.svg': 'image/svg+xml',
+  '.bmp': 'image/bmp',
+  '.tif': 'image/tiff',
+  '.tiff': 'image/tiff',
+  '.ico': 'image/x-icon',
+  '.jxl': 'image/jxl',
 };
 
-const buildObjectKey = (originalName = 'image') => {
-  const ext = path.extname(originalName).toLowerCase();
-  const safeExt = ALLOWED_EXTENSIONS.has(ext) ? ext : '.jpg';
-  return `uploads/${Date.now()}-${randomUUID()}${safeExt}`;
+const IMAGE_ERROR_MESSAGE = 'Only image files are allowed';
+
+const isImageMimeType = (mimetype) =>
+  typeof mimetype === 'string' && mimetype.toLowerCase().startsWith('image/');
+
+const getSafeExtension = (name = '') => {
+  const ext = path.extname(name).toLowerCase();
+  return /^\.[a-z0-9]{1,10}$/.test(ext) ? ext : '';
+};
+
+const resolveContentType = ({ mimetype, originalname }) => {
+  if (isImageMimeType(mimetype)) return mimetype.toLowerCase();
+  return IMAGE_EXTENSION_TO_MIME[getSafeExtension(originalname)] || null;
+};
+
+const buildObjectKey = (originalName = 'image', contentType = '') => {
+  let ext = getSafeExtension(originalName);
+  if (!ext && contentType.startsWith('image/')) {
+    const subtype = contentType.slice('image/'.length).split('+')[0].replace(/[^a-z0-9]/g, '');
+    ext = subtype ? `.${subtype === 'jpeg' ? 'jpg' : subtype}` : '';
+  }
+  return `uploads/${Date.now()}-${randomUUID()}${ext || '.img'}`;
 };
 
 const getPublicUrl = (key) => {
@@ -57,18 +82,8 @@ const isRetriableS3Error = (err) => {
 };
 
 const validateImageFile = ({ mimetype, originalname }) => {
-  if (!mimetype || !ALLOWED_MIME_TYPES.has(mimetype)) {
-    throw new Error('Only jpg, jpeg, png, and webp images are allowed');
-  }
-
-  const ext = path.extname(originalname || '').toLowerCase();
-  if (!ALLOWED_EXTENSIONS.has(ext)) {
-    throw new Error('Only jpg, jpeg, png, and webp images are allowed');
-  }
-
-  const expectedExt = MIME_TO_EXT[mimetype];
-  if (expectedExt && ext !== expectedExt && !(mimetype === 'image/jpeg' && ext === '.jpg')) {
-    throw new Error('File extension does not match file type');
+  if (!resolveContentType({ mimetype, originalname })) {
+    throw new Error(IMAGE_ERROR_MESSAGE);
   }
 };
 
@@ -79,14 +94,15 @@ const uploadImageBuffer = async ({ buffer, mimetype, originalname }) => {
 
   validateImageFile({ mimetype, originalname });
 
-  const key = buildObjectKey(originalname);
+  const contentType = resolveContentType({ mimetype, originalname });
+  const key = buildObjectKey(originalname, contentType);
 
   try {
     const command = new PutObjectCommand({
       Bucket: getBucketName(),
       Key: key,
       Body: buffer,
-      ContentType: mimetype,
+      ContentType: contentType,
     });
 
     try {
@@ -126,5 +142,6 @@ module.exports = {
   getPublicUrl,
   validateImageFile,
   uploadImageBuffer,
-  ALLOWED_MIME_TYPES,
+  resolveContentType,
+  IMAGE_ERROR_MESSAGE,
 };

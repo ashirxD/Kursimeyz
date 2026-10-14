@@ -187,8 +187,8 @@ export default function ProductImagesUploader({
                     </p>
                     <p className="text-[9px] font-medium text-forest-moss/30 mt-1">
                         {maxImages === 1
-                            ? 'PNG, JPG up to 5MB'
-                            : 'PNG, JPG up to 5MB each · select several at once'}
+                            ? 'Any image format, up to 5MB'
+                            : 'Any image format, up to 5MB each · select several at once'}
                     </p>
                 </button>
 

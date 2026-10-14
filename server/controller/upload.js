@@ -1,4 +1,4 @@
-const { uploadImageBuffer } = require('../utils/s3Upload');
+const { uploadImageBuffer, IMAGE_ERROR_MESSAGE } = require('../utils/s3Upload');
 
 const uploadImage = async (req, res) => {
   try {
@@ -19,8 +19,7 @@ const uploadImage = async (req, res) => {
   } catch (error) {
     if (
       error.message === 'No file uploaded' ||
-      error.message.includes('Only jpg') ||
-      error.message.includes('extension')
+      error.message === IMAGE_ERROR_MESSAGE
     ) {
       return res.status(400).json({ message: error.message });
     }
@@ -66,7 +65,7 @@ const uploadImages = async (req, res) => {
       urls,
     });
   } catch (error) {
-    if (error.message.includes('Only jpg') || error.message.includes('extension')) {
+    if (error.message === IMAGE_ERROR_MESSAGE) {
       return res.status(400).json({ message: error.message });
     }
 
