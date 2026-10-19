@@ -1,9 +1,30 @@
 import React, { useRef, useState } from 'react';
 import { AxiosError } from 'axios';
+import ProductImageEditor from '@/components/ProductImageEditor';
+import ProductPhoto from '@/components/ProductPhoto';
 import api from '@/utils/Axios';
 import { resolveImageUrl } from '@/utils/imageUrl';
+import {
+    aspectCss,
+    getImageDisplay,
+    withImageDisplay,
+    type CardAspect,
+    type ImageDisplay,
+} from '@/utils/productImageDisplay';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+/**
+ * Turns the uploader into a card-photo picker: each tile is drawn the way the
+ * shop card will draw it, and gets an Adjust button for the crop.
+ */
+interface CardPhotoOptions {
+    /** The collection's card shape. */
+    aspect: CardAspect;
+    /** Saved framing per photo; photos without an entry use the defaults. */
+    display: ImageDisplay[];
+    onDisplayChange: (display: ImageDisplay[]) => void;
+}
 
 interface ProductImagesUploaderProps {
     label: string;
@@ -15,6 +36,8 @@ interface ProductImagesUploaderProps {
     maxImages?: number;
     /** Hidden when the field is optional, e.g. a collection cover. */
     required?: boolean;
+    /** Opt-in: shows tiles in the card's shape and lets each photo be cropped. */
+    card?: CardPhotoOptions;
 }
 
 export default function ProductImagesUploader({
@@ -24,11 +47,13 @@ export default function ProductImagesUploader({
     onUploadingChange,
     maxImages,
     required = true,
+    card,
 }: ProductImagesUploaderProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+    const [adjustingIndex, setAdjustingIndex] = useState<number | null>(null);
 
     const setUploading = (uploading: boolean) => {
         setIsUploading(uploading);
@@ -113,15 +138,24 @@ export default function ProductImagesUploader({
                                     if (draggedIndex !== null) moveImage(draggedIndex, index);
                                     setDraggedIndex(null);
                                 }}
-                                className={`group relative aspect-square rounded-2xl overflow-hidden bg-oatmeal cursor-grab active:cursor-grabbing ring-2 transition-all ${
+                                style={card ? { aspectRatio: aspectCss(card.aspect) } : undefined}
+                                className={`group relative ${card ? '' : 'aspect-square'} rounded-2xl overflow-hidden bg-oatmeal cursor-grab active:cursor-grabbing ring-2 transition-all ${
                                     index === 0 ? 'ring-clay' : 'ring-transparent'
                                 } ${draggedIndex === index ? 'opacity-40' : ''}`}
                             >
-                                <img
-                                    src={resolveImageUrl(url)}
-                                    alt={`Product view ${index + 1}`}
-                                    className="w-full h-full object-cover pointer-events-none"
-                                />
+                                {card ? (
+                                    <ProductPhoto
+                                        src={resolveImageUrl(url)}
+                                        alt={`Product view ${index + 1}`}
+                                        display={getImageDisplay(card.display, url)}
+                                    />
+                                ) : (
+                                    <img
+                                        src={resolveImageUrl(url)}
+                                        alt={`Product view ${index + 1}`}
+                                        className="w-full h-full object-cover pointer-events-none"
+                                    />
+                                )}
 
                                 {index === 0 && maxImages !== 1 && (
                                     <span className="absolute top-1.5 left-1.5 bg-clay text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
@@ -140,6 +174,16 @@ export default function ProductImagesUploader({
                                     >
                                         <span className="material-symbols-outlined !text-sm">chevron_left</span>
                                     </button>
+                                    )}
+                                    {card && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setAdjustingIndex(index)}
+                                            title="Crop and adjust"
+                                            className="size-7 rounded-full bg-white/90 text-forest-moss flex items-center justify-center hover:bg-white"
+                                        >
+                                            <span className="material-symbols-outlined !text-sm">crop</span>
+                                        </button>
                                     )}
                                     <button
                                         type="button"
@@ -202,6 +246,25 @@ export default function ProductImagesUploader({
 
             {error && (
                 <p className="text-[10px] font-bold text-red-500 ml-4">{error}</p>
+            )}
+
+            {card && adjustingIndex !== null && images[adjustingIndex] && (
+                <ProductImageEditor
+                    images={images}
+                    startIndex={adjustingIndex}
+                    aspect={card.aspect}
+                    displays={card.display}
+                    onClose={() => setAdjustingIndex(null)}
+                    onApply={(changed) => {
+                        card.onDisplayChange(
+                            changed.reduce(
+                                (list, next) => withImageDisplay(list, next),
+                                card.display,
+                            ),
+                        );
+                        setAdjustingIndex(null);
+                    }}
+                />
             )}
 
             <input

@@ -1,5 +1,6 @@
 import type { ProductDimensions } from '@/utils/productPricing';
 import type { ProductFinish } from '@/utils/productFinish';
+import type { ImageDisplay } from '@/utils/productImageDisplay';
 
 /**
  * A product as the admin screens use it — `id` normalized from Mongo's `_id`.
@@ -12,6 +13,10 @@ export interface Product {
     discountPrice?: number | null;
     image: string;
     images?: string[];
+    /** How each gallery photo is framed on the shop card. See utils/productImageDisplay.ts. */
+    imageDisplay?: ImageDisplay[];
+    /** Whether the card swaps to the second photo on hover. Absent means yes. */
+    hoverPhoto?: boolean;
     description: string;
     dimensions?: ProductDimensions | null;
     /** Body and fabric colour + material. Absent on products saved before it. */

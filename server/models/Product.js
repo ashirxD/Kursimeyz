@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { MAX_ZOOM, MAX_PADDING } = require('../utils/productImageDisplay');
 
 const DimensionsSchema = new mongoose.Schema(
   {
@@ -33,6 +34,27 @@ const FinishPartSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// How one gallery photo is framed on a shop card: the upload stays whole and
+// these numbers are applied when it is drawn. Keyed by `url`, not by position,
+// so reordering the gallery never moves a crop onto the wrong photo. See
+// utils/productImageDisplay.js.
+const ImageDisplaySchema = new mongoose.Schema(
+  {
+    url: { type: String, required: true, trim: true },
+    // cover fills the frame and crops; contain shows the whole photo.
+    fit: { type: String, enum: ['cover', 'contain'], default: 'contain' },
+    zoom: { type: Number, min: 1, max: MAX_ZOOM, default: 1 },
+    // Which part of the photo is in view, as a percentage (50/50 is centred).
+    x: { type: Number, min: 0, max: 100, default: 50 },
+    y: { type: Number, min: 0, max: 100, default: 50 },
+    // Breathing room around a contained photo, as a percentage of the card width.
+    padding: { type: Number, min: 0, max: MAX_PADDING, default: 7 },
+    // Hex behind the photo. Empty means the shop's warm off-white.
+    background: { type: String, trim: true, default: '' },
+  },
+  { _id: false }
+);
+
 const ProductSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -58,6 +80,17 @@ const ProductSchema = new mongoose.Schema({
   images: {
     type: [String],
     default: [],
+  },
+  // Per-photo framing for the shop card. Photos without an entry use the shop's
+  // defaults, which is how every product saved before this looks.
+  imageDisplay: {
+    type: [ImageDisplaySchema],
+    default: [],
+  },
+  // Whether the card swaps to the second photo on hover.
+  hoverPhoto: {
+    type: Boolean,
+    default: true,
   },
   description: {
     type: String,

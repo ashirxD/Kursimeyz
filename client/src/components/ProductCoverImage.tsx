@@ -1,15 +1,17 @@
 import { useState } from 'react';
+import ProductPhoto from '@/components/ProductPhoto';
 import { isDisplayableImageUrl } from '@/utils/imageUrl';
+import { getImageDisplay, type ImageDisplay } from '@/utils/productImageDisplay';
 
 interface ProductCoverImageProps {
     /** Gallery images, cover first — straight from getProductImages(). */
     images: string[];
+    /** The admin's framing for each photo; photos without an entry use the defaults. */
+    imageDisplay?: ImageDisplay[];
     /** The product name. Also used to label the placeholder. */
     alt: string;
     /** Material Symbols name drawn on the placeholder, usually the collection's. */
     icon?: string;
-    /** Inset around the artwork, so furniture never sits flush to the card edge. */
-    padClassName?: string;
     /** Extra classes for each layer — the caller's hover transform lives here. */
     layerClassName?: string;
     /**
@@ -25,7 +27,7 @@ interface ProductCoverImageProps {
  *
  * Renders bare layers rather than its own box — like CollectionCover — so each
  * card keeps its own aspect ratio, rounding and overlays. The parent must be
- * `relative`.
+ * `relative` and `overflow-hidden`.
  *
  * Two things can go wrong with a stored URL, and both land on the placeholder:
  * a path the browser cannot request at all, and a URL that answers with an
@@ -35,9 +37,9 @@ interface ProductCoverImageProps {
  */
 export default function ProductCoverImage({
     images,
+    imageDisplay,
     alt,
     icon = 'chair',
-    padClassName = 'p-5',
     layerClassName = '',
     showHoverShot = true,
 }: ProductCoverImageProps) {
@@ -67,28 +69,30 @@ export default function ProductCoverImage({
         );
     }
 
-    const layer = `absolute inset-0 w-full h-full object-contain ${padClassName} transition-all duration-500 ease-out`;
+    const layer = `transition-all duration-500 ease-out ${layerClassName}`;
     const swaps = showHoverShot && Boolean(hoverShot);
 
     return (
         <>
-            <img
+            <ProductPhoto
                 src={cover}
                 alt={alt}
-                loading="lazy"
+                display={getImageDisplay(imageDisplay, cover)}
                 onError={() => markFailed(cover)}
-                className={`${layer} ${swaps ? 'group-hover:opacity-0' : ''} ${layerClassName}`}
+                className={layer}
             />
 
+            {/* Each layer paints its own background, so the second one simply fades in
+                over the first — no need to fade the cover out from underneath it. */}
             {swaps && (
-                <img
+                <ProductPhoto
                     src={hoverShot}
                     // The stack is one picture to a reader; only the cover is labelled.
                     alt=""
-                    aria-hidden
-                    loading="lazy"
+                    decorative
+                    display={getImageDisplay(imageDisplay, hoverShot)}
                     onError={() => markFailed(hoverShot)}
-                    className={`${layer} opacity-0 group-hover:opacity-100 ${layerClassName}`}
+                    className={`${layer} opacity-0 group-hover:opacity-100`}
                 />
             )}
         </>

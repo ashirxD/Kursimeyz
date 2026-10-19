@@ -68,6 +68,8 @@ interface ProductFinishSummaryProps {
     layout?: 'inline' | 'stacked';
     /** Hidden on tight rows where the swatch alone is enough. */
     showLabels?: boolean;
+    /** Darker, bolder material text, for a working screen rather than a storefront. */
+    strong?: boolean;
     className?: string;
 }
 
@@ -81,6 +83,7 @@ export default function ProductFinishSummary({
     size = 'sm',
     layout = 'inline',
     showLabels = true,
+    strong = false,
     className = '',
 }: ProductFinishSummaryProps) {
     if (isFinishEmpty(finish)) return null;
@@ -106,7 +109,13 @@ export default function ProductFinishSummary({
                             </span>
                         )}
                         {text && (
-                            <span className="text-[11px] font-bold text-[#1a2f1a]/60 truncate">
+                            <span
+                                className={`text-[11px] truncate ${
+                                    strong
+                                        ? 'font-extrabold text-[#1a2f1a]/85'
+                                        : 'font-bold text-[#1a2f1a]/60'
+                                }`}
+                            >
                                 {text}
                             </span>
                         )}

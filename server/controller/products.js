@@ -8,6 +8,7 @@ const {
     mirrorLegacyColor,
     normalizeFinish,
 } = require('../utils/productFinish');
+const { normalizeImageDisplay } = require('../utils/productImageDisplay');
 
 const parseNonNegativeNumber = (value) => {
   if (value === undefined || value === null || value === '') return undefined;
@@ -85,6 +86,10 @@ const buildProductPayload = (body) => {
 
   const gallery = normalizeImages(images, image);
   const finish = normalizeFinish(body.finish);
+  // Both are left out entirely when the client did not state them, so a client
+  // that predates photo framing can still save a product without wiping it.
+  const imageDisplay = normalizeImageDisplay(body.imageDisplay, gallery);
+  const hoverPhoto = parseBoolean(body.hoverPhoto);
 
   return {
     name,
@@ -98,6 +103,8 @@ const buildProductPayload = (body) => {
     category,
     discountPrice: normalizeDiscountPrice(discountPrice, price),
     dimensions: normalizeDimensions(dimensions),
+    ...(imageDisplay !== undefined && { imageDisplay }),
+    ...(hoverPhoto !== undefined && { hoverPhoto }),
   };
 };
 

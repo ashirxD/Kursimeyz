@@ -20,6 +20,11 @@ import {
     getProductImages,
     type ProductDimensions,
 } from '@/utils/productPricing';
+import {
+    pruneImageDisplay,
+    type CardAspect,
+    type ImageDisplay,
+} from '@/utils/productImageDisplay';
 import type { Product } from '@/types/product';
 
 export interface ProductFormCopy {
@@ -41,6 +46,10 @@ export interface ProductFormValues {
     price: number;
     discountPrice: number | null;
     images: string[];
+    /** How each photo is framed on the shop card. */
+    imageDisplay: ImageDisplay[];
+    /** Whether the card swaps to the second photo on hover. */
+    hoverPhoto: boolean;
     description: string;
     /** Body and fabric colour + material. See utils/productFinish.ts. */
     finish: ProductFinish;
@@ -59,6 +68,8 @@ interface ProductFormModalProps {
      * "Slim" stay separate.
      */
     productType: string;
+    /** The collection's card shape, which the photo crop is cut to. */
+    cardAspect: CardAspect;
     isSubmitting: boolean;
     /** Existing product when editing; omitted when adding. */
     product?: Product;
@@ -79,6 +90,8 @@ const toFormValues = (product: Product | undefined, defaultColor: string): Produ
             price: 0,
             discountPrice: null,
             images: [],
+            imageDisplay: [],
+            hoverPhoto: true,
             description: '',
             finish,
             dimensions: emptyDimensions(),
@@ -91,6 +104,8 @@ const toFormValues = (product: Product | undefined, defaultColor: string): Produ
         price: product.price,
         discountPrice: product.discountPrice ?? null,
         images: getProductImages(product),
+        imageDisplay: product.imageDisplay ?? [],
+        hoverPhoto: product.hoverPhoto !== false,
         description: product.description,
         // Folds in the legacy single colour for products saved before the finish.
         finish: resolveFinish(product),
@@ -117,6 +132,7 @@ function ProductForm({
     copy,
     defaultColor,
     productType,
+    cardAspect,
     isSubmitting,
     product,
     onSubmit,
@@ -141,6 +157,16 @@ function ProductForm({
         price: values.price,
         discountPrice: values.discountPrice,
     });
+
+    // Removing or reordering photos keeps the framing of the ones that remain; the
+    // rest is dropped here so a deleted photo leaves nothing behind.
+    const setImages = (images: string[]) => {
+        setValues((current) => ({
+            ...current,
+            images,
+            imageDisplay: pruneImageDisplay(current.imageDisplay, images),
+        }));
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -184,9 +210,49 @@ function ProductForm({
                             <ProductImagesUploader
                                 label={copy.imagesLabel}
                                 images={values.images}
-                                onChange={(images) => update('images', images)}
+                                onChange={setImages}
                                 onUploadingChange={setIsUploading}
+                                card={{
+                                    aspect: cardAspect,
+                                    display: values.imageDisplay,
+                                    onDisplayChange: (display) => update('imageDisplay', display),
+                                }}
                             />
+
+                            <p className="text-[9px] font-medium text-forest-moss/30 ml-4 -mt-2">
+                                Photos are shown in the shape of the shop card ({cardAspect}).
+                                Hover one and press the crop button to choose what shows.
+                            </p>
+
+                            {values.images.length > 1 && (
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={values.hoverPhoto}
+                                    onClick={() => update('hoverPhoto', !values.hoverPhoto)}
+                                    className="w-full flex items-center justify-between gap-4 bg-white px-5 py-3 rounded-3xl border border-forest-moss/10 text-left hover:border-forest-moss/30 transition-all"
+                                >
+                                    <span className="min-w-0">
+                                        <span className="block text-[10px] font-black uppercase tracking-widest text-forest-moss-light">
+                                            Show 2nd photo on hover
+                                        </span>
+                                        <span className="block text-[9px] font-medium text-forest-moss/40">
+                                            The shop card fades to the second photo when a shopper points at it.
+                                        </span>
+                                    </span>
+                                    <span
+                                        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                                            values.hoverPhoto ? 'bg-clay' : 'bg-forest-moss/20'
+                                        }`}
+                                    >
+                                        <span
+                                            className={`absolute top-0.5 size-5 rounded-full bg-white shadow-sm transition-all ${
+                                                values.hoverPhoto ? 'left-[22px]' : 'left-0.5'
+                                            }`}
+                                        />
+                                    </span>
+                                </button>
+                            )}
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">

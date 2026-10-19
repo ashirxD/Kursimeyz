@@ -3,6 +3,7 @@ const Product = require('../models/Product');
 const Category = require('../models/Category');
 const { normalizeName } = require('../utils/slug');
 const { pluralize, buildUniqueSlug } = require('../utils/productTypes');
+const { CARD_ASPECTS, normalizeCardAspect } = require('../utils/productImageDisplay');
 
 // One aggregation for every type, so the nav costs a single extra round trip.
 const countProductsByType = async () => {
@@ -39,6 +40,9 @@ const normalizeCoverImages = (coverImages, coverImage) => {
 const toResponse = (type, counts) => ({
   ...type,
   coverImages: normalizeCoverImages(type.coverImages, type.coverImage),
+  // Same reason: .lean() skips schema defaults, so a type saved before card
+  // shapes existed would otherwise reach the client without one.
+  cardAspect: normalizeCardAspect(type.cardAspect),
   productCount: counts.get(type.slug) || 0,
 });
 
@@ -63,8 +67,8 @@ const applyCopyFields = (target, body) => {
 
   applyCoverImages(target, body);
 
-  if (body.cardLayout === 'compact' || body.cardLayout === 'wide') {
-    target.cardLayout = body.cardLayout;
+  if (CARD_ASPECTS.includes(body.cardAspect)) {
+    target.cardAspect = body.cardAspect;
   }
 
   if (Array.isArray(body.colorPresets)) {

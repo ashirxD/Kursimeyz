@@ -2,8 +2,8 @@ const ProductType = require('../models/ProductType');
 
 // The three types the shop shipped with, back when they were a hardcoded enum
 // and a page file each. Slugs match the `category` values already on existing
-// products, so seeding these needs no data migration. Copy, colour presets and
-// card layout are lifted verbatim from the old pages so nothing looks different.
+// products, so seeding these needs no data migration. Copy and colour presets
+// are lifted verbatim from the old pages so nothing looks different.
 const BUILT_IN_TYPES = [
   {
     name: 'Chair',
@@ -18,7 +18,6 @@ const BUILT_IN_TYPES = [
       'Handcrafted from sustainable materials for your sanctuary. Designed to bring peace and comfort to your living space.',
     tagline: 'Handcrafted Comfort',
     colorPresets: ['#3a4d39', '#d27d53', '#8a9a5b', '#4b3621', '#f5f0e6'],
-    cardLayout: 'compact',
     defaultMaxPrice: 1500,
     order: 0,
   },
@@ -35,7 +34,6 @@ const BUILT_IN_TYPES = [
       'Large-scale wood carvings for dining and work. Built from solid timber and finished by hand.',
     tagline: 'Modern Elegance',
     colorPresets: ['#4b3621', '#8b4513', '#d2b48c', '#deb887', '#3a4d39'],
-    cardLayout: 'wide',
     defaultMaxPrice: 2000,
     order: 1,
   },
@@ -52,7 +50,6 @@ const BUILT_IN_TYPES = [
       'Luxurious and comfortable sofas designed for relaxation. Choose from a variety of styles and premium fabrics.',
     tagline: 'Luxurious Lounging',
     colorPresets: ['#4b3621', '#2c3e50', '#8e44ad', '#c0392b', '#27ae60', '#f1c40f'],
-    cardLayout: 'wide',
     defaultMaxPrice: 5000,
     order: 2,
   },

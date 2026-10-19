@@ -6,6 +6,7 @@ import { hasUsableCategories, useCategories } from "@/hooks/useCategories";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductTypeBySlug } from "@/hooks/useProductTypes";
+import { aspectCss } from "@/utils/productImageDisplay";
 import { getEffectivePrice } from "@/utils/productPricing";
 import ShopProductCard from "./card";
 
@@ -199,7 +200,10 @@ export default function ShopPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="bg-[#f4f5f0] rounded-[20px] aspect-[4/3]"></div>
+                  <div
+                    style={{ aspectRatio: aspectCss(productType.cardAspect) }}
+                    className="bg-[#f4f5f0] rounded-[20px]"
+                  ></div>
                   <div className="pt-4 space-y-2.5">
                     <div className="h-4 bg-[#f4f5f0] rounded-full w-3/4"></div>
                     <div className="h-3 bg-[#f4f5f0] rounded-full w-1/2"></div>
@@ -228,6 +232,7 @@ export default function ShopPage() {
                   <ShopProductCard
                     key={product.id}
                     product={product}
+                    aspect={productType.cardAspect}
                     placeholderIcon={productType.icon}
                   />
                 ))}

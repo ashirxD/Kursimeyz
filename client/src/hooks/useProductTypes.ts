@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/Axios';
-
-export type CardLayout = 'compact' | 'wide';
+import type { CardAspect } from '@/utils/productImageDisplay';
 
 /**
  * A kind of furniture the shop sells. Admin-managed, so chairs/tables/sofas are
@@ -24,7 +23,8 @@ export interface ProductType {
     heroSubtitle: string;
     tagline: string;
     colorPresets: string[];
-    cardLayout: CardLayout;
+    /** Shape of this collection's product cards, on the shop and in the admin. */
+    cardAspect: CardAspect;
     defaultMaxPrice: number;
     order: number;
     productCount: number;
@@ -40,7 +40,7 @@ export interface ProductTypeInput {
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;
-    cardLayout: CardLayout;
+    cardAspect: CardAspect;
 }
 
 export const PRODUCT_TYPES_QUERY_KEY = ['product-types'];

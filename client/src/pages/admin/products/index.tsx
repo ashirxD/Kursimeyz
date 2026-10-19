@@ -8,6 +8,7 @@ import AdminProductCard from "./card";
 import { useCategories } from "@/hooks/useCategories";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductTypeBySlug } from "@/hooks/useProductTypes";
+import { resolveCardAspect } from "@/utils/productImageDisplay";
 import { buildProductFormCopy } from "@/utils/productTypeCopy";
 
 /**
@@ -79,10 +80,10 @@ export default function AdminProductsPage() {
     );
   }
 
+  // The shop's grid, one column fewer per breakpoint to leave room for the
+  // admin sidebar — the cards themselves are the shop's, at the shop's shape.
   const gridClass =
-    productType.cardLayout === "wide"
-      ? "grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 md:px-2"
-      : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 md:px-2";
+    "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10 px-4 md:px-2";
 
   return (
     <div className="flex-1 flex flex-col gap-4 px-0 md:px-2 pb-6">
@@ -164,6 +165,7 @@ export default function AdminProductsPage() {
         copy={buildProductFormCopy(productType, "add")}
         defaultColor={productType.colorPresets[0] ?? "#3a4d39"}
         productType={productType.slug}
+        cardAspect={resolveCardAspect(productType.cardAspect)}
         isSubmitting={isAdding}
         onSubmit={(values) =>
           addProduct({

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { CARD_ASPECTS, DEFAULT_CARD_ASPECT } = require('../utils/productImageDisplay');
 
 // A kind of furniture the shop sells — chairs, tables, sofas, and whatever else
 // the admin adds later. This is the top of the hierarchy:
@@ -79,11 +80,14 @@ const ProductTypeSchema = new mongoose.Schema({
     type: [String],
     default: ['#3a4d39', '#d27d53', '#8a9a5b', '#4b3621', '#f5f0e6'],
   },
-  // Admin grid style: portrait cards 4-up, or landscape cards 2-up.
-  cardLayout: {
+  // The shape of this collection's product cards, width:height. One shape per
+  // collection keeps every card in a grid the same height; each photo is then
+  // cropped inside it (see Product.imageDisplay). The shop and the admin draw
+  // the very same card, so this is the one place the shape is decided.
+  cardAspect: {
     type: String,
-    enum: ['compact', 'wide'],
-    default: 'compact',
+    enum: CARD_ASPECTS,
+    default: DEFAULT_CARD_ASPECT,
   },
   // Starting ceiling for the shop price slider; it expands past this when a
   // product costs more.

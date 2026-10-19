@@ -3,7 +3,14 @@ import { AxiosError } from 'axios';
 import IconPicker from '@/components/IconPicker';
 import ModalPortal from '@/components/ModalPortal';
 import ProductImagesUploader from '@/components/ProductImagesUploader';
-import { useProductTypes, type CardLayout, type ProductType } from '@/hooks/useProductTypes';
+import { useProductTypes, type ProductType } from '@/hooks/useProductTypes';
+import {
+    CARD_ASPECT_OPTIONS,
+    aspectCss,
+    aspectRatio,
+    resolveCardAspect,
+    type CardAspect,
+} from '@/utils/productImageDisplay';
 import { pluralize } from '@/utils/slug';
 
 interface ProductTypeFormModalProps {
@@ -23,7 +30,7 @@ interface FormValues {
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;
-    cardLayout: CardLayout;
+    cardAspect: CardAspect;
 }
 
 const toFormValues = (productType?: ProductType): FormValues => ({
@@ -34,7 +41,7 @@ const toFormValues = (productType?: ProductType): FormValues => ({
     heroTitle: productType?.heroTitle ?? '',
     heroSubtitle: productType?.heroSubtitle ?? '',
     tagline: productType?.tagline ?? '',
-    cardLayout: productType?.cardLayout ?? 'compact',
+    cardAspect: resolveCardAspect(productType?.cardAspect),
 });
 
 /**
@@ -49,11 +56,6 @@ export default function ProductTypeFormModal(props: ProductTypeFormModalProps) {
 
 /** Matches MAX_COVER_IMAGES in server/controller/productTypes.js. */
 const MAX_COVER_IMAGES = 6;
-
-const LAYOUT_OPTIONS: Array<{ value: CardLayout; label: string; hint: string }> = [
-    { value: 'compact', label: 'Compact', hint: 'Portrait cards, 4 per row' },
-    { value: 'wide', label: 'Wide', hint: 'Landscape cards, 2 per row' },
-];
 
 function ProductTypeForm({ onClose, productType, onCreated }: ProductTypeFormModalProps) {
     const { createProductType, updateProductType, isCreating, isUpdating } = useProductTypes();
@@ -242,29 +244,47 @@ function ProductTypeForm({ onClose, productType, onCreated }: ProductTypeFormMod
 
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">
-                                    Admin Card Layout
+                                    Product Card Shape
                                 </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {LAYOUT_OPTIONS.map((option) => (
+                                <div className="grid grid-cols-3 gap-3">
+                                    {CARD_ASPECT_OPTIONS.map((option) => (
                                         <button
                                             key={option.value}
                                             type="button"
-                                            onClick={() => update('cardLayout', option.value)}
-                                            className={`px-4 py-3 rounded-3xl border-2 text-left transition-all ${
-                                                values.cardLayout === option.value
+                                            onClick={() => update('cardAspect', option.value)}
+                                            aria-pressed={values.cardAspect === option.value}
+                                            className={`px-3 py-3 rounded-3xl border-2 flex flex-col items-center gap-2 transition-all ${
+                                                values.cardAspect === option.value
                                                     ? 'bg-white border-clay shadow-soft'
                                                     : 'bg-white/50 border-forest-moss/10 hover:border-forest-moss/30'
                                             }`}
                                         >
-                                            <span className="block text-xs font-black text-forest-moss uppercase tracking-widest">
-                                                {option.label}
+                                            {/* A miniature of the frame, drawn to scale. */}
+                                            <span className="flex h-10 items-center">
+                                                <span
+                                                    style={{
+                                                        aspectRatio: aspectCss(option.value),
+                                                        height: aspectRatio(option.value) > 1 ? undefined : '100%',
+                                                        width: aspectRatio(option.value) > 1 ? '3rem' : undefined,
+                                                    }}
+                                                    className="block rounded-md bg-forest-moss/15 border border-forest-moss/20"
+                                                />
                                             </span>
-                                            <span className="block text-[9px] font-medium text-forest-moss/40 mt-0.5">
-                                                {option.hint}
+                                            <span className="text-center">
+                                                <span className="block text-xs font-black text-forest-moss uppercase tracking-widest">
+                                                    {option.label}
+                                                </span>
+                                                <span className="block text-[9px] font-medium text-forest-moss/40">
+                                                    {option.hint}
+                                                </span>
                                             </span>
                                         </button>
                                     ))}
                                 </div>
+                                <p className="text-[9px] font-medium text-forest-moss/30 ml-4">
+                                    Every {singular.toLowerCase()} card in the shop and in this admin uses this
+                                    shape. Crop each photo to fit it from the product form.
+                                </p>
                             </div>
 
                             {error && (
