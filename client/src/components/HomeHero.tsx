@@ -1,7 +1,9 @@
 import { Fragment, type CSSProperties, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { HeroBadgePosition, HomeHeroContent } from '@/hooks/useHomePage';
+import ProductPhoto from '@/components/ProductPhoto';
 import { resolveImageUrl } from '@/utils/imageUrl';
+import { COVER_DISPLAY } from '@/utils/productImageDisplay';
 import { mix, withAlpha } from '@/utils/themeColor';
 
 interface HomeHeroProps {
@@ -95,10 +97,11 @@ export default function HomeHero({ hero, onScrollRequest, isPreview = false }: H
 
                 <div className="relative w-full h-full rounded-[20px] lg:rounded-[32px] overflow-hidden shadow-2xl transition-transform duration-1000 hover:scale-[1.02]">
                     {image.url ? (
-                        <img
+                        <ProductPhoto
                             src={resolveImageUrl(image.url)}
                             alt={image.alt}
-                            className="w-full h-full object-cover"
+                            display={image.display ?? COVER_DISPLAY}
+                            loading="eager"
                         />
                     ) : (
                         <div

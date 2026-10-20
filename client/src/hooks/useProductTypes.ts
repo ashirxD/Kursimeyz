@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/Axios';
-import type { CardAspect } from '@/utils/productImageDisplay';
+import type { CardAspect, ImageDisplay } from '@/utils/productImageDisplay';
+
+/** Whether the shop banner reuses the dashboard card's photos or has its own. */
+export type CoverMode = 'shared' | 'separate';
 
 /**
  * A kind of furniture the shop sells. Admin-managed, so chairs/tables/sofas are
@@ -19,6 +22,16 @@ export interface ProductType {
     coverImage: string;
     /** Every cover the admin uploaded, first one first. Cards rotate through them. */
     coverImages: string[];
+    /** How each cover is framed. Covers without an entry fill the frame. */
+    coverDisplay?: ImageDisplay[];
+    /**
+     * 'shared' crops one set of photos for both the dashboard card and the shop
+     * banner; 'separate' gives the banner the photos below.
+     */
+    coverMode: CoverMode;
+    /** The banner's own photos — used only in 'separate' mode, kept otherwise. */
+    bannerImages?: string[];
+    bannerDisplay?: ImageDisplay[];
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;
@@ -37,6 +50,10 @@ export interface ProductTypeInput {
     icon: string;
     /** coverImage is derived from this server-side. */
     coverImages: string[];
+    coverDisplay: ImageDisplay[];
+    coverMode: CoverMode;
+    bannerImages: string[];
+    bannerDisplay: ImageDisplay[];
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;

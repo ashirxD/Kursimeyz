@@ -2,6 +2,11 @@ import IconPicker from '@/components/IconPicker';
 import ProductColorPicker from '@/components/ProductColorPicker';
 import ProductImagesUploader from '@/components/ProductImagesUploader';
 import {
+    COVER_DISPLAY,
+    fromFraming,
+    toFraming,
+} from '@/utils/productImageDisplay';
+import {
     CONTENT_ICON_OPTIONS,
     CTA_ICON_OPTIONS,
 } from '@/components/pageEditor/iconOptions';
@@ -284,11 +289,24 @@ export function ImageEditor({
                 required={false}
                 maxImages={1}
                 images={image.url ? [image.url] : []}
-                onChange={(images) => setImage({ url: images[0] ?? '' })}
+                // A new photo starts from the default framing, not the last one's.
+                onChange={(images) => setImage({ url: images[0] ?? '', display: { ...COVER_DISPLAY } })}
                 onUploadingChange={onUploadingChange}
+                card={{
+                    aspect: '3:2',
+                    target: 'home page photo',
+                    radius: 32,
+                    defaults: COVER_DISPLAY,
+                    display: image.url ? [fromFraming(image.url, image.display)] : [],
+                    onDisplayChange: (list) => {
+                        const next = list.find((entry) => entry.url === image.url);
+                        if (next) setImage({ display: toFraming(next) });
+                    },
+                }}
             />
             <p className="text-[10px] font-bold text-forest-moss-light/50 ml-4 -mt-4">
-                A wide landscape photo works best — it is shown at a 3:2 crop.
+                Shown at a 3:2 crop. Hover the photo and press the crop button to choose
+                what shows, or to fit the whole photo instead.
             </p>
 
             <TextField

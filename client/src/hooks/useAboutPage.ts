@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/Axios';
+import type { ImageFraming } from '@/utils/productImageDisplay';
 
 /**
  * The About page's content is admin-authored and stored server-side, so both the
@@ -78,6 +79,8 @@ export interface AboutPageContent {
         paragraphs: string[];
         image: string;
         imageAlt: string;
+        /** How the photo is framed inside its 4:3 panel. */
+        imageDisplay: ImageFraming;
         imagePosition: 'left' | 'right';
         badgeEnabled: boolean;
         badgeValue: string;

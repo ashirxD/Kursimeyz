@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { FramingSchema } = require('./imageDisplaySchemas');
 
 // Singleton document — only one record ever exists in this collection.
 // Read with HomePage.findOne(), write with findOneAndUpdate({}, data, { upsert: true }).
@@ -60,6 +61,8 @@ const HomePageSchema = new mongoose.Schema(
                 alt: { type: String, trim: true, default: '' },
                 // The tilted panel behind the photo.
                 backdropColor: { type: String, trim: true, default: '#f8fafc' },
+                // How the photo is framed inside its 3:2 panel.
+                display: { type: FramingSchema, default: () => ({ fit: 'cover' }) },
             },
             badges: {
                 enabled: { type: Boolean, default: true },

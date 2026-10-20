@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import ProductPhoto from '@/components/ProductPhoto';
 import { resolveImageUrl } from '@/utils/imageUrl';
+import { COVER_DISPLAY, getImageDisplay, type ImageDisplay } from '@/utils/productImageDisplay';
 
 /** Long enough to read the card, short enough to notice there is more than one. */
 const ROTATE_INTERVAL = 4000;
@@ -7,6 +9,8 @@ const ROTATE_INTERVAL = 4000;
 interface CollectionCoverProps {
     /** A product type's covers, first one first. Empty falls back to its icon. */
     images: string[];
+    /** How the admin framed each cover; covers without an entry fill the frame. */
+    display?: ImageDisplay[];
     /** Material Symbols name drawn when there are no covers yet. */
     icon: string;
     alt: string;
@@ -26,6 +30,7 @@ interface CollectionCoverProps {
  */
 export default function CollectionCover({
     images,
+    display,
     icon,
     alt,
     layerClassName = '',
@@ -65,13 +70,15 @@ export default function CollectionCover({
     return (
         <>
             {images.map((url, position) => (
-                <img
+                <ProductPhoto
                     key={`${url}-${position}`}
                     src={resolveImageUrl(url)}
                     // The stack is one picture to a reader; only the first is labelled.
                     alt={position === 0 ? alt : ''}
+                    decorative={position !== 0}
+                    display={getImageDisplay(display, url, COVER_DISPLAY)}
                     // Stacked and crossfaded, so the card never flashes empty mid-swap.
-                    className={`absolute inset-0 w-full h-full object-cover transition-all ${
+                    className={`transition-all ${
                         position === active ? 'opacity-100' : 'opacity-0'
                     } ${layerClassName}`}
                 />

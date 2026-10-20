@@ -17,6 +17,7 @@ const {
     pickParagraph,
     pickString,
 } = require('./contentFields');
+const { COVER_DEFAULTS, normalizeFraming } = require('./productImageDisplay');
 
 // Render order, and the only keys a stored order may contain.
 const SECTION_KEYS = ['hero', 'values', 'story', 'stats', 'contact', 'backLink'];
@@ -84,6 +85,8 @@ const DEFAULT_ABOUT_CONTENT = {
     image:
       'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=1000',
     imageAlt: 'Craftsman working on furniture',
+    // Fills its 4:3 panel and centred — the original treatment.
+    imageDisplay: { ...COVER_DEFAULTS },
     // Which side the photo sits on; the text takes the other.
     imagePosition: 'right',
     badgeEnabled: true,
@@ -237,6 +240,7 @@ const normalizeAboutContent = (body) => {
       }),
       image: pickImage(story.image, defaults.story.image, LIMITS.image),
       imageAlt: pickString(story.imageAlt, defaults.story.imageAlt, LIMITS.label),
+      imageDisplay: normalizeFraming(story.imageDisplay, COVER_DEFAULTS),
       imagePosition: story.imagePosition === 'left' ? 'left' : 'right',
       badgeEnabled: pickBoolean(story.badgeEnabled, defaults.story.badgeEnabled),
       badgeValue: pickString(story.badgeValue, defaults.story.badgeValue, LIMITS.badgeValue),

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { AxiosError } from 'axios';
-import ProductImageEditor from '@/components/ProductImageEditor';
+import ProductImageEditor, { type SecondaryShape } from '@/components/ProductImageEditor';
 import ProductPhoto from '@/components/ProductPhoto';
 import api from '@/utils/Axios';
 import { resolveImageUrl } from '@/utils/imageUrl';
@@ -10,20 +10,29 @@ import {
     withImageDisplay,
     type CardAspect,
     type ImageDisplay,
+    type ImageFraming,
 } from '@/utils/productImageDisplay';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 /**
- * Turns the uploader into a card-photo picker: each tile is drawn the way the
- * shop card will draw it, and gets an Adjust button for the crop.
+ * Turns the uploader into a framed-photo picker: each tile is drawn the way the
+ * storefront will draw it, and gets an Adjust button for the crop.
  */
-interface CardPhotoOptions {
-    /** The collection's card shape. */
+export interface CardPhotoOptions {
+    /** The shape the photo is shown in on the storefront. */
     aspect: CardAspect;
-    /** Saved framing per photo; photos without an entry use the defaults. */
+    /** Saved framing per photo; photos without an entry use `defaults`. */
     display: ImageDisplay[];
     onDisplayChange: (display: ImageDisplay[]) => void;
+    /** Where an untouched photo starts. Defaults to a whole photo with air around it. */
+    defaults?: ImageFraming;
+    /** What the photo is shown as, e.g. "home page photo". */
+    target?: string;
+    /** Corner radius of the real frame, in px. */
+    radius?: number;
+    /** Other shapes the same crop also appears in. */
+    alsoShownAs?: SecondaryShape[];
 }
 
 interface ProductImagesUploaderProps {
@@ -147,7 +156,7 @@ export default function ProductImagesUploader({
                                     <ProductPhoto
                                         src={resolveImageUrl(url)}
                                         alt={`Product view ${index + 1}`}
-                                        display={getImageDisplay(card.display, url)}
+                                        display={getImageDisplay(card.display, url, card.defaults)}
                                     />
                                 ) : (
                                     <img
@@ -254,6 +263,10 @@ export default function ProductImagesUploader({
                     startIndex={adjustingIndex}
                     aspect={card.aspect}
                     displays={card.display}
+                    defaults={card.defaults}
+                    target={card.target}
+                    radius={card.radius}
+                    alsoShownAs={card.alsoShownAs}
                     onClose={() => setAdjustingIndex(null)}
                     onApply={(changed) => {
                         card.onDisplayChange(

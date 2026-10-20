@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { FramingSchema } = require('./imageDisplaySchemas');
 
 // Singleton document — only one record ever exists in this collection.
 // Read with AboutPage.findOne(), write with findOneAndUpdate({}, data, { upsert: true }).
@@ -81,6 +82,8 @@ const AboutPageSchema = new mongoose.Schema(
       paragraphs: { type: [String], default: [] },
       image: { type: String, trim: true, default: '' },
       imageAlt: { type: String, trim: true, default: '' },
+      // How the photo is framed inside its 4:3 panel.
+      imageDisplay: { type: FramingSchema, default: () => ({ fit: 'cover' }) },
       // Which side the photo sits on; the text takes the other.
       imagePosition: { type: String, enum: ['left', 'right'], default: 'right' },
       badgeEnabled: { type: Boolean, default: true },

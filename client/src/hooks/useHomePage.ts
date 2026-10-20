@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/utils/Axios';
+import type { ImageFraming } from '@/utils/productImageDisplay';
 
 /**
  * The dashboard hero is admin-authored and stored server-side, so the storefront
@@ -55,6 +56,8 @@ export interface HomeHeroContent {
         alt: string;
         /** The tilted panel behind the photo. */
         backdropColor: string;
+        /** How the photo is framed inside its 3:2 panel. */
+        display: ImageFraming;
     };
     badges: {
         enabled: boolean;

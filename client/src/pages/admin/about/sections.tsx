@@ -1,6 +1,11 @@
 import IconPicker from '@/components/IconPicker';
 import ProductColorPicker from '@/components/ProductColorPicker';
 import ProductImagesUploader from '@/components/ProductImagesUploader';
+import {
+    COVER_DISPLAY,
+    fromFraming,
+    toFraming,
+} from '@/utils/productImageDisplay';
 import type { AboutPageContent, AboutSectionKey } from '@/hooks/useAboutPage';
 import { moveItem } from '@/utils/reorder';
 import { CONTENT_ICON_OPTIONS } from '@/components/pageEditor/iconOptions';
@@ -412,11 +417,30 @@ export function StoryEditor({
                     required={false}
                     maxImages={1}
                     images={value.image ? [value.image] : []}
-                    onChange={(images) => onChange({ ...value, image: images[0] ?? '' })}
+                    // A new photo starts from the default framing, not the last one's.
+                    onChange={(images) =>
+                        onChange({
+                            ...value,
+                            image: images[0] ?? '',
+                            imageDisplay: { ...COVER_DISPLAY },
+                        })
+                    }
                     onUploadingChange={onUploadingChange}
+                    card={{
+                        aspect: '4:3',
+                        target: 'story photo',
+                        radius: 32,
+                        defaults: COVER_DISPLAY,
+                        display: value.image ? [fromFraming(value.image, value.imageDisplay)] : [],
+                        onDisplayChange: (list) => {
+                            const next = list.find((entry) => entry.url === value.image);
+                            if (next) onChange({ ...value, imageDisplay: toFraming(next) });
+                        },
+                    }}
                 />
                 <p className="text-[10px] font-bold text-forest-moss-light/50 ml-4 -mt-4">
-                    Remove the photo to give the story text the full width.
+                    Shown at a 4:3 crop — hover the photo and press the crop button to
+                    adjust it. Remove the photo to give the story text the full width.
                 </p>
 
                 <TextField

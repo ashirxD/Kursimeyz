@@ -7,6 +7,7 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductTypeBySlug } from "@/hooks/useProductTypes";
 import { aspectCss } from "@/utils/productImageDisplay";
+import { getBannerCovers } from "@/utils/collectionCovers";
 import { getEffectivePrice } from "@/utils/productPricing";
 import ShopProductCard from "./card";
 
@@ -272,7 +273,8 @@ export default function ShopPage() {
                 className="group relative h-[250px] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 bg-[#1a2f1a]"
               >
                 <CollectionCover
-                  images={type.coverImages}
+                  images={getBannerCovers(type).images}
+                  display={getBannerCovers(type).display}
                   icon={type.icon}
                   alt={type.pluralName}
                   layerClassName="duration-700 group-hover:scale-110"

@@ -55,6 +55,7 @@ export default function Dashboard() {
               <div className="relative aspect-[4/5] w-full rounded-[32px] overflow-hidden mb-6 transition-all duration-700 hover:-translate-y-2 shadow-sm hover:shadow-2xl hover:shadow-black/10">
                 <CollectionCover
                   images={type.coverImages}
+                  display={type.coverDisplay}
                   icon={type.icon}
                   alt={type.pluralName}
                   layerClassName="duration-1000 group-hover:scale-110"

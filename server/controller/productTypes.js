@@ -3,7 +3,12 @@ const Product = require('../models/Product');
 const Category = require('../models/Category');
 const { normalizeName } = require('../utils/slug');
 const { pluralize, buildUniqueSlug } = require('../utils/productTypes');
-const { CARD_ASPECTS, normalizeCardAspect } = require('../utils/productImageDisplay');
+const {
+  CARD_ASPECTS,
+  COVER_DEFAULTS,
+  normalizeCardAspect,
+  normalizeImageDisplay,
+} = require('../utils/productImageDisplay');
 
 // One aggregation for every type, so the nav costs a single extra round trip.
 const countProductsByType = async () => {
@@ -40,6 +45,8 @@ const normalizeCoverImages = (coverImages, coverImage) => {
 const toResponse = (type, counts) => ({
   ...type,
   coverImages: normalizeCoverImages(type.coverImages, type.coverImage),
+  coverMode: type.coverMode === 'separate' ? 'separate' : 'shared',
+  bannerImages: normalizeCoverImages(type.bannerImages),
   // Same reason: .lean() skips schema defaults, so a type saved before card
   // shapes existed would otherwise reach the client without one.
   cardAspect: normalizeCardAspect(type.cardAspect),
@@ -58,6 +65,27 @@ const applyCoverImages = (target, body) => {
   const covers = normalizeCoverImages(body.coverImages, body.coverImage);
   target.coverImages = covers;
   target.coverImage = covers[0] || '';
+
+  // Framing follows the covers it belongs to: what the client sent, or else what
+  // is already stored, minus any cover that has just been removed.
+  const framing = Array.isArray(body.coverDisplay) ? body.coverDisplay : target.coverDisplay;
+  target.coverDisplay = normalizeImageDisplay(framing, covers, COVER_DEFAULTS) || [];
+};
+
+// The banner's own set, and whether it is in use. Each part is left alone unless
+// the request carries it, for the same reason as applyCoverImages.
+const applyBannerImages = (target, body) => {
+  if (body.coverMode === 'shared' || body.coverMode === 'separate') {
+    target.coverMode = body.coverMode;
+  }
+
+  if (!Array.isArray(body.bannerImages)) return;
+
+  const banners = normalizeCoverImages(body.bannerImages);
+  target.bannerImages = banners;
+
+  const framing = Array.isArray(body.bannerDisplay) ? body.bannerDisplay : target.bannerDisplay;
+  target.bannerDisplay = normalizeImageDisplay(framing, banners, COVER_DEFAULTS) || [];
 };
 
 const applyCopyFields = (target, body) => {
@@ -66,6 +94,7 @@ const applyCopyFields = (target, body) => {
   });
 
   applyCoverImages(target, body);
+  applyBannerImages(target, body);
 
   if (CARD_ASPECTS.includes(body.cardAspect)) {
     target.cardAspect = body.cardAspect;

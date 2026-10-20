@@ -56,8 +56,11 @@ export interface ImageDisplay {
     background: string;
 }
 
-/** What a photo looks like until the admin touches it — the shop's original treatment. */
-export const DEFAULT_DISPLAY: Omit<ImageDisplay, 'url'> = {
+/** The framing without the photo it belongs to — for a slot that holds one photo. */
+export type ImageFraming = Omit<ImageDisplay, 'url'>;
+
+/** What a product photo looks like until the admin touches it — the shop's original treatment. */
+export const DEFAULT_DISPLAY: ImageFraming = {
     fit: 'contain',
     zoom: 1,
     x: 50,
@@ -65,6 +68,29 @@ export const DEFAULT_DISPLAY: Omit<ImageDisplay, 'url'> = {
     padding: 7,
     background: '',
 };
+
+/**
+ * Where collection covers, the home hero and the About photo start: filling
+ * their frame, centred, which is how they were always drawn.
+ */
+export const COVER_DISPLAY: ImageFraming = { ...DEFAULT_DISPLAY, fit: 'cover' };
+
+/** Strips the photo off an entry, leaving the framing a single-photo slot stores. */
+export const toFraming = (display: ImageDisplay): ImageFraming => ({
+    fit: display.fit,
+    zoom: display.zoom,
+    x: display.x,
+    y: display.y,
+    padding: display.padding,
+    background: display.background,
+});
+
+/** The other way: a single-photo slot's framing as the editor's list entry. */
+export const fromFraming = (url: string, framing?: Partial<ImageFraming> | null): ImageDisplay => ({
+    ...COVER_DISPLAY,
+    ...framing,
+    url,
+});
 
 export const resolveCardAspect = (aspect?: string | null): CardAspect =>
     CARD_ASPECT_OPTIONS.some((option) => option.value === aspect)
@@ -85,9 +111,10 @@ export const aspectCss = (aspect?: string | null): string =>
 export const getImageDisplay = (
     list: ImageDisplay[] | null | undefined,
     url: string,
+    defaults: ImageFraming = DEFAULT_DISPLAY,
 ): ImageDisplay => {
     const saved = list?.find((entry) => entry.url === url);
-    return saved ? { ...DEFAULT_DISPLAY, ...saved } : { ...DEFAULT_DISPLAY, url };
+    return saved ? { ...defaults, ...saved } : { ...defaults, url };
 };
 
 /** Adds or replaces the entry for `next.url`. */

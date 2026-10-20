@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { AxiosError } from 'axios';
 import IconPicker from '@/components/IconPicker';
 import ModalPortal from '@/components/ModalPortal';
-import ProductImagesUploader from '@/components/ProductImagesUploader';
-import { useProductTypes, type ProductType } from '@/hooks/useProductTypes';
+import CollectionCoversField from '@/components/CollectionCoversField';
+import { useProductTypes, type CoverMode, type ProductType } from '@/hooks/useProductTypes';
 import {
     CARD_ASPECT_OPTIONS,
     aspectCss,
     aspectRatio,
     resolveCardAspect,
     type CardAspect,
+    type ImageDisplay,
 } from '@/utils/productImageDisplay';
 import { pluralize } from '@/utils/slug';
 
@@ -27,6 +28,10 @@ interface FormValues {
     pluralName: string;
     icon: string;
     coverImages: string[];
+    coverDisplay: ImageDisplay[];
+    coverMode: CoverMode;
+    bannerImages: string[];
+    bannerDisplay: ImageDisplay[];
     heroTitle: string;
     heroSubtitle: string;
     tagline: string;
@@ -38,6 +43,10 @@ const toFormValues = (productType?: ProductType): FormValues => ({
     pluralName: productType?.pluralName ?? '',
     icon: productType?.icon ?? 'category',
     coverImages: productType?.coverImages ?? [],
+    coverDisplay: productType?.coverDisplay ?? [],
+    coverMode: productType?.coverMode === 'separate' ? 'separate' : 'shared',
+    bannerImages: productType?.bannerImages ?? [],
+    bannerDisplay: productType?.bannerDisplay ?? [],
     heroTitle: productType?.heroTitle ?? '',
     heroSubtitle: productType?.heroSubtitle ?? '',
     tagline: productType?.tagline ?? '',
@@ -53,9 +62,6 @@ export default function ProductTypeFormModal(props: ProductTypeFormModalProps) {
 
     return <ProductTypeForm key={props.productType?._id ?? 'new'} {...props} />;
 }
-
-/** Matches MAX_COVER_IMAGES in server/controller/productTypes.js. */
-const MAX_COVER_IMAGES = 6;
 
 function ProductTypeForm({ onClose, productType, onCreated }: ProductTypeFormModalProps) {
     const { createProductType, updateProductType, isCreating, isUpdating } = useProductTypes();
@@ -181,21 +187,13 @@ function ProductTypeForm({ onClose, productType, onCreated }: ProductTypeFormMod
                                 onChange={(icon) => update('icon', icon)}
                             />
 
-                            <div className="space-y-1">
-                                <ProductImagesUploader
-                                    label="Collection Covers"
-                                    required={false}
-                                    maxImages={MAX_COVER_IMAGES}
-                                    images={values.coverImages}
-                                    onChange={(images) => update('coverImages', images)}
-                                    onUploadingChange={setIsUploading}
-                                />
-                                <p className="text-[9px] font-medium text-forest-moss/30 ml-4">
-                                    {values.coverImages.length > 1
-                                        ? `These ${values.coverImages.length} photos take turns on the ${plural} card in "Find Your Space".`
-                                        : `Add more than one and they take turns on the ${plural} card in "Find Your Space".`}
-                                </p>
-                            </div>
+                            <CollectionCoversField
+                                value={values}
+                                onChange={(patch) => setValues((current) => ({ ...current, ...patch }))}
+                                onUploadingChange={setIsUploading}
+                                plural={plural}
+                                icon={values.icon}
+                            />
 
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-forest-moss-light ml-4">

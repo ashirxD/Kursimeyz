@@ -5,7 +5,9 @@ import type {
     AboutSectionKey,
     AboutTheme,
 } from '@/hooks/useAboutPage';
+import ProductPhoto from '@/components/ProductPhoto';
 import { resolveImageUrl } from '@/utils/imageUrl';
+import { COVER_DISPLAY } from '@/utils/productImageDisplay';
 import { mix, readableTextColor, withAlpha } from '@/utils/themeColor';
 
 interface AboutContentProps {
@@ -255,11 +257,11 @@ function StorySection({ content }: { content: AboutPageContent }) {
 
                 {story.image && (
                     <div className="flex-1 relative w-full">
-                        <div className="aspect-[4/3] rounded-[32px] overflow-hidden shadow-2xl">
-                            <img
+                        <div className="relative aspect-[4/3] rounded-[32px] overflow-hidden shadow-2xl">
+                            <ProductPhoto
                                 src={resolveImageUrl(story.image)}
                                 alt={story.imageAlt}
-                                className="w-full h-full object-cover"
+                                display={story.imageDisplay ?? COVER_DISPLAY}
                             />
                         </div>
 

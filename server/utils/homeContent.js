@@ -18,6 +18,7 @@ const {
     pickParagraph,
     pickString,
 } = require('./contentFields');
+const { COVER_DEFAULTS, normalizeFraming } = require('./productImageDisplay');
 
 /** Which corner of the photo a hover badge sits in. */
 const BADGE_POSITIONS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
@@ -63,6 +64,8 @@ const DEFAULT_HOME_CONTENT = {
             alt: 'Minimalist Interior Decor',
             // The tilted panel peeking out behind the photo.
             backdropColor: '#f8fafc',
+            // Fills its 3:2 panel and centred — the original treatment.
+            display: { ...COVER_DEFAULTS },
         },
         badges: {
             enabled: true,
@@ -142,6 +145,7 @@ const normalizeHomeContent = (body) => {
                     image.backdropColor,
                     defaultHero.image.backdropColor
                 ),
+                display: normalizeFraming(image.display, COVER_DEFAULTS),
             },
             badges: {
                 enabled: pickBoolean(badges.enabled, defaultHero.badges.enabled),

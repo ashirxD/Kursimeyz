@@ -16,6 +16,7 @@ import {
     type CardAspect,
     type ImageDisplay,
     type ImageFit,
+    type ImageFraming,
 } from '@/utils/productImageDisplay';
 
 /** Tallest the preview frame grows, so a portrait card still fits the modal. */
@@ -24,15 +25,31 @@ const FRAME_MAX_HEIGHT = 320;
 /** How far an arrow key nudges the photo, in pixels of the preview. */
 const KEY_STEP = 8;
 
+/** Another place the same photo is shown, in a different shape. */
+export interface SecondaryShape {
+    label: string;
+    aspect: CardAspect;
+    /** Corner radius of that place, in px. */
+    radius?: number;
+}
+
 interface ProductImageEditorProps {
     /** Every photo of the product, cover first. They are adjusted one by one. */
     images: string[];
     /** Which photo to open on. */
     startIndex?: number;
-    /** The collection's card shape — the preview is cut to exactly this. */
+    /** The shape the photo is shown in — the preview is cut to exactly this. */
     aspect: CardAspect;
-    /** Framing saved so far; photos without an entry start from the defaults. */
+    /** Framing saved so far; photos without an entry start from `defaults`. */
     displays: ImageDisplay[];
+    /** Where an untouched photo starts, and what Reset returns to. */
+    defaults?: ImageFraming;
+    /** What the photo is shown as, e.g. "product card" or "home page photo". */
+    target?: string;
+    /** Corner radius of the main frame, in px, to match the real thing. */
+    radius?: number;
+    /** Other shapes the same crop also appears in, previewed live underneath. */
+    alsoShownAs?: SecondaryShape[];
     title?: string;
     applyLabel?: string;
     isSaving?: boolean;
@@ -79,6 +96,10 @@ export default function ProductImageEditor({
     startIndex = 0,
     aspect,
     displays,
+    defaults = DEFAULT_DISPLAY,
+    target = 'product card',
+    radius = 20,
+    alsoShownAs = [],
     title = 'Adjust photos',
     applyLabel = 'Apply',
     isSaving = false,
@@ -87,7 +108,7 @@ export default function ProductImageEditor({
 }: ProductImageEditorProps) {
     // One draft per photo, so moving between them never loses an adjustment.
     const [initial] = useState<Record<string, ImageDisplay>>(() =>
-        Object.fromEntries(images.map((url) => [url, getImageDisplay(displays, url)])),
+        Object.fromEntries(images.map((url) => [url, getImageDisplay(displays, url, defaults)])),
     );
     const [drafts, setDrafts] = useState(initial);
     const [index, setIndex] = useState(() =>
@@ -194,7 +215,7 @@ export default function ProductImageEditor({
         if (next) update(next);
     };
 
-    const reset = () => update({ ...DEFAULT_DISPLAY });
+    const reset = () => update({ ...defaults });
 
     const copyToAll = () =>
         setDrafts((current) =>
@@ -220,8 +241,8 @@ export default function ProductImageEditor({
                                 </h3>
                                 <p className="text-[11px] font-bold text-forest-moss/40 mt-1">
                                     {hasMany
-                                        ? `Photo ${index + 1} of ${images.length}${index === 0 ? ' (cover)' : ''} — exactly as it appears on the ${aspect} product card.`
-                                        : `Exactly how this photo appears on the ${aspect} product card.`}
+                                        ? `Photo ${index + 1} of ${images.length}${index === 0 ? ' (cover)' : ''} — exactly as it appears in the ${aspect} ${target}.`
+                                        : `Exactly how this photo appears in the ${aspect} ${target}.`}
                                 </p>
                             </div>
                             <button
@@ -310,8 +331,9 @@ export default function ProductImageEditor({
                                 style={{
                                     aspectRatio: aspectCss(aspect),
                                     maxWidth: Math.round(FRAME_MAX_HEIGHT * aspectRatio(aspect)),
+                                    borderRadius: radius,
                                 }}
-                                className={`relative mx-auto w-full rounded-[20px] overflow-hidden border border-[#1a2f1a]/[0.06] shadow-soft touch-none select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-clay/60 ${
+                                className={`relative mx-auto w-full overflow-hidden border border-[#1a2f1a]/[0.06] shadow-soft touch-none select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-clay/60 ${
                                     isDragging ? 'cursor-grabbing' : 'cursor-grab'
                                 }`}
                             >
@@ -343,6 +365,34 @@ export default function ProductImageEditor({
                                 Drag the photo to reposition it
                             </p>
                         </div>
+
+                        {/* The same crop, as it lands in the other places this photo is used. */}
+                        {alsoShownAs.length > 0 && (
+                            <div className="space-y-2">
+                                {alsoShownAs.map((shape) => (
+                                    <div key={shape.label} className="space-y-1">
+                                        <p className="text-center text-[9px] font-black uppercase tracking-widest text-forest-moss/40">
+                                            Also shown as {shape.label} ({shape.aspect})
+                                        </p>
+                                        <div
+                                            style={{
+                                                aspectRatio: aspectCss(shape.aspect),
+                                                maxWidth: Math.round(110 * aspectRatio(shape.aspect)),
+                                                borderRadius: Math.min(shape.radius ?? 20, 16),
+                                            }}
+                                            className="relative mx-auto w-full overflow-hidden border border-[#1a2f1a]/[0.06]"
+                                        >
+                                            <ProductPhoto
+                                                src={resolveImageUrl(url)}
+                                                alt=""
+                                                decorative
+                                                display={draft}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
                         <div className="bg-white rounded-2xl p-4 border border-forest-moss/10 space-y-4">
                             <div className="space-y-1.5">

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { CARD_ASPECTS, DEFAULT_CARD_ASPECT } = require('../utils/productImageDisplay');
+const { ImageDisplaySchema } = require('./imageDisplaySchemas');
 
 // A kind of furniture the shop sells — chairs, tables, sofas, and whatever else
 // the admin adds later. This is the top of the hierarchy:
@@ -57,6 +58,31 @@ const ProductTypeSchema = new mongoose.Schema({
   // and shop cards rotate through them; one image just means no rotation.
   coverImages: {
     type: [String],
+    default: [],
+  },
+  // How each cover is framed on the dashboard card (and, in 'shared' mode, on
+  // the shop banner too). Keyed by URL; covers without an entry fill the frame,
+  // as they always have.
+  coverDisplay: {
+    type: [ImageDisplaySchema],
+    default: [],
+  },
+  // The covers are drawn in two shapes: the tall dashboard card and the wide shop
+  // banner. 'shared' crops one set of photos for both; 'separate' gives the
+  // banner its own set below, so each shape can show different photos.
+  coverMode: {
+    type: String,
+    enum: ['shared', 'separate'],
+    default: 'shared',
+  },
+  // The banner's own photos, used only in 'separate' mode. They are kept when the
+  // admin switches back to 'shared', so flipping the mode never throws work away.
+  bannerImages: {
+    type: [String],
+    default: [],
+  },
+  bannerDisplay: {
+    type: [ImageDisplaySchema],
     default: [],
   },
   heroTitle: {
