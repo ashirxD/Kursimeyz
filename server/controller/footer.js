@@ -1,5 +1,6 @@
 const Footer = require('../models/Footer');
 const { normalizeFooterContent } = require('../utils/footerContent');
+const { sendError } = require('../middleware/errorHandler');
 
 // Both directions run through normalizeFooterContent: reads so an empty or older
 // document still answers with a complete footer, writes so nothing unvalidated is
@@ -29,7 +30,7 @@ const getFooter = async (req, res) => {
   try {
     res.json(await readContent());
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching footer', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the footer. Please refresh the page and try again.');
   }
 };
 
@@ -38,7 +39,7 @@ const updateFooter = async (req, res) => {
   try {
     res.json(await writeContent(req.body));
   } catch (error) {
-    res.status(400).json({ message: 'Error saving footer', error: error.message });
+    return sendError(res, error, 'We couldn\'t save the footer. Please try again.');
   }
 };
 
@@ -48,7 +49,7 @@ const resetFooter = async (req, res) => {
   try {
     res.json(await writeContent({}));
   } catch (error) {
-    res.status(400).json({ message: 'Error resetting footer', error: error.message });
+    return sendError(res, error, 'We couldn\'t reset the footer. Please try again.');
   }
 };
 

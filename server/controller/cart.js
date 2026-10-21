@@ -1,6 +1,7 @@
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const { isValidPakistaniMobile } = require('../utils/phone');
+const { sendError } = require('../middleware/errorHandler');
 
 // Get user cart
 const getCart = async (req, res) => {
@@ -15,11 +16,7 @@ const getCart = async (req, res) => {
             data: cart,
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t load your cart. Please refresh the page and try again.');
     }
 };
 
@@ -41,7 +38,7 @@ const addToCart = async (req, res) => {
         if (!product) {
             return res.status(404).json({
                 success: false,
-                message: 'Product not found',
+                message: "That product isn't available any more. It may have been removed.",
             });
         }
 
@@ -81,11 +78,7 @@ const addToCart = async (req, res) => {
         });
     } catch (err) {
         console.error('CRITICAL: Error in addToCart:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t add that to your cart. Please try again.');
     }
 };
 
@@ -97,7 +90,7 @@ const updateQuantity = async (req, res) => {
         if (quantity < 1) {
             return res.status(400).json({
                 success: false,
-                message: 'Quantity must be at least 1',
+                message: 'Please choose a quantity of 1 or more.',
             });
         }
 
@@ -105,7 +98,7 @@ const updateQuantity = async (req, res) => {
         if (!cart) {
             return res.status(404).json({
                 success: false,
-                message: 'Cart not found',
+                message: "We couldn't find your cart. Please refresh the page and try again.",
             });
         }
 
@@ -116,7 +109,7 @@ const updateQuantity = async (req, res) => {
         if (itemIndex === -1) {
             return res.status(404).json({
                 success: false,
-                message: 'Item not found in cart',
+                message: "That item isn't in your cart any more.",
             });
         }
 
@@ -130,11 +123,7 @@ const updateQuantity = async (req, res) => {
             data: cart,
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t update that quantity. Please try again.');
     }
 };
 
@@ -147,7 +136,7 @@ const removeFromCart = async (req, res) => {
         if (!cart) {
             return res.status(404).json({
                 success: false,
-                message: 'Cart not found',
+                message: "We couldn't find your cart. Please refresh the page and try again.",
             });
         }
 
@@ -163,11 +152,7 @@ const removeFromCart = async (req, res) => {
             data: cart,
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t remove that from your cart. Please try again.');
     }
 };
 
@@ -186,11 +171,7 @@ const clearCart = async (req, res) => {
             message: 'Cart cleared',
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t clear your cart. Please try again.');
     }
 };
 

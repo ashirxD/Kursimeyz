@@ -29,6 +29,8 @@ export const useOrder = () => {
   const navigate = useNavigate();
 
   const createOrderMutation = useMutation({
+    // The caller shows its own message for this one.
+    meta: { silent: true },
     mutationFn: async (orderData: OrderPayload) => {
       const response = await api.post("/order", orderData);
       return response.data.data;

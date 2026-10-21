@@ -1,5 +1,6 @@
 const ShippingCity = require('../models/ShippingCity');
 const { slugify, normalizeName } = require('../utils/slug');
+const { sendError } = require('../middleware/errorHandler');
 
 const toResponse = (city) => ({
     _id: city._id,
@@ -43,7 +44,7 @@ const getShippingCities = async (req, res) => {
         const cities = await ShippingCity.find().sort({ name: 1 }).lean();
         res.json(cities.map(toResponse));
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching shipping cities', error: error.message });
+        return sendError(res, error, 'We couldn\'t load the shipping cities. Please refresh the page and try again.');
     }
 };
 
@@ -67,7 +68,7 @@ const createShippingCity = async (req, res) => {
             return res.status(400).json({ message: error.message });
         }
 
-        res.status(500).json({ message: 'Error creating shipping city', error: error.message });
+        return sendError(res, error, 'We couldn\'t create that shipping city. Please check the details and try again.');
     }
 };
 
@@ -79,7 +80,7 @@ const updateShippingCity = async (req, res) => {
         const city = await ShippingCity.findById(req.params.id);
 
         if (!city) {
-            return res.status(404).json({ message: 'Shipping city not found' });
+            return res.status(404).json({ message: "We couldn't find that shipping city. It may have been removed." });
         }
 
         if (req.body.name !== undefined) {
@@ -107,7 +108,7 @@ const updateShippingCity = async (req, res) => {
             return res.status(400).json({ message: error.message });
         }
 
-        res.status(500).json({ message: 'Error updating shipping city', error: error.message });
+        return sendError(res, error, 'We couldn\'t update that shipping city. Please try again.');
     }
 };
 
@@ -119,12 +120,12 @@ const deleteShippingCity = async (req, res) => {
         const city = await ShippingCity.findByIdAndDelete(req.params.id);
 
         if (!city) {
-            return res.status(404).json({ message: 'Shipping city not found' });
+            return res.status(404).json({ message: "We couldn't find that shipping city. It may have been removed." });
         }
 
         res.json({ message: 'Shipping city removed', _id: city._id });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting shipping city', error: error.message });
+        return sendError(res, error, 'We couldn\'t delete that shipping city. Please try again.');
     }
 };
 

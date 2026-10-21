@@ -24,6 +24,8 @@ export const useAdminProfile = () => {
   const { user, setUser } = useAuthStore();
 
   const updateProfileMutation = useMutation({
+    // The caller shows its own message for this one.
+    meta: { silent: true },
     mutationFn: async (payload: UpdateProfilePayload) => {
       const response = await api.put<UpdateProfileResponse>("/user/admin/profile", payload);
       return response.data;

@@ -60,6 +60,8 @@ export const useUpdateOrderNumber = () => {
   const queryClient = useQueryClient();
 
   const updateOrderNumberMutation = useMutation({
+    // The caller shows its own message for this one.
+    meta: { silent: true },
     mutationFn: async ({ orderId, orderNumber }: { orderId: string; orderNumber: string }) => {
       const response = await api.put(`/order/admin/${orderId}/order-number`, { orderNumber });
       return response.data;
@@ -161,6 +163,8 @@ export const useConfirmPayment = () => {
   const queryClient = useQueryClient();
 
   const confirmPaymentMutation = useMutation({
+    // The caller shows its own message for this one.
+    meta: { silent: true },
     mutationFn: async ({
       orderId,
       payload,

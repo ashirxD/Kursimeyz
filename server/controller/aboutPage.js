@@ -1,5 +1,6 @@
 const AboutPage = require('../models/AboutPage');
 const { normalizeAboutContent } = require('../utils/aboutContent');
+const { sendError } = require('../middleware/errorHandler');
 
 // Both directions run through normalizeAboutContent: reads so an empty or older
 // document still answers with a complete page, writes so nothing unvalidated is
@@ -29,7 +30,7 @@ const getAboutPage = async (req, res) => {
   try {
     res.json(await readContent());
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching About page', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the About page. Please refresh the page and try again.');
   }
 };
 
@@ -38,7 +39,7 @@ const updateAboutPage = async (req, res) => {
   try {
     res.json(await writeContent(req.body));
   } catch (error) {
-    res.status(400).json({ message: 'Error saving About page', error: error.message });
+    return sendError(res, error, 'We couldn\'t save the About page. Please try again.');
   }
 };
 
@@ -48,7 +49,7 @@ const resetAboutPage = async (req, res) => {
   try {
     res.json(await writeContent({}));
   } catch (error) {
-    res.status(400).json({ message: 'Error resetting About page', error: error.message });
+    return sendError(res, error, 'We couldn\'t reset the About page. Please try again.');
   }
 };
 

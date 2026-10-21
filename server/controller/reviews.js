@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const ProductReview = require('../models/ProductReview');
 const { orderLabel } = require('../utils/orderNumber');
+const { sendError } = require('../middleware/errorHandler');
 
 const getUserId = (req) => req.user.id || req.user._id;
 
@@ -78,11 +79,7 @@ const getPendingReviews = async (req, res) => {
             data: pendingOrders,
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t load your pending reviews. Please try again.');
     }
 };
 
@@ -97,7 +94,7 @@ const submitReviews = async (req, res) => {
         if (!orderId || !Array.isArray(reviews) || reviews.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: 'orderId and reviews array are required',
+                message: 'Something went missing from that review. Please try again.',
             });
         }
 
@@ -106,21 +103,21 @@ const submitReviews = async (req, res) => {
         if (!order) {
             return res.status(404).json({
                 success: false,
-                message: 'Order not found',
+                message: "We couldn't find that order.",
             });
         }
 
         if (order.user.toString() !== userId.toString()) {
             return res.status(403).json({
                 success: false,
-                message: 'Not authorized to review this order',
+                message: 'You can only review your own orders.',
             });
         }
 
         if (order.status !== 'Delivered') {
             return res.status(400).json({
                 success: false,
-                message: 'Reviews can only be submitted for delivered orders',
+                message: 'You can review an order once it has been delivered.',
             });
         }
 
@@ -136,7 +133,7 @@ const submitReviews = async (req, res) => {
             if (!productId || !orderProductIds.has(productId.toString())) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Invalid product for this order',
+                    message: "One of those products isn't part of this order.",
                 });
             }
 
@@ -144,7 +141,7 @@ const submitReviews = async (req, res) => {
             if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Rating must be an integer between 1 and 5',
+                    message: 'Please choose a rating from 1 to 5 stars.',
                 });
             }
 
@@ -202,11 +199,7 @@ const submitReviews = async (req, res) => {
             });
         }
 
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t save your review. Please try again.');
     }
 };
 
@@ -224,14 +217,14 @@ const snoozeReviewPrompt = async (req, res) => {
         if (!order) {
             return res.status(404).json({
                 success: false,
-                message: 'Order not found',
+                message: "We couldn't find that order.",
             });
         }
 
         if (order.user.toString() !== userId.toString()) {
             return res.status(403).json({
                 success: false,
-                message: 'Not authorized',
+                message: 'You can only change reminders for your own orders.',
             });
         }
 
@@ -245,11 +238,7 @@ const snoozeReviewPrompt = async (req, res) => {
             data: { reviewPromptSnoozedUntil: order.reviewPromptSnoozedUntil },
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t postpone that reminder. Please try again.');
     }
 };
 
@@ -266,14 +255,14 @@ const skipReviewPrompt = async (req, res) => {
         if (!order) {
             return res.status(404).json({
                 success: false,
-                message: 'Order not found',
+                message: "We couldn't find that order.",
             });
         }
 
         if (order.user.toString() !== userId.toString()) {
             return res.status(403).json({
                 success: false,
-                message: 'Not authorized',
+                message: 'You can only change reminders for your own orders.',
             });
         }
 
@@ -285,11 +274,7 @@ const skipReviewPrompt = async (req, res) => {
             message: 'Review prompt skipped for this order',
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t skip that reminder. Please try again.');
     }
 };
 

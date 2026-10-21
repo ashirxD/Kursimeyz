@@ -128,6 +128,8 @@ export const useAboutPageEditor = () => {
     };
 
     const saveMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async (content: AboutPageContent) => {
             const response = await api.put('/about-page', content);
             return response.data as AboutPageContent;
@@ -141,6 +143,8 @@ export const useAboutPageEditor = () => {
     });
 
     const resetMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async () => {
             const response = await api.post('/about-page/reset');
             return response.data as AboutPageContent;

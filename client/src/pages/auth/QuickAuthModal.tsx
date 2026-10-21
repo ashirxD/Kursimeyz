@@ -9,6 +9,7 @@ import {
     normalizePakistaniMobile,
     PAKISTANI_MOBILE_HINT,
 } from '@/utils/phone';
+import { getErrorMessage } from '@/utils/apiError';
 
 type AuthMode = 'signup' | 'login' | 'forgot';
 
@@ -25,7 +26,7 @@ export default function QuickAuthModal() {
     const [isLoading, setIsLoading] = useState(false);
     const [localError, setLocalError] = useState<string | null>(null);
 
-    const error = localError || (googleAuthError ? (googleAuthError as any).response?.data?.message || "Google authentication failed" : null);
+    const error = localError || (googleAuthError ? getErrorMessage(googleAuthError, "Google authentication failed") : null);
 
     // Close modal automatically when authenticated (handles Google auth success)
     useEffect(() => {
@@ -72,7 +73,7 @@ export default function QuickAuthModal() {
             await api.post('/auth/register', { email, password, phone: normalizedPhone });
             setIsOtpSent(true);
         } catch (err: any) {
-            setLocalError(err.response?.data?.message || 'Failed to send OTP');
+            setLocalError(getErrorMessage(err, 'Failed to send OTP'));
         } finally {
             setIsLoading(false);
         }
@@ -88,7 +89,7 @@ export default function QuickAuthModal() {
             storeLogin(user, token);
             setQuickAuthModalOpen(false);
         } catch (err: any) {
-            setLocalError(err.response?.data?.message || 'Invalid OTP');
+            setLocalError(getErrorMessage(err, 'Invalid OTP'));
         } finally {
             setIsLoading(false);
         }
@@ -114,7 +115,7 @@ export default function QuickAuthModal() {
             storeLogin(user, token);
             setQuickAuthModalOpen(false);
         } catch (err: any) {
-            setLocalError(err.response?.data?.message || 'Login failed');
+            setLocalError(getErrorMessage(err, 'Login failed'));
         } finally {
             setIsLoading(false);
         }

@@ -26,6 +26,7 @@ import {
     type ImageDisplay,
 } from '@/utils/productImageDisplay';
 import type { Product } from '@/types/product';
+import { toast } from '@/stores/toastStore';
 
 export interface ProductFormCopy {
     title: string;
@@ -172,11 +173,11 @@ function ProductForm({
         e.preventDefault();
         if (!validateProductForm(e.currentTarget, values.name, values.price, values.discountPrice)) return;
         if (values.images.length === 0) {
-            alert('Please upload at least one image!');
+            toast.error('Please upload at least one image.');
             return;
         }
         if (!values.description.trim()) {
-            alert('Please write at least one description detail!');
+            toast.error('Please write a short description.');
             return;
         }
 

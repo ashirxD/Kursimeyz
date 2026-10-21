@@ -22,6 +22,15 @@ const normalizePakistaniMobile = (value) => {
 
 const isValidPakistaniMobile = (value) => Boolean(normalizePakistaniMobile(value));
 
+// Phone numbers are unique per account (a unique index in MongoDB), so a number
+// another account already holds is a user mistake to explain, not a server fault.
+const PHONE_IN_USE_MESSAGE =
+    'That phone number is already linked to another account. Please use a different number, or sign in to the account that has it.';
+
+/** True when MongoDB rejected a write because `field` must be unique and already exists. */
+const isDuplicateKeyError = (error, field) =>
+    error?.code === 11000 && Object.prototype.hasOwnProperty.call(error.keyPattern || {}, field);
+
 const requirePakistaniMobile = (value) => {
     const normalized = normalizePakistaniMobile(value);
 
@@ -36,6 +45,8 @@ const requirePakistaniMobile = (value) => {
 
 module.exports = {
     PAKISTANI_MOBILE_MESSAGE,
+    PHONE_IN_USE_MESSAGE,
+    isDuplicateKeyError,
     normalizePakistaniMobile,
     isValidPakistaniMobile,
     requirePakistaniMobile,

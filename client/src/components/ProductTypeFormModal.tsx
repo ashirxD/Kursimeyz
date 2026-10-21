@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { AxiosError } from 'axios';
 import IconPicker from '@/components/IconPicker';
 import ModalPortal from '@/components/ModalPortal';
 import CollectionCoversField from '@/components/CollectionCoversField';
@@ -13,6 +12,7 @@ import {
     type ImageDisplay,
 } from '@/utils/productImageDisplay';
 import { pluralize } from '@/utils/slug';
+import { getErrorMessage } from '@/utils/apiError';
 
 interface ProductTypeFormModalProps {
     isOpen: boolean;
@@ -104,11 +104,7 @@ function ProductTypeForm({ onClose, productType, onCreated }: ProductTypeFormMod
             }
             onClose();
         } catch (submitError) {
-            const message =
-                submitError instanceof AxiosError
-                    ? (submitError.response?.data as { message?: string } | undefined)?.message
-                    : undefined;
-            setError(message || 'Could not save this product kind.');
+            setError(getErrorMessage(submitError, 'Could not save this product kind.'));
         }
     };
 

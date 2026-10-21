@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { PendingReviewOrder, PendingReviewProduct } from '@/hooks/usePendingReviews';
 import { resolveImageUrl } from '@/utils/imageUrl';
+import { getErrorMessage } from '@/utils/apiError';
 
 interface ReviewDraft {
   rating: number;
@@ -100,7 +101,7 @@ export default function OrderReviewModal({
       onClose();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
-      setError(e.response?.data?.message || 'Failed to submit reviews. Please try again.');
+      setError(getErrorMessage(e, 'Failed to submit reviews. Please try again.'));
     }
   };
 

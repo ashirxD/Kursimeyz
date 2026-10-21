@@ -67,7 +67,6 @@ const statusStyles = {
 };
 
 import { useUpdateOrderStatus, useUpdateOrderNumber } from "@/hooks/useAdminOrders";
-import { AxiosError } from "axios";
 import {
     ORDER_NUMBER_MAX_LENGTH,
     isValidOrderNumber,
@@ -77,6 +76,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import PaymentConfirmationModal from "@/components/paymentConfirmationModal";
+import { getErrorMessage } from "@/utils/apiError";
 
 interface OrdersTableProps {
     orders: Order[];
@@ -247,11 +247,7 @@ const OrderNumberCell = ({ order }: { order: Order }) => {
             setIsEditing(false);
             setError(null);
         } catch (failure) {
-            const detail =
-                failure instanceof AxiosError
-                    ? (failure.response?.data as { message?: string } | undefined)?.message
-                    : undefined;
-            setError(detail || 'Could not save that number.');
+            setError(getErrorMessage(failure, 'Could not save that number.'));
         }
     };
 

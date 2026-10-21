@@ -104,6 +104,8 @@ export const useFooterEditor = () => {
     };
 
     const saveMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async (content: FooterContent) => {
             const response = await api.put('/footer', content);
             return response.data as FooterContent;
@@ -117,6 +119,8 @@ export const useFooterEditor = () => {
     });
 
     const resetMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async () => {
             const response = await api.post('/footer/reset');
             return response.data as FooterContent;

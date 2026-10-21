@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light only">
+  <meta name="supported-color-schemes" content="light only">
+  <title>{{emailTitle}}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+    /* Kursimeyz email theme.
+       oatmeal #f2ece0 · forest #3a4d39 · sage #8a9a5b / #e8ecd7 · clay #d27d53 / #f5e8e1 · brand red #ff311b */
+    body { margin: 0; padding: 0; background: #f2ece0; color: #4a5a48; font-family: 'Plus Jakarta Sans', 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.65; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+    a { color: #3a4d39; }
+    table { border-collapse: collapse; }
+
+    .page { width: 100%; background: #f2ece0; }
+    .shell { width: 100%; max-width: 600px; margin: 0 auto; }
+    .brand { text-align: center; padding: 8px 0 20px; }
+    .card { background: #fffdf8; border: 1px solid #eadfcb; border-radius: 28px; overflow: hidden; }
+
+    /* Hero band: a sticker on a soft colour, then the headline. */
+    .hero { background: #e8ecd7; padding: 30px 24px 28px; text-align: center; }
+    .hero-clay { background: #f5e8e1; }
+    .sticker { display: block; }
+    .pill { display: inline-block; margin: 16px 0 0; background: #ffffff; color: #3a4d39; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(58, 77, 57, 0.12); }
+    .pill-red { background: #ff311b; color: #ffffff; border-color: #ff311b; }
+    .h1 { margin: 12px 0 6px; font-size: 28px; line-height: 1.2; font-weight: 800; color: #3a4d39; letter-spacing: -0.4px; }
+    .sub { margin: 0; font-size: 14px; color: #6c7b69; }
+
+    .body { padding: 30px 34px 34px; }
+    .lead { margin: 0 0 6px; font-size: 17px; font-weight: 700; color: #3a4d39; }
+    .muted { margin: 0; font-size: 14px; color: #7b8a78; }
+    p { margin: 0 0 14px; }
+    h2 { margin: 30px 0 12px; font-size: 11px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; color: #8a9a5b; }
+
+    .btn { display: inline-block; background: #3a4d39; color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 15px; padding: 15px 32px; border-radius: 999px; }
+    .btn-clay { background: #d27d53; }
+    .btn-red { background: #ff311b; }
+    .center { text-align: center; }
+    .right { text-align: right; }
+
+    /* Callouts: the one thing to read first. */
+    .callout { border-radius: 18px; padding: 18px 20px; margin: 24px 0 0; font-size: 14px; }
+    .callout-info { background: #f1f4e6; border: 1px solid #dfe5c9; }
+    .callout-success { background: #e8ecd7; border: 1px solid #d3dbb4; }
+    .callout-action { background: #f5e8e1; border: 1px solid #ecd2bf; }
+    .callout-title { font-size: 15px; font-weight: 800; color: #3a4d39; margin-bottom: 4px; }
+    .callout-body { color: #4a5a48; }
+    .kv { width: 100%; margin: 14px 0 0; background: #fffdf8; border-radius: 12px; }
+    .kv td { padding: 9px 14px; border-top: 1px solid #ecd2bf; font-size: 14px; }
+    .kv-label { color: #8a7a68; width: 38%; }
+    .kv-value { font-weight: 700; color: #3a4d39; }
+
+    .steps { margin: 0; padding-left: 20px; }
+    .steps li { margin: 7px 0; padding-left: 4px; }
+    .steps li::marker { color: #d27d53; font-weight: 800; }
+
+    .info { width: 100%; background: #f7f3ea; border-radius: 16px; }
+    .info td { padding: 10px 16px; border-bottom: 1px solid #ece3d2; font-size: 14px; vertical-align: top; }
+    .info tr:last-child td { border-bottom: 0; }
+    .info td.label { color: #8a7a68; width: 32%; }
+    .info td.value { font-weight: 700; color: #3a4d39; }
+
+    table.items { width: 100%; font-size: 14px; }
+    table.items th { color: #8a9a5b; text-align: left; padding: 8px 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; border-bottom: 2px solid #ece3d2; }
+    table.items td { border-bottom: 1px solid #f0e8d9; padding: 12px 6px; color: #4a5a48; vertical-align: middle; }
+    td.thumb { width: 56px; padding-right: 10px; }
+    table.totals { width: 100%; margin-top: 10px; font-size: 14px; }
+    table.totals td { padding: 6px; }
+    table.totals .grand td { padding-top: 12px; border-top: 2px solid #3a4d39; font-size: 19px; font-weight: 800; color: #3a4d39; }
+
+    .address { background: #f7f3ea; border: 1px solid #ece3d2; border-radius: 14px; padding: 14px 18px; font-size: 14px; }
+
+    .otp { background: #fbf4ee; border: 2px dashed #d27d53; border-radius: 22px; padding: 26px 16px; text-align: center; margin: 26px 0; }
+    .otp-label { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #8a7a68; margin-bottom: 10px; }
+    .otp-code { font-size: 42px; font-weight: 800; letter-spacing: 12px; color: #d27d53; margin-left: 12px; }
+    .note { background: #f1f4e6; border-radius: 14px; padding: 13px 16px; font-size: 13px; color: #5a6a57; margin: 22px 0 0; }
+
+    .attention-box { background: #fff1ec; border: 1px solid #ffd3c8; border-left: 5px solid #ff311b; border-radius: 14px; padding: 14px 18px; }
+    .attention-box h2 { margin: 0 0 6px; color: #d12a15; }
+    .attention { margin: 0; padding-left: 18px; font-size: 14px; }
+    .attention li { margin: 7px 0; }
+
+    .fruits { text-align: center; padding: 26px 0 6px; }
+    .footer { text-align: center; padding: 6px 20px 8px; font-size: 12px; line-height: 1.7; color: #8a8f80; }
+    .footer .tag { font-weight: 700; color: #6c7b69; }
+
+    @media only screen and (max-width: 480px) {
+      .body { padding: 24px 20px 28px; }
+      .hero { padding: 26px 16px 24px; }
+      .h1 { font-size: 24px; }
+      .otp-code { font-size: 34px; letter-spacing: 8px; margin-left: 8px; }
+      .card { border-radius: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Preview text shown beside the subject in an inbox; hidden in the message itself. -->
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;color:#f2ece0;">{{preheader}}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
+
+  <table role="presentation" class="page" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center" style="padding: 28px 12px 36px;">
+        <table role="presentation" class="shell" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          <tr>
+            <td class="brand" align="center">
+              <img src="cid:logo" width="170" alt="Kursimeyz" style="display:block;margin:0 auto;width:170px;height:auto;">
+            </td>
+          </tr>
+          <tr>
+            <td class="card">

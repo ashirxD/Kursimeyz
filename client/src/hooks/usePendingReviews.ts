@@ -30,6 +30,8 @@ export const usePendingReviews = (enabled = true) => {
   });
 
   const submitReviewsMutation = useMutation({
+    // The caller shows its own message for this one.
+    meta: { silent: true },
     mutationFn: async ({
       orderId,
       reviews,

@@ -3,9 +3,13 @@ const PaymentSettings = require('../models/PaymentSettings');
 const bcrypt = require('bcryptjs');
 const { requirePakistaniMobile } = require('../utils/phone');
 
-const DEFAULT_WHATSAPP_NUMBER = '+923211411478';
-const DEFAULT_EASYPAISA_REDIRECT_URL = 'https://easypaisa.onelink.me/cw4d/q9y8ba5v';
-const DEFAULT_JAZZCASH_REDIRECT_URL = 'https://www.jazzcash.com.pk/jazzcash-app-aur-bhi-behtar/';
+const {
+    DEFAULT_WHATSAPP_NUMBER,
+    DEFAULT_EASYPAISA_REDIRECT_URL,
+    DEFAULT_JAZZCASH_REDIRECT_URL,
+    buildPaymentSettingsResponse,
+} = require('../utils/paymentSettings');
+const { sendError } = require('../middleware/errorHandler');
 
 const cleanNumber = (value) => (value || '').toString().replace(/\D/g, '');
 
@@ -41,17 +45,6 @@ const validateOptionalRedirectUrl = (value, label) => {
     return url;
 };
 
-const buildPaymentSettingsResponse = (doc) => ({
-    whatsappNumber: doc?.whatsappNumber || DEFAULT_WHATSAPP_NUMBER,
-    easypaisaAccountNumber: doc?.easypaisaAccountNumber || '',
-    easypaisaRedirectUrl: doc?.easypaisaRedirectUrl || DEFAULT_EASYPAISA_REDIRECT_URL,
-    jazzcashAccountNumber: doc?.jazzcashAccountNumber || '',
-    jazzcashRedirectUrl: doc?.jazzcashRedirectUrl || DEFAULT_JAZZCASH_REDIRECT_URL,
-    bankAccountNumber: doc?.bankAccountNumber || '',
-    bankName: doc?.bankName || '',
-    bankAccountTitle: doc?.bankAccountTitle || '',
-});
-
 const buildUserResponse = (user) => ({
     id: user._id,
     username: user.username,
@@ -76,7 +69,7 @@ const getWhatsAppNumber = async (req, res) => {
         });
     } catch (err) {
         console.error('Error fetching WhatsApp number:', err);
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't load the WhatsApp number. Please try again.");
     }
 };
 
@@ -92,7 +85,7 @@ const getPaymentSettings = async (req, res) => {
         });
     } catch (err) {
         console.error('Error fetching payment settings:', err);
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't load the payment details. Please refresh the page and try again.");
     }
 };
 
@@ -109,7 +102,7 @@ const updateUserPhone = async (req, res) => {
         );
 
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, message: "We couldn't find your account. Please sign in again." });
         }
 
         res.json({
@@ -118,12 +111,7 @@ const updateUserPhone = async (req, res) => {
             user: buildUserResponse(user),
         });
     } catch (err) {
-        if (err.statusCode === 400 || err.name === 'ValidationError') {
-            return res.status(400).json({ success: false, message: err.message });
-        }
-
-        console.error('Error updating user phone:', err);
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't save your phone number. Please try again.");
     }
 };
 
@@ -134,7 +122,7 @@ const getAdminPaymentSettings = async (req, res) => {
         if (req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Only admin users can access this endpoint',
+                message: 'Only admins can do that.',
             });
         }
 
@@ -146,7 +134,7 @@ const getAdminPaymentSettings = async (req, res) => {
         });
     } catch (err) {
         console.error('Error fetching admin payment settings:', err);
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't load the payment settings. Please refresh the page and try again.");
     }
 };
 
@@ -157,7 +145,7 @@ const updatePaymentSettings = async (req, res) => {
         if (req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Only admin users can update payment settings',
+                message: 'Only admins can do that.',
             });
         }
 
@@ -202,7 +190,7 @@ const updatePaymentSettings = async (req, res) => {
         });
     } catch (err) {
         console.error('Error updating payment settings:', err);
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't save the payment settings. Please try again.");
     }
 };
 
@@ -217,7 +205,7 @@ const getAllCustomers = async (req, res) => {
         res.json({ success: true, data: customers });
     } catch (err) {
         console.error('Error fetching customers:', err);
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't load the customers. Please refresh the page and try again.");
     }
 };
 
@@ -228,7 +216,7 @@ const updateAdminProfile = async (req, res) => {
         if (req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Only admin users can update admin profile',
+                message: 'Only admins can do that.',
             });
         }
 
@@ -237,20 +225,20 @@ const updateAdminProfile = async (req, res) => {
         if (!currentPassword) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide your current password to make changes',
+                message: 'Please enter your current password to save changes.',
             });
         }
 
         const user = await User.findById(req.user.id);
 
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, message: "We couldn't find your account. Please sign in again." });
         }
 
         const isMatch = await bcrypt.compare(currentPassword, user.password);
 
         if (!isMatch) {
-            return res.status(401).json({ success: false, message: 'Incorrect current password' });
+            return res.status(401).json({ success: false, message: "That current password isn't right. Please try again." });
         }
 
         if (newEmail && newEmail !== user.email) {
@@ -270,7 +258,7 @@ const updateAdminProfile = async (req, res) => {
             if (newPassword.length < 6) {
                 return res.status(400).json({
                     success: false,
-                    message: 'New password must be at least 6 characters',
+                    message: 'Your new password needs to be at least 6 characters.',
                 });
             }
 
@@ -292,7 +280,7 @@ const updateAdminProfile = async (req, res) => {
         });
     } catch (err) {
         console.error('Error updating admin profile:', err);
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't update your profile. Please try again.");
     }
 };
 
@@ -300,7 +288,7 @@ const updateAdminProfile = async (req, res) => {
 const getWhatsAppNumberAdmin = async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: 'Only admin users can access this endpoint' });
+            return res.status(403).json({ success: false, message: 'Only admins can do that.' });
         }
 
         const settings = await PaymentSettings.findOne();
@@ -308,7 +296,7 @@ const getWhatsAppNumberAdmin = async (req, res) => {
         res.json({ success: true, whatsappNumber: settings?.whatsappNumber || '' });
     } catch (err) {
         console.error('Error fetching admin WhatsApp number:', err);
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't load the WhatsApp number. Please try again.");
     }
 };
 

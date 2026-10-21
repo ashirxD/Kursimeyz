@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { GoogleLoginButton } from "@/components/GoogleLoginButton";
 import type { CredentialResponse } from "@react-oauth/google";
 import BrandLogo from "@/components/BrandLogo";
+import { getErrorMessage } from "@/utils/apiError";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,9 +14,9 @@ const Login = () => {
   const { login, isLoggingIn, loginError, googleAuth, isGoogleAuthing, googleAuthError } = useAuth();
   
   const errorMessage = loginError
-    ? (loginError as any).response?.data?.message || "Login failed"
+    ? getErrorMessage(loginError, "Login failed")
     : googleAuthError
-    ? (googleAuthError as any).response?.data?.message || "Google authentication failed"
+    ? getErrorMessage(googleAuthError, "Google authentication failed")
     : null;
 
   // Handle Google login success

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { AxiosError } from 'axios';
 import HomeHero from '@/components/HomeHero';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Switch } from '@/components/pageEditor/fields';
@@ -17,6 +16,7 @@ import {
     ImageEditor,
     KickerEditor,
 } from './sections';
+import { getErrorMessage } from '@/utils/apiError';
 
 /**
  * Admin editor for the dashboard hero — the first thing a visitor sees.
@@ -98,11 +98,7 @@ function HeroEditor({ initialContent }: { initialContent: HomePageContent }) {
     };
 
     const reportFailure = (failure: unknown, fallback: string) => {
-        const detail =
-            failure instanceof AxiosError
-                ? (failure.response?.data as { message?: string } | undefined)?.message
-                : undefined;
-        setMessage({ type: 'error', text: detail || fallback });
+        setMessage({ type: 'error', text: getErrorMessage(failure, fallback) });
     };
 
     const handleSave = async () => {

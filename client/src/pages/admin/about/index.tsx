@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { AxiosError } from 'axios';
 import AboutContent from '@/components/AboutContent';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import Header from '@/pages/admin/layout/Header';
@@ -21,6 +20,7 @@ import {
     ThemeEditor,
     ValuesEditor,
 } from './sections';
+import { getErrorMessage } from '@/utils/apiError';
 
 /**
  * Admin editor for the storefront About page.
@@ -122,11 +122,7 @@ function AboutEditor({ initialContent }: { initialContent: AboutPageContent }) {
     };
 
     const reportFailure = (failure: unknown, fallback: string) => {
-        const detail =
-            failure instanceof AxiosError
-                ? (failure.response?.data as { message?: string } | undefined)?.message
-                : undefined;
-        setMessage({ type: 'error', text: detail || fallback });
+        setMessage({ type: 'error', text: getErrorMessage(failure, fallback) });
     };
 
     const handleSave = async () => {

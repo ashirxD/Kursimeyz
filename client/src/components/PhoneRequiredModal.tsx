@@ -5,6 +5,7 @@ import {
   normalizePakistaniMobile,
   PAKISTANI_MOBILE_HINT,
 } from "@/utils/phone";
+import { getErrorMessage } from "@/utils/apiError";
 
 interface UpdatePhoneResponse {
   success: boolean;
@@ -63,7 +64,7 @@ export default function PhoneRequiredModal() {
       closePhoneRequiredModal();
       retry?.();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to save phone number");
+      setError(getErrorMessage(err, "Failed to save phone number"));
     } finally {
       setIsSaving(false);
     }

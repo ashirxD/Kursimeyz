@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForgotPassword } from "@/hooks/useAuth";
+import { getErrorMessage } from "@/utils/apiError";
 
 type Step = "email" | "otp" | "password";
 
@@ -10,14 +11,6 @@ interface ForgotPasswordFormProps {
   onSuccess?: () => void;
   onBack?: () => void;
 }
-
-const getErrorMessage = (error: unknown, fallback: string) => {
-  if (error && typeof error === "object" && "response" in error) {
-    const response = (error as { response?: { data?: { message?: string } } }).response;
-    return response?.data?.message || fallback;
-  }
-  return fallback;
-};
 
 export default function ForgotPasswordForm({
   variant = "page",

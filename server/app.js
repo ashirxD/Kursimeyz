@@ -7,7 +7,12 @@ const cookieParser = require('cookie-parser');
 // Load config before importing routes/controllers that read process.env.
 dotenv.config({ path: path.join(__dirname, '.env') });
 
+// Before any route is registered: makes rejected promises in async handlers reach
+// the error handler instead of stopping the process.
+require('./utils/asyncErrors');
+
 const apiRoutes = require('./routes/apis');
+const { requestId, notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 const connectDB = require('./config/db');
 const { seedProductTypes } = require('./seed/productTypes');
 const { seedShippingCities } = require('./seed/shippingCities');
@@ -16,6 +21,9 @@ const mongoose = require("mongoose");
 
 
 const app = express();
+
+// Gives every request an id that is returned to the client and written to the log.
+app.use(requestId);
 
 // Middleware
 app.use(express.json());
@@ -34,10 +42,16 @@ const allowedOrigins = [
 app.use(cors({
     origin: allowedOrigins,
     credentials: true,
+    // So the browser lets the client read the reference it shows beside an error.
+    exposedHeaders: ['X-Request-Id'],
 }));
 
 // Routes
 app.use('/api', apiRoutes);
+
+// Anything no route answered, then anything that threw. Order matters: these come last.
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 
 
@@ -90,6 +104,17 @@ const gracefulShutdown = (signal) => {
         process.exit(1);
     }, 10000);
 };
+
+// A rejection nobody handled is a bug worth knowing about, but not a reason to take
+// the shop offline for everyone: log it loudly and carry on. A truly uncaught
+// exception leaves the process in an unknown state, so that one shuts down cleanly.
+process.on('unhandledRejection', (reason) => {
+    console.error('[ERROR] Unhandled promise rejection:', reason);
+});
+process.on('uncaughtException', (error) => {
+    console.error('[ERROR] Uncaught exception:', error);
+    gracefulShutdown('uncaughtException');
+});
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));

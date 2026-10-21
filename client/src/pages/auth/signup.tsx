@@ -8,6 +8,7 @@ import {
   normalizePakistaniMobile,
   PAKISTANI_MOBILE_HINT,
 } from "@/utils/phone";
+import { getErrorMessage } from "@/utils/apiError";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,10 +31,9 @@ const Signup = () => {
   const errorMessage = localError
     ? localError
     : registerError
-    ? (registerError as any).response?.data?.message || "Registration failed"
+    ? getErrorMessage(registerError, "Registration failed")
     : googleAuthError
-    ? (googleAuthError as any).response?.data?.message ||
-      "Google authentication failed"
+    ? getErrorMessage(googleAuthError, "Google authentication failed")
     : null;
 
   const handleSubmit = (e: React.FormEvent) => {

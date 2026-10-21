@@ -1,76 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Kursimeyz</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-            border-radius: 10px 10px 0 0;
-        }
-        .content {
-            background: #f9f9f9;
-            padding: 30px;
-            border-radius: 0 0 10px 10px;
-        }
-        .button {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 12px 30px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            color: #666;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Welcome to Kursimeyz!</h1>
-        <p>We're excited to have you on board</p>
-    </div>
-    
-    <div class="content">
-        <h2>Hello {{name}},</h2>
-        <p>Thank you for joining Kursimeyz! We're thrilled to have you as part of our learning community.</p>
-        
-        <p>With your new account, you can:</p>
-        <ul>
-            <li>Access our comprehensive course library</li>
-            <li>Learn at your own pace</li>
-            <li>Track your progress</li>
-            <li>Connect with other learners</li>
-        </ul>
-        
-        <p>To get started, simply click the button below:</p>
-        <a href="{{loginUrl}}" class="button">Get Started</a>
-        
-        <p>If you have any questions, feel free to reach out to our support team at support@kursimeyz.com</p>
-        
-        <p>Best regards,<br>The Kursimeyz Team</p>
-    </div>
-    
-    <div class="footer">
-        <p>&copy; 2024 Kursimeyz. All rights reserved.</p>
-        <p>You received this email because you signed up for a Kursimeyz account.</p>
-    </div>
-</body>
-</html>
+{{>top}}
+              <div class="hero">
+                <table role="presentation" align="center" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+                  <tr>
+                    <td valign="bottom" style="padding-right:4px;"><img src="cid:plant" width="58" height="58" alt="" class="sticker"></td>
+                    <td><img src="cid:chair" width="136" height="136" alt="A smiling chair" class="sticker"></td>
+                    <td valign="bottom" style="padding-left:4px;"><img src="cid:apple" width="54" height="54" alt="" class="sticker"></td>
+                  </tr>
+                </table>
+                <div class="pill">Your account is ready</div>
+                <h1 class="h1">Welcome home, {{name}}!</h1>
+                <p class="sub">We saved you a comfy seat.</p>
+              </div>
+
+              <div class="body">
+                <p class="lead">Thank you for joining Kursimeyz.</p>
+                <p>We make furniture to be lived in: chairs to curl up in, tables to gather around and sofas made for slow evenings. Your account is all set, so you can start finding the pieces that feel like yours.</p>
+
+                <h2>Here is what you can do</h2>
+                <ol class="steps">
+                  <li>Browse our collections and look closely at every photo.</li>
+                  <li>Add your favourites to the cart and check out in a few taps.</li>
+                  <li>Follow your orders from <strong>My Orders</strong>, and tell us how it went once they arrive.</li>
+                </ol>
+
+                <p class="center" style="margin:32px 0 6px;">
+                  <a class="btn" href="{{loginUrl}}">Sign in and take a look</a>
+                </p>
+
+                <div class="note">Questions about a piece or an order? Just reply to this email.</div>
+              </div>
+{{>bottom}}

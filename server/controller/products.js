@@ -9,6 +9,7 @@ const {
     normalizeFinish,
 } = require('../utils/productFinish');
 const { normalizeImageDisplay } = require('../utils/productImageDisplay');
+const { sendError } = require('../middleware/errorHandler');
 
 const parseNonNegativeNumber = (value) => {
   if (value === undefined || value === null || value === '') return undefined;
@@ -157,7 +158,7 @@ const getMaterials = async (req, res) => {
 
     res.json({ body: tidy(body), fabric: tidy(fabric) });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching materials', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the materials. Please refresh the page and try again.');
   }
 };
 
@@ -196,7 +197,7 @@ const getAllProducts = async (req, res) => {
     const products = await Product.find(filter).sort({ createdAt: -1 });
     res.json(products);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching products', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the products. Please refresh the page and try again.');
   }
 };
 
@@ -215,7 +216,7 @@ const createProduct = async (req, res) => {
     } else {
       const fallback = await ProductType.findOne().sort({ order: 1, createdAt: 1 }).lean();
       if (!fallback) {
-        return res.status(400).json({ message: 'No product types exist yet' });
+        return res.status(400).json({ message: 'Please add a product type (like Chairs) before adding products.' });
       }
       category = fallback.slug;
     }
@@ -233,7 +234,7 @@ const createProduct = async (req, res) => {
     await newProduct.save();
     res.status(201).json(newProduct);
   } catch (error) {
-    res.status(400).json({ message: 'Error creating product', error: error.message });
+    return sendError(res, error, 'We couldn\'t create that product. Please check the details and try again.');
   }
 };
 
@@ -242,11 +243,11 @@ const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "That product isn't available any more. It may have been removed." });
     }
     res.json(product);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching product', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the product. Please refresh the page and try again.');
   }
 };
 
@@ -264,7 +265,7 @@ const getGroupedProducts = async (req, res) => {
 
     res.json(grouped);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching grouped products', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the grouped products. Please refresh the page and try again.');
   }
 };
 
@@ -287,7 +288,7 @@ const getTopPicks = async (req, res) => {
 
     res.json(products);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching top picks', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the top picks. Please refresh the page and try again.');
   }
 };
 
@@ -301,12 +302,12 @@ const setTopPick = async (req, res) => {
   try {
     const fields = topPickFields(req.body.isTopPick);
     if (!fields) {
-      return res.status(400).json({ message: 'isTopPick must be true or false' });
+      return res.status(400).json({ message: "We couldn't tell whether to add or remove this from Top Picks. Please try again." });
     }
 
     const current = await Product.findById(req.params.id).select('isTopPick').lean();
     if (!current) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "That product isn't available any more. It may have been removed." });
     }
 
     // Re-sending the state a product is already in must not restamp
@@ -324,7 +325,7 @@ const setTopPick = async (req, res) => {
 
     res.json(product);
   } catch (error) {
-    res.status(400).json({ message: 'Error updating top pick', error: error.message });
+    return sendError(res, error, 'We couldn\'t update that top pick. Please try again.');
   }
 };
 
@@ -334,11 +335,11 @@ const deleteProduct = async (req, res) => {
     const { id } = req.params;
     const deletedProduct = await Product.findByIdAndDelete(id);
     if (!deletedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "That product isn't available any more. It may have been removed." });
     }
     res.json({ message: 'Product deleted successfully', id });
   } catch (error) {
-    res.status(400).json({ message: 'Error deleting product', error: error.message });
+    return sendError(res, error, 'We couldn\'t delete that product. Please try again.');
   }
 };
 
@@ -369,12 +370,12 @@ const updateProduct = async (req, res) => {
     });
 
     if (!updatedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "That product isn't available any more. It may have been removed." });
     }
 
     res.json(updatedProduct);
   } catch (error) {
-    res.status(400).json({ message: 'Error updating product', error: error.message });
+    return sendError(res, error, 'We couldn\'t update that product. Please try again.');
   }
 };
 

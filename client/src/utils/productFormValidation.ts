@@ -1,3 +1,4 @@
+import { toast } from '@/stores/toastStore';
 export function getProductNamePriceError(
     name: string,
     price: number,
@@ -33,7 +34,7 @@ export function validateProductForm(
 
     const error = getProductNamePriceError(name, price, discountPrice);
     if (error) {
-        alert(error);
+        toast.error(error);
         return false;
     }
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useConfirmPayment } from '@/hooks/useAdminOrders';
 import api from '@/utils/Axios';
+import { getErrorMessage } from '@/utils/apiError';
 
 interface PaymentConfirmationModalProps {
   isOpen: boolean;
@@ -83,7 +84,7 @@ export default function PaymentConfirmationModal({ isOpen, onClose, orderId, ord
       const err = error as { response?: { data?: { message?: string } } };
       setMessage({
         type: 'error',
-        text: err.response?.data?.message || 'Failed to confirm payment',
+        text: getErrorMessage(err, 'Failed to confirm payment'),
       });
     }
   };

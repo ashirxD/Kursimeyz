@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Header from "@/pages/admin/layout/Header";
 import api from "@/utils/Axios";
+import { getErrorMessage } from "@/utils/apiError";
 
 const DEFAULT_EASYPAISA_REDIRECT_URL =
   "https://easypaisa.onelink.me/cw4d/q9y8ba5v";
@@ -134,9 +135,7 @@ export default function SettingsPage() {
       setMessage({
         type: "error",
         text:
-          error.response?.data?.message ||
-          error.message ||
-          "Failed to update payment settings. Please try again.",
+          getErrorMessage(error, "Failed to update payment settings. Please try again."),
       });
     } finally {
       setLoading(false);

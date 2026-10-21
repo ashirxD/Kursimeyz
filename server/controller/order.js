@@ -13,6 +13,7 @@ const {
 } = require('../utils/orderNumber');
 const PaymentConfirmation = require('../models/PaymentConfirmation');
 const emailService = require('../services/emailService');
+const { sendError } = require('../middleware/errorHandler');
 
 const adminOrderPopulate = [
     { path: 'user', select: 'username email phone' },
@@ -29,7 +30,14 @@ const getAdminOrderEmailRecipients = async () => {
         email: { $exists: true, $nin: [null, ''] },
     }).select('email');
 
-    const adminEmails = admins.map((adminUser) => adminUser.email).filter(Boolean);
+    // Two admin accounts sharing an address, or differing only in case, get one mail.
+    const adminEmails = [
+        ...new Set(
+            admins
+                .map((adminUser) => adminUser.email?.trim().toLowerCase())
+                .filter(Boolean)
+        ),
+    ];
 
     if (adminEmails.length > 0) {
         return adminEmails;
@@ -75,6 +83,26 @@ const sendOrderEmails = async (user, order) => {
     logOrderEmailResults(order._id, results);
 };
 
+// Runs after the customer has been answered, so a slow or failing mail server can
+// never hold up checkout or turn a placed order into an error. It reloads the
+// order with its products (for names and photos) and never throws: whatever goes
+// wrong is logged, and the order stands.
+const dispatchOrderEmails = async (user, orderId) => {
+    try {
+        const order = await Order.findById(orderId)
+            .populate('items.product', 'name image images category price');
+
+        if (!order) return;
+
+        await sendOrderEmails(user, order);
+    } catch (emailError) {
+        console.error('Order email dispatch failed:', {
+            orderId,
+            error: emailError.message,
+        });
+    }
+};
+
 // @desc    Create new order
 // @route   POST /api/order
 // @access  Private
@@ -89,7 +117,7 @@ const createOrder = async (req, res) => {
         if (!items || items.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: 'No order items',
+                message: 'Your order has no items. Please add something to your cart first.',
             });
         }
 
@@ -104,7 +132,7 @@ const createOrder = async (req, res) => {
         if (missingProduct) {
             return res.status(400).json({
                 success: false,
-                message: 'One or more products in your order are no longer available',
+                message: 'One or more products in your order are no longer available. Please review your cart and try again.',
             });
         }
 
@@ -151,29 +179,16 @@ const createOrder = async (req, res) => {
             { $set: { items: [] } }
         );
 
-        const emailOrder = await Order.findById(createdOrder._id)
-            .populate('items.product', 'name image category price');
-
-        try {
-            await sendOrderEmails(req.user, emailOrder || createdOrder);
-        } catch (emailError) {
-            console.error('Order email dispatch failed:', {
-                orderId: createdOrder._id,
-                error: emailError.message,
-            });
-        }
-
         res.status(201).json({
             success: true,
             data: createdOrder,
         });
+
+        // Deliberately not awaited: see dispatchOrderEmails.
+        dispatchOrderEmails(req.user, createdOrder._id);
     } catch (err) {
         console.error('Error in createOrder:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t confirm your order. Please check My Orders before trying again, so you don\'t place it twice.');
     }
 };
 
@@ -188,11 +203,7 @@ const getMyOrders = async (req, res) => {
             data: orders,
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t load your orders. Please refresh the page and try again.');
     }
 };
 
@@ -211,15 +222,11 @@ const getOrderById = async (req, res) => {
         } else {
             res.status(404).json({
                 success: false,
-                message: 'Order not found',
+                message: "We couldn't find that order.",
             });
         }
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t load that order. Please try again.');
     }
 };
 
@@ -266,11 +273,7 @@ const getAllOrders = async (req, res) => {
             data: orders,
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t load the orders. Please refresh the page and try again.');
     }
 };
 
@@ -336,11 +339,7 @@ const getDashboardStats = async (req, res) => {
             },
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t load the dashboard numbers. Please refresh the page and try again.');
     }
 };
 
@@ -354,7 +353,7 @@ const updateOrderStatus = async (req, res) => {
         if (!['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].includes(status)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid status',
+                message: "That isn't a valid order status. Please pick one from the list.",
             });
         }
         
@@ -363,7 +362,7 @@ const updateOrderStatus = async (req, res) => {
         if (!order) {
             return res.status(404).json({
                 success: false,
-                message: 'Order not found',
+                message: "We couldn't find that order.",
             });
         }
         
@@ -387,11 +386,7 @@ const updateOrderStatus = async (req, res) => {
             data: updatedOrder,
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t update that order\'s status. Please try again.');
     }
 };
 
@@ -414,7 +409,7 @@ const updateOrderNumber = async (req, res) => {
         if (!order) {
             return res.status(404).json({
                 success: false,
-                message: 'Order not found',
+                message: "We couldn't find that order.",
             });
         }
 
@@ -453,11 +448,7 @@ const updateOrderNumber = async (req, res) => {
             });
         }
 
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t save that order number. Please try again.');
     }
 };
 
@@ -471,7 +462,7 @@ const getAdminOrderById = async (req, res) => {
         if (!order) {
             return res.status(404).json({
                 success: false,
-                message: 'Order not found',
+                message: "We couldn't find that order.",
             });
         }
 
@@ -480,11 +471,7 @@ const getAdminOrderById = async (req, res) => {
             data: order,
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t load that order. Please try again.');
     }
 };
 
@@ -500,7 +487,7 @@ const confirmPayment = async (req, res) => {
         if (!order) {
             return res.status(404).json({
                 success: false,
-                message: 'Order not found',
+                message: "We couldn't find that order.",
             });
         }
 
@@ -535,11 +522,7 @@ const confirmPayment = async (req, res) => {
             data: updatedOrder,
         });
     } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: 'Server Error',
-            error: err.message,
-        });
+        return sendError(res, err, 'We couldn\'t confirm that payment. Please try again.');
     }
 };
 

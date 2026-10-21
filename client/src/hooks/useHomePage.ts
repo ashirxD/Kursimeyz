@@ -95,6 +95,8 @@ export const useHomePageEditor = () => {
     };
 
     const saveMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async (content: HomePageContent) => {
             const response = await api.put('/home-page', content);
             return response.data as HomePageContent;
@@ -108,6 +110,8 @@ export const useHomePageEditor = () => {
     });
 
     const resetMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async () => {
             const response = await api.post('/home-page/reset');
             return response.data as HomePageContent;

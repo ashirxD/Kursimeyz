@@ -4,12 +4,7 @@ import {
   useShippingCities,
   type ShippingCity,
 } from "@/hooks/useShippingCities";
-
-const getErrorMessage = (error: unknown, fallback: string) => {
-  const response = (error as { response?: { data?: { message?: string } } })
-    ?.response;
-  return response?.data?.message || fallback;
-};
+import { getErrorMessage } from "@/utils/apiError";
 
 /**
  * Delivery rates per city. Checkout suggests these and charges the rate the

@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react';
-import { AxiosError } from 'axios';
 import ProductImageEditor, { type SecondaryShape } from '@/components/ProductImageEditor';
 import ProductPhoto from '@/components/ProductPhoto';
 import api from '@/utils/Axios';
@@ -12,6 +11,7 @@ import {
     type ImageDisplay,
     type ImageFraming,
 } from '@/utils/productImageDisplay';
+import { getErrorMessage } from '@/utils/apiError';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -96,11 +96,7 @@ export default function ProductImagesUploader({
             onChange(maxImages ? merged.slice(-maxImages) : merged);
         } catch (uploadError) {
             console.error('Upload failed:', uploadError);
-            const message =
-                uploadError instanceof AxiosError
-                    ? (uploadError.response?.data as { message?: string } | undefined)?.message
-                    : undefined;
-            setError(message || 'Failed to upload images.');
+            setError(getErrorMessage(uploadError, 'Failed to upload images.'));
         } finally {
             setUploading(false);
         }

@@ -1,9 +1,11 @@
 import './App.css';
 import AppRouter from './routes/appRoutes';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import Toaster from './components/Toaster';
+import { createQueryClient } from './lib/queryClient';
 
-const queryClient = new QueryClient();
+const queryClient = createQueryClient();
 
 // Google OAuth Client ID from environment variables
 // Get this from Google Cloud Console: https://console.cloud.google.com/
@@ -14,6 +16,7 @@ function App() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
         <AppRouter />
+        <Toaster />
       </QueryClientProvider>
     </GoogleOAuthProvider>
   );

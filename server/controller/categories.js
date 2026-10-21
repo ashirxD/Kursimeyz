@@ -2,6 +2,7 @@ const Category = require('../models/Category');
 const Product = require('../models/Product');
 const { isProductType } = require('../utils/productTypes');
 const { slugify, normalizeName } = require('../utils/slug');
+const { sendError } = require('../middleware/errorHandler');
 
 // One aggregation covers every category, so listing tabs stays a single extra
 // round trip no matter how many categories exist.
@@ -64,7 +65,7 @@ const getCategories = async (req, res) => {
 
     if (productType) {
       if (!(await isProductType(productType))) {
-        return res.status(400).json({ message: 'Unknown product type' });
+        return res.status(400).json({ message: "That product type doesn't exist. Please refresh the page and try again." });
       }
       filter.productType = productType;
     }
@@ -76,7 +77,7 @@ const getCategories = async (req, res) => {
 
     res.json(categories.map((category) => withProductCount(category, counts)));
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching categories', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the categories. Please refresh the page and try again.');
   }
 };
 
@@ -86,14 +87,14 @@ const createCategory = async (req, res) => {
     const { productType, name } = req.body;
 
     if (!(await isProductType(productType))) {
-      return res.status(400).json({ message: 'A valid product type is required' });
+      return res.status(400).json({ message: 'Please choose a product type.' });
     }
 
     const normalizedName = normalizeName(name);
     const slug = slugify(normalizedName);
 
     if (!slug) {
-      return res.status(400).json({ message: 'Category name is required' });
+      return res.status(400).json({ message: 'Please enter a category name.' });
     }
 
     const existing = await Category.findOne({ productType, slug }).lean();
@@ -105,7 +106,7 @@ const createCategory = async (req, res) => {
     const category = await Category.create({ productType, name: normalizedName, slug });
     res.status(201).json({ ...category.toObject(), productCount: 0 });
   } catch (error) {
-    res.status(400).json({ message: 'Error creating category', error: error.message });
+    return sendError(res, error, 'We couldn\'t create that category. Please check the details and try again.');
   }
 };
 
@@ -115,14 +116,14 @@ const updateCategory = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
     if (!category) {
-      return res.status(404).json({ message: 'Category not found' });
+      return res.status(404).json({ message: "We couldn't find that category. It may have been removed." });
     }
 
     const name = normalizeName(req.body.name);
     const slug = slugify(name);
 
     if (!slug) {
-      return res.status(400).json({ message: 'Category name is required' });
+      return res.status(400).json({ message: 'Please enter a category name.' });
     }
 
     if (slug !== category.slug) {
@@ -149,7 +150,7 @@ const updateCategory = async (req, res) => {
 
     res.json(category);
   } catch (error) {
-    res.status(400).json({ message: 'Error updating category', error: error.message });
+    return sendError(res, error, 'We couldn\'t update that category. Please try again.');
   }
 };
 
@@ -159,7 +160,7 @@ const deleteCategory = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
     if (!category) {
-      return res.status(404).json({ message: 'Category not found' });
+      return res.status(404).json({ message: "We couldn't find that category. It may have been removed." });
     }
 
     const productCount = await Product.countDocuments({
@@ -177,7 +178,7 @@ const deleteCategory = async (req, res) => {
     await category.deleteOne();
     res.json({ message: 'Category deleted successfully', id: req.params.id });
   } catch (error) {
-    res.status(400).json({ message: 'Error deleting category', error: error.message });
+    return sendError(res, error, 'We couldn\'t delete that category. Please try again.');
   }
 };
 

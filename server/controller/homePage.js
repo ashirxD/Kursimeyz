@@ -1,5 +1,6 @@
 const HomePage = require('../models/HomePage');
 const { normalizeHomeContent } = require('../utils/homeContent');
+const { sendError } = require('../middleware/errorHandler');
 
 // Both directions run through normalizeHomeContent: reads so an empty or older
 // document still answers with a complete hero, writes so nothing unvalidated is
@@ -29,7 +30,7 @@ const getHomePage = async (req, res) => {
   try {
     res.json(await readContent());
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching home page', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the home page. Please refresh the page and try again.');
   }
 };
 
@@ -38,7 +39,7 @@ const updateHomePage = async (req, res) => {
   try {
     res.json(await writeContent(req.body));
   } catch (error) {
-    res.status(400).json({ message: 'Error saving home page', error: error.message });
+    return sendError(res, error, 'We couldn\'t save the home page. Please try again.');
   }
 };
 
@@ -48,7 +49,7 @@ const resetHomePage = async (req, res) => {
   try {
     res.json(await writeContent({}));
   } catch (error) {
-    res.status(400).json({ message: 'Error resetting home page', error: error.message });
+    return sendError(res, error, 'We couldn\'t reset the home page. Please try again.');
   }
 };
 

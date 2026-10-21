@@ -9,6 +9,7 @@ const {
   normalizeCardAspect,
   normalizeImageDisplay,
 } = require('../utils/productImageDisplay');
+const { sendError } = require('../middleware/errorHandler');
 
 // One aggregation for every type, so the nav costs a single extra round trip.
 const countProductsByType = async () => {
@@ -123,7 +124,7 @@ const getProductTypes = async (req, res) => {
 
     res.json(types.map((type) => toResponse(type, counts)));
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching product types', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the product types. Please refresh the page and try again.');
   }
 };
 
@@ -137,13 +138,13 @@ const getProductTypeBySlug = async (req, res) => {
     }).lean();
 
     if (!type) {
-      return res.status(404).json({ message: 'Product type not found' });
+      return res.status(404).json({ message: "We couldn't find that product type. It may have been removed." });
     }
 
     const counts = await countProductsByType();
     res.json(toResponse(type, counts));
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching product type', error: error.message });
+    return sendError(res, error, 'We couldn\'t load the product type. Please refresh the page and try again.');
   }
 };
 
@@ -152,7 +153,7 @@ const createProductType = async (req, res) => {
   try {
     const name = normalizeName(req.body.name);
     if (!name) {
-      return res.status(400).json({ message: 'A name is required' });
+      return res.status(400).json({ message: 'Please enter a name.' });
     }
 
     const pluralName = normalizeName(req.body.pluralName) || pluralize(name);
@@ -163,7 +164,7 @@ const createProductType = async (req, res) => {
     ]);
 
     if (!slug || !pluralSlug) {
-      return res.status(400).json({ message: 'That name cannot be turned into a URL' });
+      return res.status(400).json({ message: 'Please use a name with at least one letter or number.' });
     }
 
     // Newest type lands at the end of the sidebar.
@@ -190,7 +191,7 @@ const createProductType = async (req, res) => {
     const productType = await ProductType.create(payload);
     res.status(201).json(toResponse(productType.toObject(), new Map()));
   } catch (error) {
-    res.status(400).json({ message: 'Error creating product type', error: error.message });
+    return sendError(res, error, 'We couldn\'t create that product type. Please check the details and try again.');
   }
 };
 
@@ -200,7 +201,7 @@ const updateProductType = async (req, res) => {
   try {
     const productType = await ProductType.findById(req.params.id);
     if (!productType) {
-      return res.status(404).json({ message: 'Product type not found' });
+      return res.status(404).json({ message: "We couldn't find that product type. It may have been removed." });
     }
 
     const name = normalizeName(req.body.name);
@@ -218,7 +219,7 @@ const updateProductType = async (req, res) => {
     const counts = await countProductsByType();
     res.json(toResponse(productType.toObject(), counts));
   } catch (error) {
-    res.status(400).json({ message: 'Error updating product type', error: error.message });
+    return sendError(res, error, 'We couldn\'t update that product type. Please try again.');
   }
 };
 
@@ -228,7 +229,7 @@ const deleteProductType = async (req, res) => {
   try {
     const productType = await ProductType.findById(req.params.id);
     if (!productType) {
-      return res.status(404).json({ message: 'Product type not found' });
+      return res.status(404).json({ message: "We couldn't find that product type. It may have been removed." });
     }
 
     const productCount = await Product.countDocuments({ category: productType.slug });
@@ -245,7 +246,7 @@ const deleteProductType = async (req, res) => {
 
     res.json({ message: 'Product type deleted successfully', id: req.params.id });
   } catch (error) {
-    res.status(400).json({ message: 'Error deleting product type', error: error.message });
+    return sendError(res, error, 'We couldn\'t delete that product type. Please try again.');
   }
 };
 

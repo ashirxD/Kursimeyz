@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "@/pages/admin/layout/Header";
 import { useAuthStore } from "@/stores/authStore";
 import { useAdminProfile } from "@/hooks/useAdminProfile";
+import { getErrorMessage } from "@/utils/apiError";
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
@@ -69,8 +70,7 @@ export default function ProfilePage() {
       setMessage({
         type: "error",
         text:
-          error.response?.data?.message ||
-          "Failed to update profile. Please try again.",
+          getErrorMessage(error, "Failed to update profile. Please try again."),
       });
     }
   };

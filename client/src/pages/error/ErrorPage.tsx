@@ -4,14 +4,22 @@ export default function ErrorPage() {
   const error = useRouteError();
   console.error(error);
 
-  let errorMessage = "An unexpected error occurred.";
+  let errorMessage = "Something unexpected happened while loading this page.";
   let errorStatus = 500;
+  // What a developer needs; never shown to shoppers.
+  let technicalDetail = "";
 
   if (isRouteErrorResponse(error)) {
-    errorMessage = error.data?.message || error.statusText;
     errorStatus = error.status;
+    errorMessage =
+      error.status === 404
+        ? "We couldn't find the page you were looking for. It may have moved, or the link may be out of date."
+        : error.data?.message || "Something went wrong while loading this page.";
+    technicalDetail = `${error.status} ${error.statusText}`;
   } else if (error instanceof Error) {
-    errorMessage = error.message;
+    // A thrown JavaScript error ("Cannot read properties of undefined…") means
+    // nothing to a shopper, so it stays out of sight outside development.
+    technicalDetail = error.message;
   }
 
   return (
@@ -40,6 +48,11 @@ export default function ErrorPage() {
         </h2>
         <p className="text-slate-500 font-medium mb-10 leading-relaxed">
           {errorMessage}
+          {import.meta.env.DEV && technicalDetail && (
+            <code className="mt-4 block rounded-xl bg-slate-100 px-4 py-3 text-left text-xs font-mono text-slate-600 break-words">
+              {technicalDetail}
+            </code>
+          )}
           <br />
           Don't worry, our team of highly skilled digital gardeners is on the case.
         </p>

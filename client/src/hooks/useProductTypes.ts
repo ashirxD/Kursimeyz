@@ -80,6 +80,8 @@ export const useProductTypes = () => {
     };
 
     const createProductTypeMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async (input: Partial<ProductTypeInput>) => {
             const response = await api.post('/product-types', input);
             return response.data as ProductType;
@@ -88,6 +90,8 @@ export const useProductTypes = () => {
     });
 
     const updateProductTypeMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async ({ id, ...input }: Partial<ProductTypeInput> & { id: string }) => {
             const response = await api.put(`/product-types/${id}`, input);
             return response.data as ProductType;

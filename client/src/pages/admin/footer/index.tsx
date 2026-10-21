@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { AxiosError } from 'axios';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import SiteFooter from '@/components/SiteFooter';
 import { Switch } from '@/components/pageEditor/fields';
@@ -14,6 +13,7 @@ import {
     SocialEditor,
     ThemeEditor,
 } from './sections';
+import { getErrorMessage } from '@/utils/apiError';
 
 /**
  * Admin editor for the storefront footer — the panel at the bottom of every page.
@@ -91,11 +91,7 @@ function FooterEditor({ initialContent }: { initialContent: FooterContent }) {
     };
 
     const reportFailure = (failure: unknown, fallback: string) => {
-        const detail =
-            failure instanceof AxiosError
-                ? (failure.response?.data as { message?: string } | undefined)?.message
-                : undefined;
-        setMessage({ type: 'error', text: detail || fallback });
+        setMessage({ type: 'error', text: getErrorMessage(failure, fallback) });
     };
 
     const handleSave = async () => {

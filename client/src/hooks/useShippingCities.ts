@@ -31,6 +31,8 @@ export const useShippingCities = () => {
     };
 
     const createCityMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async (input: { name: string; shippingPrice: number }) => {
             const response = await api.post('/shipping-cities', input);
             return response.data as ShippingCity;
@@ -39,6 +41,8 @@ export const useShippingCities = () => {
     });
 
     const updateCityMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async ({ id, ...input }: { id: string; name?: string; shippingPrice?: number }) => {
             const response = await api.put(`/shipping-cities/${id}`, input);
             return response.data as ShippingCity;
@@ -47,6 +51,8 @@ export const useShippingCities = () => {
     });
 
     const deleteCityMutation = useMutation({
+      // The caller shows its own message for this one.
+      meta: { silent: true },
         mutationFn: async (id: string) => {
             await api.delete(`/shipping-cities/${id}`);
             return id;

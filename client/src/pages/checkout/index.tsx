@@ -1,6 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AxiosError } from "axios";
 import CitySelect from "@/components/CitySelect";
 import { useCart } from "@/hooks/useCart";
 import { useOrder, type OrderPayload } from "@/hooks/useOrder";
@@ -12,6 +11,7 @@ import {
   getEffectivePrice,
   hasDiscount,
 } from "@/utils/productPricing";
+import { getErrorMessage } from "@/utils/apiError";
 
 interface CartProduct {
   _id: string;
@@ -27,16 +27,8 @@ interface CartLineItem {
   quantity: number;
 }
 
-const getOrderErrorMessage = (error: unknown) => {
-  if (error instanceof AxiosError) {
-    return (
-      (error.response?.data as { message?: string } | undefined)?.message ||
-      "Failed to place order. Please try again."
-    );
-  }
-
-  return "Failed to place order. Please try again.";
-};
+const getOrderErrorMessage = (error: unknown) =>
+  getErrorMessage(error, "Failed to place order. Please try again.");
 
 type PaymentMethod = "Cash" | "Card" | "Easypaisa" | "JazzCash" | "Bank";
 type WalletMethod = Extract<PaymentMethod, "Easypaisa" | "JazzCash">;

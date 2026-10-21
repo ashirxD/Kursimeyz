@@ -4,7 +4,9 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const googleAuthService = require('../services/googleAuth.service');
 const emailService = require('../services/emailService');
-const { requirePakistaniMobile } = require('../utils/phone');
+const { requirePakistaniMobile, PHONE_IN_USE_MESSAGE, isDuplicateKeyError } = require('../utils/phone');
+const { sendError } = require('../middleware/errorHandler');
+const { AppError } = require('../utils/errors');
 
 const getRequestMeta = (req) => ({
     ip: req.ip || req.socket?.remoteAddress,
@@ -71,6 +73,23 @@ const OTP_PURPOSE = {
     PASSWORD_RESET: 'password_reset',
 };
 
+// What the one email template says, per reason for sending a code. The same
+// template serves both, so the wording has to follow the purpose.
+const OTP_EMAIL_COPY = {
+    [OTP_PURPOSE.VERIFICATION]: {
+        heading: 'Verify your email',
+        intro: 'Welcome to Kursimeyz! To finish creating your account, enter this one-time code.',
+        preheader: 'Your Kursimeyz verification code',
+        footerNote: 'You are receiving this because this email address was used to sign up.',
+    },
+    [OTP_PURPOSE.PASSWORD_RESET]: {
+        heading: 'Reset your password',
+        intro: 'We received a request to reset the password for your Kursimeyz account. Enter this one-time code to continue.',
+        preheader: 'Your Kursimeyz password reset code',
+        footerNote: 'You are receiving this because a password reset was requested for this email address.',
+    },
+};
+
 const createOTP = async (email, purpose, subject) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -81,7 +100,14 @@ const createOTP = async (email, purpose, subject) => {
         { upsert: true, new: true }
     );
 
-    await emailService.sendCustomEmail(email, subject, 'otp', { otp });
+    const copy = OTP_EMAIL_COPY[purpose] || OTP_EMAIL_COPY[OTP_PURPOSE.VERIFICATION];
+
+    await emailService.sendCustomEmail(email, subject, 'otp', {
+        otp,
+        ...copy,
+        // The code itself leads the inbox preview, so it can be read without opening the mail.
+        preheader: `${copy.preheader}: ${otp}. It expires in 10 minutes.`,
+    });
 };
 
 const createVerificationOTP = async (email) => {
@@ -101,7 +127,7 @@ const register = async (req, res, next) => {
         // Validate basic fields
         if (!email || !password) {
             authLog('warn', action, 'Missing email or password', meta);
-            return res.status(400).json({ success: false, message: 'Please provide email and password' });
+            return res.status(400).json({ success: false, message: 'Please enter your email and password.' });
         }
 
         let normalizedPhone;
@@ -119,12 +145,25 @@ const register = async (req, res, next) => {
         let user = await User.findOne({ email: normalizedEmail });
         if (user && user.emailVerified) {
             authLog('warn', action, 'User already exists', { ...meta, userId: user._id });
-            return res.status(400).json({ success: false, message: 'User already exists' });
+            return res.status(400).json({ success: false, message: 'An account with this email already exists. Try signing in instead.' });
         }
 
         if (user && user.provider !== 'local') {
             authLog('warn', action, 'Email registered with Google', { ...meta, userId: user._id });
             return res.status(400).json({ success: false, message: 'This email is registered with Google. Please sign in with Google.' });
+        }
+
+        // The phone number is unique across accounts. Ask first, so the person is told
+        // plainly instead of hitting the database's duplicate-key error. The account
+        // being re-registered (same email, not yet verified) is allowed to keep its own.
+        const phoneOwner = await User.findOne({
+            phone: normalizedPhone,
+            ...(user ? { _id: { $ne: user._id } } : {}),
+        }).select('_id');
+
+        if (phoneOwner) {
+            authLog('warn', action, 'Phone number already in use', meta);
+            return res.status(400).json({ success: false, message: PHONE_IN_USE_MESSAGE });
         }
 
         // Generate username if not provided
@@ -159,10 +198,13 @@ const register = async (req, res, next) => {
                 userId: user._id,
                 error: emailError.message,
             });
-            return res.status(500).json({
-                success: false,
-                message: 'Account created, but failed to send OTP email. Please try resending the OTP.'
-            });
+            return sendError(
+                res,
+                new AppError(
+                    'Your account was created, but we couldn\'t send the verification code. Please use "Resend code" to try again.',
+                    { statusCode: 502, code: 'EMAIL_SEND_FAILED', cause: emailError }
+                )
+            );
         }
 
         authLog('info', action, 'Registration successful, verification OTP sent', {
@@ -179,11 +221,22 @@ const register = async (req, res, next) => {
         });
 
     } catch (err) {
+        // Two people registering at once can both pass the checks above; the unique
+        // indexes then decide, and the loser should still get a real answer.
+        if (isDuplicateKeyError(err, 'phone')) {
+            authLog('warn', action, 'Phone number already in use (race)', getRequestMeta(req));
+            return res.status(400).json({ success: false, message: PHONE_IN_USE_MESSAGE });
+        }
+        if (isDuplicateKeyError(err, 'email')) {
+            authLog('warn', action, 'User already exists (race)', getRequestMeta(req));
+            return res.status(400).json({ success: false, message: 'An account with this email already exists. Try signing in instead.' });
+        }
+
         authLog('error', action, 'Registration failed', {
             ...getRequestMeta(req),
             error: err.message,
         });
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't create your account right now. Please try again in a moment.");
     }
 };
 
@@ -200,7 +253,7 @@ const login = async (req, res, next) => {
         // Validate
         if (!email || !password) {
             authLog('warn', action, 'Missing email or password', meta);
-            return res.status(400).json({ success: false, message: 'Please provide email and password' });
+            return res.status(400).json({ success: false, message: 'Please enter your email and password.' });
         }
 
         const normalizedEmail = normalizeEmail(email);
@@ -210,19 +263,19 @@ const login = async (req, res, next) => {
         const user = await User.findOne({ email: normalizedEmail });
         if (!user) {
             authLog('warn', action, 'Invalid credentials - user not found', meta);
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+            return res.status(401).json({ success: false, message: "That email and password don't match. Please check them and try again." });
         }
 
         if (!user.password) {
             authLog('warn', action, 'Google-only account login attempt', { ...meta, userId: user._id });
-            return res.status(401).json({ success: false, message: 'Please sign in with Google for this account' });
+            return res.status(401).json({ success: false, message: 'This account uses Google sign-in. Please choose "Continue with Google".' });
         }
 
         // Check password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             authLog('warn', action, 'Invalid credentials - wrong password', { ...meta, userId: user._id });
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+            return res.status(401).json({ success: false, message: "That email and password don't match. Please check them and try again." });
         }
 
         // Block admin accounts from using the user login page
@@ -240,7 +293,7 @@ const login = async (req, res, next) => {
                 success: false,
                 requiresEmailVerification: true,
                 email: user.email,
-                message: 'Please verify your email before logging in'
+                message: 'Please verify your email before signing in. Check your inbox for the code, or request a new one.'
             });
         }
 
@@ -266,7 +319,7 @@ const login = async (req, res, next) => {
             ...getRequestMeta(req),
             error: err.message,
         });
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't sign you in right now. Please try again in a moment.");
     }
 };
 
@@ -282,7 +335,7 @@ const adminLogin = async (req, res) => {
 
         if (!email || !password) {
             authLog('warn', action, 'Missing email or password', meta);
-            return res.status(400).json({ success: false, message: 'Please provide email and password' });
+            return res.status(400).json({ success: false, message: 'Please enter your email and password.' });
         }
 
         const normalizedEmail = normalizeEmail(email);
@@ -291,18 +344,18 @@ const adminLogin = async (req, res) => {
         const user = await User.findOne({ email: normalizedEmail });
         if (!user) {
             authLog('warn', action, 'Invalid credentials - user not found', meta);
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+            return res.status(401).json({ success: false, message: "That email and password don't match. Please check them and try again." });
         }
 
         if (!user.password) {
             authLog('warn', action, 'Google-only account login attempt', { ...meta, userId: user._id });
-            return res.status(401).json({ success: false, message: 'Please sign in with Google for this account' });
+            return res.status(401).json({ success: false, message: 'This account uses Google sign-in. Please choose "Continue with Google".' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             authLog('warn', action, 'Invalid credentials - wrong password', { ...meta, userId: user._id });
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+            return res.status(401).json({ success: false, message: "That email and password don't match. Please check them and try again." });
         }
 
         // Block non-admin accounts from using the admin login page
@@ -310,7 +363,7 @@ const adminLogin = async (req, res) => {
             authLog('warn', action, 'Non-admin tried to login via admin portal', { ...meta, userId: user._id });
             return res.status(403).json({
                 success: false,
-                message: 'Access denied. This portal is for admin accounts only.',
+                message: 'This sign-in is for admin accounts only.',
             });
         }
 
@@ -334,7 +387,7 @@ const adminLogin = async (req, res) => {
             ...getRequestMeta(req),
             error: err.message,
         });
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't sign you in right now. Please try again in a moment.");
     }
 };
 
@@ -352,7 +405,7 @@ const currentUser = async (req, res) => {
 
         if (!user) {
             authLog('warn', action, 'User not found', { userId: req.user?.id });
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, message: "We couldn't find your account. Please sign in again." });
         }
 
         authLog('info', action, 'Current user fetched', {
@@ -370,7 +423,7 @@ const currentUser = async (req, res) => {
             userId: req.user?.id,
             error: err.message,
         });
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't load your account. Please sign in again.");
     }
 };
 
@@ -404,7 +457,7 @@ const logout = async (req, res) => {
             userId: req.user?.id,
             error: err.message,
         });
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't sign you out. Please try again.");
     }
 };
 
@@ -423,7 +476,7 @@ const googleAuth = async (req, res) => {
             authLog('warn', action, 'Google token missing', meta);
             return res.status(400).json({ 
                 success: false, 
-                message: 'Google token is required' 
+                message: "We couldn't read your Google sign-in. Please try again." 
             });
         }
 
@@ -438,7 +491,7 @@ const googleAuth = async (req, res) => {
             authLog('warn', action, 'Google email not verified', meta);
             return res.status(400).json({
                 success: false,
-                message: 'Please verify your Google email before signing in'
+                message: "Your Google email isn't verified yet. Please verify it with Google and try again."
             });
         }
 
@@ -525,14 +578,11 @@ const googleAuth = async (req, res) => {
         if (err.message === 'Invalid Google token') {
             return res.status(401).json({ 
                 success: false, 
-                message: 'Invalid or expired Google token' 
+                message: 'Your Google sign-in expired. Please try again.' 
             });
         }
         
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error during authentication' 
-        });
+        return sendError(res, err, "We couldn't complete your Google sign-in. Please try again, or sign in with your email instead.");
     }
 };
 
@@ -549,7 +599,7 @@ const sendOTP = async (req, res) => {
 
         if (!email) {
             authLog('warn', action, 'Email missing', meta);
-            return res.status(400).json({ success: false, message: 'Please provide an email' });
+            return res.status(400).json({ success: false, message: 'Please enter your email address.' });
         }
 
         const normalizedEmail = normalizeEmail(email);
@@ -559,12 +609,12 @@ const sendOTP = async (req, res) => {
 
         if (!user) {
             authLog('warn', action, 'User not found', meta);
-            return res.status(404).json({ success: false, message: 'Please create an account before requesting an OTP' });
+            return res.status(404).json({ success: false, message: "We couldn't find an account with that email. Please sign up first." });
         }
 
         if (user.emailVerified) {
             authLog('warn', action, 'Email already verified', { ...meta, userId: user._id });
-            return res.status(400).json({ success: false, message: 'Email is already verified' });
+            return res.status(400).json({ success: false, message: 'That email is already verified. You can sign in now.' });
         }
 
         // Send Email
@@ -578,14 +628,20 @@ const sendOTP = async (req, res) => {
                 userId: user._id,
                 error: emailError.message,
             });
-            res.status(500).json({ success: false, message: 'Failed to send OTP email' });
+            return sendError(
+                res,
+                new AppError(
+                    "We couldn't send the verification code to your email. Please check the address and try again in a moment.",
+                    { statusCode: 502, code: 'EMAIL_SEND_FAILED', cause: emailError }
+                )
+            );
         }
     } catch (err) {
         authLog('error', action, 'Send OTP failed', {
             ...getRequestMeta(req),
             error: err.message,
         });
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't send your verification code. Please try again in a moment.");
     }
 };
 
@@ -601,7 +657,7 @@ const verifyOTP = async (req, res) => {
 
         if (!email || !otp) {
             authLog('warn', action, 'Missing email or OTP', meta);
-            return res.status(400).json({ success: false, message: 'Please provide email and OTP' });
+            return res.status(400).json({ success: false, message: 'Please enter your email and the 6-digit code.' });
         }
 
         const normalizedEmail = normalizeEmail(email);
@@ -616,7 +672,7 @@ const verifyOTP = async (req, res) => {
 
         if (!otpRecord) {
             authLog('warn', action, 'Invalid or expired OTP', meta);
-            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+            return res.status(400).json({ success: false, message: "That code isn't right, or it has expired. Please check it, or request a new one." });
         }
 
         const user = await User.findOne({ email: normalizedEmail });
@@ -666,7 +722,7 @@ const verifyOTP = async (req, res) => {
             ...getRequestMeta(req),
             error: err.message,
         });
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't verify that code right now. Please try again.");
     }
 };
 
@@ -682,7 +738,7 @@ const forgotPassword = async (req, res) => {
 
         if (!email) {
             authLog('warn', action, 'Email missing', meta);
-            return res.status(400).json({ success: false, message: 'Please provide an email' });
+            return res.status(400).json({ success: false, message: 'Please enter your email address.' });
         }
 
         const normalizedEmail = normalizeEmail(email);
@@ -723,14 +779,20 @@ const forgotPassword = async (req, res) => {
                 userId: user._id,
                 error: emailError.message,
             });
-            res.status(500).json({ success: false, message: 'Failed to send reset code email' });
+            return sendError(
+                res,
+                new AppError(
+                    "We couldn't send the reset code to your email. Please try again in a moment.",
+                    { statusCode: 502, code: 'EMAIL_SEND_FAILED', cause: emailError }
+                )
+            );
         }
     } catch (err) {
         authLog('error', action, 'Forgot password failed', {
             ...getRequestMeta(req),
             error: err.message,
         });
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't start the password reset. Please try again in a moment.");
     }
 };
 
@@ -746,7 +808,7 @@ const verifyResetOtp = async (req, res) => {
 
         if (!email || !otp) {
             authLog('warn', action, 'Missing email or OTP', meta);
-            return res.status(400).json({ success: false, message: 'Please provide email and OTP' });
+            return res.status(400).json({ success: false, message: 'Please enter your email and the 6-digit code.' });
         }
 
         const normalizedEmail = normalizeEmail(email);
@@ -761,7 +823,7 @@ const verifyResetOtp = async (req, res) => {
 
         if (!otpRecord) {
             authLog('warn', action, 'Invalid or expired reset OTP', meta);
-            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+            return res.status(400).json({ success: false, message: "That code isn't right, or it has expired. Please check it, or request a new one." });
         }
 
         otpRecord.verified = true;
@@ -775,7 +837,7 @@ const verifyResetOtp = async (req, res) => {
             ...getRequestMeta(req),
             error: err.message,
         });
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't verify that code right now. Please try again.");
     }
 };
 
@@ -791,12 +853,12 @@ const resetPassword = async (req, res) => {
 
         if (!email || !password) {
             authLog('warn', action, 'Missing email or password', meta);
-            return res.status(400).json({ success: false, message: 'Please provide email and password' });
+            return res.status(400).json({ success: false, message: 'Please enter your email and password.' });
         }
 
         if (password.length < 6) {
             authLog('warn', action, 'Password too short', meta);
-            return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+            return res.status(400).json({ success: false, message: 'Your password needs to be at least 6 characters.' });
         }
 
         const normalizedEmail = normalizeEmail(email);
@@ -813,7 +875,7 @@ const resetPassword = async (req, res) => {
             authLog('warn', action, 'Invalid or expired reset session', meta);
             return res.status(400).json({
                 success: false,
-                message: 'Invalid or expired reset session. Please request a new OTP.',
+                message: 'Your password reset session has expired. Please request a new code.',
             });
         }
 
@@ -821,7 +883,7 @@ const resetPassword = async (req, res) => {
 
         if (!user || !user.password) {
             authLog('warn', action, 'Unable to reset password for account', meta);
-            return res.status(400).json({ success: false, message: 'Unable to reset password for this account' });
+            return res.status(400).json({ success: false, message: "We couldn't reset the password for this account. Please request a new code." });
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -837,7 +899,7 @@ const resetPassword = async (req, res) => {
             ...getRequestMeta(req),
             error: err.message,
         });
-        res.status(500).json({ success: false, message: 'Server error' });
+        return sendError(res, err, "We couldn't reset your password right now. Please try again.");
     }
 };
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AxiosError } from 'axios';
 import ModalPortal from '@/components/ModalPortal';
 import api from '@/utils/Axios';
 import type { Swatch } from '@/utils/productFinish';
+import { getErrorMessage } from '@/utils/apiError';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -319,11 +319,7 @@ function Cropper({ onClose, onSelect }: ImageSwatchCropperProps) {
             onSelect({ hex: averageHex, image: url });
             onClose();
         } catch (uploadError) {
-            const detail =
-                uploadError instanceof AxiosError
-                    ? (uploadError.response?.data as { message?: string } | undefined)?.message
-                    : undefined;
-            setError(detail || 'The swatch did not upload. Try again.');
+            setError(getErrorMessage(uploadError, 'The swatch did not upload. Try again.'));
         } finally {
             setIsUploading(false);
         }

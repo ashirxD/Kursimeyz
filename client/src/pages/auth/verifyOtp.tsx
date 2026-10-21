@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import api from "@/utils/Axios";
 import { useAuthStore } from "@/stores";
 import BrandLogo from "@/components/BrandLogo";
+import { getErrorMessage } from "@/utils/apiError";
 
 interface VerifyOtpResponse {
   success: boolean;
@@ -62,7 +63,7 @@ const VerifyOtp = () => {
       storeLogin(response.data.user, response.data.token);
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.message || "Invalid OTP. Please try again.");
+      setError(getErrorMessage(err, "Invalid OTP. Please try again."));
     } finally {
       setIsVerifying(false);
     }
@@ -80,7 +81,7 @@ const VerifyOtp = () => {
       await api.post("/auth/send-otp", { email });
       setMessage("A fresh OTP has been sent to your email.");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to resend OTP.");
+      setError(getErrorMessage(err, "Failed to resend OTP."));
     } finally {
       setIsResending(false);
     }
