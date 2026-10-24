@@ -100,6 +100,12 @@ const createOTP = async (email, purpose, subject) => {
         { upsert: true, new: true }
     );
 
+    // Dev convenience: lets registration be tested without reading the inbox.
+    // Never log codes in production.
+    if (purpose === OTP_PURPOSE.VERIFICATION && process.env.NODE_ENV !== 'production') {
+        console.log(`[AUTH] Registration OTP for ${email}: ${otp}`);
+    }
+
     const copy = OTP_EMAIL_COPY[purpose] || OTP_EMAIL_COPY[OTP_PURPOSE.VERIFICATION];
 
     await emailService.sendCustomEmail(email, subject, 'otp', {
