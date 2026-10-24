@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import ProductCoverImage from "@/components/ProductCoverImage";
 import ProductRating from "@/components/ProductRating";
 import { useCart } from "@/hooks/useCart";
 import type { Product } from "@/hooks/useProduct";
-import { resolveImageUrl } from "@/utils/imageUrl";
+import { aspectCss } from "@/utils/productImageDisplay";
 import {
-  getCoverImage,
   getDiscountPercent,
   getEffectivePrice,
+  getProductImages,
   hasDiscount,
 } from "@/utils/productPricing";
 
@@ -15,16 +16,25 @@ interface TopPickCardProps {
   product: Product;
   /** Slightly larger type on the home shelf than on the full listing page. */
   isDashboard?: boolean;
+  /** The product's collection card shape — the one its shop page uses. */
+  aspect?: string | null;
+  /** The collection's Material Symbols icon, drawn if the photo is unavailable. */
+  placeholderIcon?: string;
 }
 
 /**
  * One storefront product card. Lives on its own so the home shelf's carousel and
  * the full Top Picks grid render exactly the same card, and so each card owns its
  * own add-to-cart state instead of the list tracking one id for all of them.
+ *
+ * The photo frame is the shop card's: the collection's shape, and the crop the
+ * admin set for it, drawn by the same ProductCoverImage.
  */
 export default function TopPickCard({
   product,
   isDashboard = false,
+  aspect,
+  placeholderIcon,
 }: TopPickCardProps) {
   const { addToCart, isAdding } = useCart();
   const [added, setAdded] = useState(false);
@@ -49,15 +59,20 @@ export default function TopPickCard({
 
   return (
     <div className="group flex flex-col h-full">
-      {/* Image Container - Fixed height with object-cover */}
+      {/* Photo frame — the same shape, rounding and border as a shop card's, with
+          the admin's crop applied. No hover lift: the home carousel clips it. */}
       <Link
         to={`/product/${product._id}`}
-        className="relative block w-full aspect-square overflow-hidden rounded-lg bg-gray-100 mb-3"
+        style={{ aspectRatio: aspectCss(aspect) }}
+        className="relative block w-full overflow-hidden rounded-[20px] border border-[#1a2f1a]/[0.06] bg-[#faf9f6] mb-3"
       >
-        <img
-          src={resolveImageUrl(getCoverImage(product))}
+        <ProductCoverImage
+          images={getProductImages(product)}
+          imageDisplay={product.imageDisplay}
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          icon={placeholderIcon}
+          showHoverShot={product.hoverPhoto !== false}
+          layerClassName="group-hover:scale-[1.03]"
         />
         {hasDiscount(product) && (
           <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-[#ff311b] text-white text-[9px] font-black uppercase tracking-wider">

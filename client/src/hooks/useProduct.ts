@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@/utils/Axios";
 import type { ProductDimensions } from "@/utils/productPricing";
 import type { ProductFinish } from "@/utils/productFinish";
+import type { ImageDisplay } from "@/utils/productImageDisplay";
 
 export interface Product {
   _id: string;
@@ -10,6 +11,10 @@ export interface Product {
   discountPrice?: number | null;
   image: string;
   images?: string[];
+  /** How each gallery photo is framed on the card. See utils/productImageDisplay.ts. */
+  imageDisplay?: ImageDisplay[];
+  /** Whether the card swaps to the second photo on hover. Absent means yes. */
+  hoverPhoto?: boolean;
   description: string;
   dimensions?: ProductDimensions | null;
   finish?: ProductFinish | null;

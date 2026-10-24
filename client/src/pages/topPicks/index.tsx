@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import ProductCarousel from "@/components/ProductCarousel";
+import { useProductTypes } from "@/hooks/useProductTypes";
 import { useTopPicks } from "@/hooks/useTopPicks";
 import TopPickCard from "./card";
 
@@ -20,6 +21,24 @@ interface TopPicksProps {
  */
 export default function TopPicks({ isDashboard = false }: TopPicksProps) {
   const { topPicks, isTopPicksLoading } = useTopPicks();
+  const { productTypes } = useProductTypes();
+
+  // A pick is drawn in its own collection's card shape, so it looks the way it
+  // does on that collection's shop page. Not found yet (types still loading, or
+  // the collection was deleted) falls back to the default shape.
+  const renderCard = (product: (typeof topPicks)[number], isDashboardCard: boolean) => {
+    const productType = productTypes.find((type) => type.slug === product.category);
+
+    return (
+      <TopPickCard
+        key={product._id}
+        product={product}
+        isDashboard={isDashboardCard}
+        aspect={productType?.cardAspect}
+        placeholderIcon={productType?.icon}
+      />
+    );
+  };
 
   if (isTopPicksLoading) {
     return (
@@ -65,15 +84,11 @@ export default function TopPicks({ isDashboard = false }: TopPicksProps) {
         </p>
       ) : isDashboard ? (
         <ProductCarousel label="Top Picks">
-          {topPicks.map((product) => (
-            <TopPickCard key={product._id} product={product} isDashboard />
-          ))}
+          {topPicks.map((product) => renderCard(product, true))}
         </ProductCarousel>
       ) : (
         <div className="grid gap-x-8 gap-y-12 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {topPicks.map((product) => (
-            <TopPickCard key={product._id} product={product} />
-          ))}
+          {topPicks.map((product) => renderCard(product, false))}
         </div>
       )}
     </div>

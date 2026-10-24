@@ -97,7 +97,7 @@ export default function ProductCarousel({
                         onClick={() => page(-1)}
                         disabled={!scrollable.left}
                         aria-label="Previous products"
-                        className="hidden sm:flex absolute -left-3 top-[38%] -translate-y-1/2 size-11 rounded-full bg-white shadow-lg shadow-black/10 items-center justify-center text-[#1a2f1a] transition-all hover:bg-[#1a2f1a] hover:text-white disabled:opacity-0 disabled:pointer-events-none"
+                        className="hidden sm:flex absolute -left-3 top-[30%] -translate-y-1/2 size-11 rounded-full bg-white shadow-lg shadow-black/10 items-center justify-center text-[#1a2f1a] transition-all hover:bg-[#1a2f1a] hover:text-white disabled:opacity-0 disabled:pointer-events-none"
                     >
                         <span className="material-symbols-outlined">chevron_left</span>
                     </button>
@@ -106,7 +106,7 @@ export default function ProductCarousel({
                         onClick={() => page(1)}
                         disabled={!scrollable.right}
                         aria-label="More products"
-                        className="hidden sm:flex absolute -right-3 top-[38%] -translate-y-1/2 size-11 rounded-full bg-white shadow-lg shadow-black/10 items-center justify-center text-[#1a2f1a] transition-all hover:bg-[#1a2f1a] hover:text-white disabled:opacity-0 disabled:pointer-events-none"
+                        className="hidden sm:flex absolute -right-3 top-[30%] -translate-y-1/2 size-11 rounded-full bg-white shadow-lg shadow-black/10 items-center justify-center text-[#1a2f1a] transition-all hover:bg-[#1a2f1a] hover:text-white disabled:opacity-0 disabled:pointer-events-none"
                     >
                         <span className="material-symbols-outlined">chevron_right</span>
                     </button>
