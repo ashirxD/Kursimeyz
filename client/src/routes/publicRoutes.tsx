@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import LoadingSpinner from "../components/LoadingSpinner";
 import UserLayout from "../pages/layout";
+import { protectedPageRoutes } from "./protectedRoutes";
 
 // Lazy load components
 const Dashboard = lazy(() => import("../pages/dashboard"));
@@ -69,6 +70,8 @@ export const publicRoutes = [
           </Suspense>
         ),
       },
+      // Cart, checkout and orders share this layout instead of mounting their own.
+      ...protectedPageRoutes,
     ],
   },
   {

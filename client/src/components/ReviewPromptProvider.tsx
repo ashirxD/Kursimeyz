@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useIsAuthenticated } from '@/stores/authStore';
 import { usePendingReviews, type PendingReviewOrder } from '@/hooks/usePendingReviews';
 import OrderReviewModal from './OrderReviewModal';
@@ -38,6 +39,11 @@ export default function ReviewPromptProvider({ children }: ReviewPromptProviderP
   const [manualOrderId, setManualOrderId] = useState<string | null>(null);
   const [dismissedOrderId, setDismissedOrderId] = useState<string | null>(null);
 
+  // A rating prompt must never appear while someone is paying: it re-checks every
+  // minute and whenever the tab regains focus (coming back from their wallet app).
+  const { pathname } = useLocation();
+  const isBusyPage = ['/cart', '/checkout', '/order-success'].includes(pathname);
+
   const openReviewForOrder = useCallback((orderId: string) => {
     setManualOrderId(orderId);
     setDismissedOrderId(null);
@@ -73,7 +79,7 @@ export default function ReviewPromptProvider({ children }: ReviewPromptProviderP
   return (
     <ReviewPromptContext.Provider value={{ openReviewForOrder }}>
       {children}
-      {activeOrder && (
+      {activeOrder && (!isBusyPage || manualOrderId) && (
         <OrderReviewModal
           order={activeOrder}
           onClose={handleClose}

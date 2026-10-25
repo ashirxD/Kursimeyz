@@ -7,7 +7,7 @@ const ForgotPassword = () => {
   const returnTo = searchParams.get("returnTo") || "/login";
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row bg-[#fdfcf8] font-sans text-[#101b0e] overflow-hidden">
+    <div className="h-dvh w-full flex flex-col md:flex-row bg-[#fdfcf8] font-sans text-[#101b0e] overflow-hidden">
       <div
         className="hidden md:flex w-full md:w-1/2 relative h-full bg-cover bg-center"
         style={{
@@ -33,7 +33,7 @@ const ForgotPassword = () => {
       <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8 lg:p-12 bg-[#fdfcf8] h-full relative">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff311b]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px] pointer-events-none" />
 
-        <div className="w-full max-w-[400px] flex flex-col gap-6 lg:gap-8 relative z-10 overflow-y-auto lg:overflow-visible max-h-full py-4 px-2 custom-scrollbar">
+        <div className="w-full max-w-[400px] flex flex-col gap-6 lg:gap-8 relative z-10 overflow-y-auto max-h-full py-4 px-2 custom-scrollbar">
           <div className="flex md:hidden mb-2">
             <BrandLogo imageClassName="h-11 w-auto max-w-[190px]" />
           </div>

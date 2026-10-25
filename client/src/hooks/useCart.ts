@@ -162,6 +162,12 @@ export const useCart = () => {
     },
   });
 
+  // A line whose product was deleted after it was added has nothing to buy, so
+  // it must not inflate the badge in the header either.
+  const buyableItems = ((cart?.items ?? []) as { product?: unknown; quantity: number }[]).filter(
+    (item) => item.product,
+  );
+
   return {
     cart,
     isLoading,
@@ -171,9 +177,7 @@ export const useCart = () => {
     updateQuantity: updateQuantityMutation.mutate,
     removeFromCart: removeFromCartMutation.mutate,
     clearCart: clearCartMutation.mutate,
-    itemsCount: cart?.items?.length || 0,
-    totalItems:
-      cart?.items?.reduce((acc: number, item: any) => acc + item.quantity, 0) ||
-      0,
+    itemsCount: buyableItems.length,
+    totalItems: buyableItems.reduce((acc, item) => acc + item.quantity, 0),
   };
 };

@@ -113,6 +113,7 @@ export default function PhoneRequiredModal() {
                   id="profile-phone"
                   type="tel"
                   inputMode="tel"
+                  autoComplete="tel"
                   value={phone}
                   onChange={(event) => {
                     setPhone(event.target.value);

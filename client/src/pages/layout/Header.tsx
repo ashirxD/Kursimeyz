@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "@/hooks/useCart";
 import { useCategories } from "@/hooks/useCategories";
 import { useProductTypes } from "@/hooks/useProductTypes";
@@ -53,6 +54,7 @@ export default function Header() {
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   const isActivePath = (path: string) => location.pathname === path;
   const isShopActive = location.pathname.startsWith("/shop");
@@ -85,6 +87,9 @@ export default function Header() {
       console.error("Logout error:", err);
     } finally {
       logout();
+      // The next person to sign in on this browser must not see this shopper's
+      // cart, orders or account details flash up from the cache.
+      queryClient.clear();
       navigate("/login");
     }
   };
@@ -130,8 +135,19 @@ export default function Header() {
             className="relative"
             onMouseEnter={() => setDropdownOpen(true)}
             onMouseLeave={closeDropdown}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") closeDropdown();
+            }}
           >
-            <button className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group flex items-center gap-1 cursor-pointer">
+            {/* Click and keyboard work as well as hover: hover alone never opens
+                this on a touch laptop or for someone tabbing through the page. */}
+            <button
+              type="button"
+              aria-haspopup="true"
+              aria-expanded={dropdownOpen}
+              // Open-only: a tap fires hover first, so toggling would close it again.
+              onClick={() => setDropdownOpen(true)}
+              className="text-[13px] font-bold text-[#1a2f1a]/60 hover:text-[#1a2f1a] transition-colors relative group flex items-center gap-1 cursor-pointer">
               Shop
               <span
                 className="material-symbols-outlined text-[16px] transition-transform duration-300"
@@ -250,7 +266,6 @@ export default function Header() {
             <>
               <Link
                 to="/cart"
-                onClick={() => console.log("Navigating to /cart")}
                 className="h-11 px-4 sm:px-6 bg-[#1a2f1a] hover:bg-black text-white rounded-full flex items-center gap-2 sm:gap-3 transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-black/10"
               >
                 <span className="material-symbols-outlined text-[20px]">
@@ -263,10 +278,21 @@ export default function Header() {
                   {totalItems}
                 </span>
               </Link>
+              <Link
+                to="/account"
+                aria-label="My account"
+                title="My account"
+                className="hidden md:flex size-11 items-center justify-center text-[#1a2f1a] hover:bg-[#f4f5f0] rounded-full transition-all"
+              >
+                <span className="material-symbols-outlined text-[24px]">
+                  person
+                </span>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="size-11 flex items-center justify-center text-[#1a2f1a] hover:bg-red-50 hover:text-red-500 rounded-full transition-all"
                 title="Logout"
+                aria-label="Sign out"
               >
                 <span className="material-symbols-outlined text-[24px]">
                   logout
@@ -352,7 +378,7 @@ export default function Header() {
           </div>
         )}
 
-        <nav className="grid grid-cols-4 h-16 px-2">
+        <nav className="grid grid-cols-5 h-16 px-2">
           <Link
             to="/dashboard"
             className={mobileTabClass(isActivePath("/dashboard") || isActivePath("/"))}
@@ -402,7 +428,20 @@ export default function Header() {
               receipt_long
             </span>
             <span className="text-[10px] font-black uppercase tracking-wide">
-              My Orders
+              Orders
+            </span>
+          </Link>
+
+          <Link
+            to="/account"
+            className={mobileTabClass(isActivePath("/account"))}
+            onClick={closeMobileShop}
+          >
+            <span className="material-symbols-outlined text-[22px]">
+              person
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-wide">
+              Account
             </span>
           </Link>
         </nav>

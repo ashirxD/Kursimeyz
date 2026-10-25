@@ -4,6 +4,7 @@ import {
   hasDiscount,
   type PricedProduct,
 } from '@/utils/productPricing';
+import { formatPrice } from '@/utils/formatPrice';
 
 type PriceSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -42,7 +43,7 @@ export default function ProductPrice({
   if (!discounted) {
     return (
       <span className={`${classes.current} font-black text-[#1a2f1a] whitespace-nowrap ${className}`}>
-        Rs. {current}
+        {formatPrice(current)}
       </span>
     );
   }
@@ -54,10 +55,10 @@ export default function ProductPrice({
       } ${className}`}
     >
       <span className={`${classes.current} font-black text-[#ff311b] whitespace-nowrap`}>
-        Rs. {current}
+        {formatPrice(current)}
       </span>
       <span className={`${classes.original} font-bold text-[#1a2f1a]/40 line-through whitespace-nowrap`}>
-        Rs. {original}
+        {formatPrice(original)}
       </span>
       {showPercent && percent > 0 && (
         <span

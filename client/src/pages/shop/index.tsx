@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import CategoryTabs from "@/components/CategoryTabs";
 import CollectionCover from "@/components/CollectionCover";
 import { hasUsableCategories, useCategories } from "@/hooks/useCategories";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { formatPrice } from "@/utils/formatPrice";
 import { useProducts } from "@/hooks/useProducts";
 import { useProductTypeBySlug } from "@/hooks/useProductTypes";
 import { aspectCss } from "@/utils/productImageDisplay";
@@ -13,19 +15,33 @@ import ShopProductCard from "./card";
 
 const ITEMS_PER_PAGE = 6;
 
+type SortKey = "newest" | "price-asc" | "price-desc" | "rating";
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "newest", label: "Newest first" },
+  { value: "price-asc", label: "Price: low to high" },
+  { value: "price-desc", label: "Price: high to low" },
+  { value: "rating", label: "Top rated" },
+];
+
 /**
  * One shop page for every kind of product, resolved from the URL segment. The
  * chairs, tables and sofas pages were three copies of this that differed only
  * in hero copy, price ceiling and cross-links — all of which now come from the
  * product type's record.
  */
-export default function ShopPage() {
-  const { typeSlug } = useParams<{ typeSlug: string }>();
+function ShopContent({ typeSlug }: { typeSlug?: string }) {
   const { productType, productTypes, isLoading: isLoadingType } =
     useProductTypeBySlug(typeSlug);
 
   const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>();
-  const debouncedMaxPrice = useDebouncedValue(selectedMaxPrice, 1000);
+  // Short enough that dragging the slider feels live, long enough not to fire a
+  // request for every pixel of the drag.
+  const debouncedMaxPrice = useDebouncedValue(selectedMaxPrice, 350);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sort, setSort] = useState<SortKey>("newest");
+  // The filters take a whole screen of a phone, so they start folded away there.
+  const [filtersOpen, setFiltersOpen] = useState(false);
   // Kept in the URL so a filtered view can be linked and the back button works.
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get("category");
@@ -36,6 +52,8 @@ export default function ShopPage() {
     subCategory: activeCategory ?? undefined,
     maxPrice: debouncedMaxPrice,
   });
+
+  useDocumentTitle(productType?.pluralName);
 
   const defaultMaxPrice = productType?.defaultMaxPrice ?? 1500;
   const [priceCeiling, setPriceCeiling] = useState(defaultMaxPrice);
@@ -61,10 +79,47 @@ export default function ShopPage() {
 
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [debouncedMaxPrice, activeCategory, typeSlug]);
+  }, [debouncedMaxPrice, activeCategory, typeSlug, searchTerm, sort]);
 
   const handleCategoryChange = (slug: string | null) => {
     setSearchParams(slug ? { category: slug } : {}, { replace: true });
+  };
+
+  // Price and category are filtered by the server; search and order are cheap
+  // enough to do here, and feel instant that way.
+  const shownProducts = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    const matching = query
+      ? products.filter((product) =>
+          [product.name, product.description, product.subCategory]
+            .filter(Boolean)
+            .some((text) => String(text).toLowerCase().includes(query)),
+        )
+      : products;
+
+    const ordered = [...matching];
+    if (sort === "price-asc") {
+      ordered.sort((a, b) => getEffectivePrice(a) - getEffectivePrice(b));
+    } else if (sort === "price-desc") {
+      ordered.sort((a, b) => getEffectivePrice(b) - getEffectivePrice(a));
+    } else if (sort === "rating") {
+      ordered.sort(
+        (a, b) =>
+          (b.averageRating ?? 0) - (a.averageRating ?? 0) ||
+          (b.ratingCount ?? 0) - (a.ratingCount ?? 0),
+      );
+    }
+    return ordered;
+  }, [products, searchTerm, sort]);
+
+  const hasActiveFilters =
+    selectedMaxPrice !== undefined || Boolean(activeCategory) || searchTerm.trim() !== "";
+
+  const clearAllFilters = () => {
+    setSelectedMaxPrice(undefined);
+    setSearchTerm("");
+    setSearchParams({}, { replace: true });
   };
 
   if (isLoadingType) {
@@ -100,8 +155,8 @@ export default function ShopPage() {
   }
 
   const sliderValue = selectedMaxPrice ?? priceCeiling;
-  const visibleProducts = products.slice(0, visibleCount);
-  const hasMore = visibleCount < products.length;
+  const visibleProducts = shownProducts.slice(0, visibleCount);
+  const hasMore = visibleCount < shownProducts.length;
   const otherTypes = productTypes.filter((type) => type.slug !== productType.slug);
 
   return (
@@ -138,7 +193,12 @@ export default function ShopPage() {
       {/* Main Content */}
       <div className="flex flex-col lg:flex-row gap-10">
         {/* ─── Left Sidebar ─── */}
-        <aside className="w-full lg:w-[220px] flex-shrink-0 space-y-8">
+        <aside
+          id="shop-filters"
+          className={`w-full lg:w-[220px] flex-shrink-0 space-y-8 lg:block ${
+            filtersOpen ? "block" : "hidden"
+          }`}
+        >
           {/* Price Range */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
             <div className="flex items-center justify-between mb-4">
@@ -149,18 +209,20 @@ export default function ShopPage() {
             </div>
             <input
               type="range"
+              aria-label="Maximum price"
               min={0}
+              step={50}
               max={priceCeiling}
               value={Math.min(sliderValue, priceCeiling)}
               onChange={(e) => setSelectedMaxPrice(Number(e.target.value))}
               className="w-full accent-[#ff311b] cursor-pointer"
             />
             <div className="flex justify-between mt-2 text-[12px] font-bold text-[#1a2f1a]/50">
-              <span>Rs. 0</span>
+              <span>{formatPrice(0)}</span>
               <span>
                 {selectedMaxPrice === undefined
                   ? "Any price"
-                  : `Up to Rs. ${Math.min(selectedMaxPrice, priceCeiling)}`}
+                  : `Up to ${formatPrice(Math.min(selectedMaxPrice, priceCeiling))}`}
               </span>
             </div>
             {selectedMaxPrice !== undefined && (
@@ -196,6 +258,59 @@ export default function ShopPage() {
 
         {/* ─── Product Grid ─── */}
         <div className="flex-1 min-w-0">
+          {/* Find and order what's here */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            <div className="relative flex-1">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[20px] text-[#1a2f1a]/30 pointer-events-none">
+                search
+              </span>
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder={`Search ${productType.pluralName.toLowerCase()}`}
+                aria-label={`Search ${productType.pluralName.toLowerCase()}`}
+                enterKeyHint="search"
+                className="w-full h-12 pl-12 pr-4 rounded-full border border-slate-100 bg-white focus:border-[#ff311b] outline-none text-[14px] font-bold text-[#1a2f1a] placeholder:text-[#1a2f1a]/30 transition-colors"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((open) => !open)}
+                aria-expanded={filtersOpen}
+                aria-controls="shop-filters"
+                className="lg:hidden h-12 px-5 rounded-full border border-slate-100 bg-white text-[13px] font-bold text-[#1a2f1a] flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">tune</span>
+                Filters
+                {(selectedMaxPrice !== undefined || activeCategory) && (
+                  <span className="size-2 rounded-full bg-[#ff311b]" aria-label="Filters applied" />
+                )}
+              </button>
+              <select
+                value={sort}
+                onChange={(event) => setSort(event.target.value as SortKey)}
+                aria-label="Sort products"
+                className="flex-1 sm:flex-none h-12 pl-4 pr-8 rounded-full border border-slate-100 bg-white text-[13px] font-bold text-[#1a2f1a] cursor-pointer outline-none focus:border-[#ff311b]"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {!isLoading && products.length > 0 && (
+            <p role="status" className="text-[13px] font-bold text-[#1a2f1a]/40 mb-6">
+              {shownProducts.length === products.length
+                ? `${shownProducts.length} ${shownProducts.length === 1 ? productType.name.toLowerCase() : productType.pluralName.toLowerCase()}`
+                : `${shownProducts.length} of ${products.length} ${productType.pluralName.toLowerCase()}`}
+            </p>
+          )}
+
           {isLoading ? (
             /* Skeleton Loader */
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
@@ -213,7 +328,7 @@ export default function ShopPage() {
                 </div>
               ))}
             </div>
-          ) : products.length === 0 ? (
+          ) : shownProducts.length === 0 ? (
             /* Empty State */
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <span className="material-symbols-outlined text-[64px] text-[#1a2f1a]/10 mb-4">
@@ -222,9 +337,20 @@ export default function ShopPage() {
               <p className="text-[#1a2f1a]/40 font-bold text-lg mb-2">
                 No {productType.pluralName.toLowerCase()} found
               </p>
-              <p className="text-[#1a2f1a]/30 text-sm font-medium">
-                Try adjusting your filters
+              <p className="text-[#1a2f1a]/40 text-sm font-medium mb-6">
+                {hasActiveFilters
+                  ? "Nothing matches your search and filters."
+                  : "Check back soon, new pieces are added regularly."}
               </p>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="px-8 py-3 bg-[#1a2f1a] text-white rounded-full text-[12px] font-black uppercase tracking-widest hover:bg-black transition-colors"
+                >
+                  Clear all filters
+                </button>
+              )}
             </div>
           ) : (
             <>
@@ -295,4 +421,9 @@ export default function ShopPage() {
       )}
     </div>
   );
+}
+
+export default function ShopPage() {
+  const { typeSlug } = useParams<{ typeSlug: string }>();
+  return <ShopContent key={typeSlug} typeSlug={typeSlug} />;
 }

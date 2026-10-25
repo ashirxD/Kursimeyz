@@ -26,6 +26,41 @@ const dedupeOrderProducts = (items) => {
     return Array.from(map.values());
 };
 
+// "Ayesha Khan" -> "Ayesha K." A review is public, so it carries a first name and
+// an initial rather than the full name or any contact detail.
+const publicName = (username) => {
+    const parts = String(username || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'Verified buyer';
+    if (parts.length === 1) return parts[0];
+    return `${parts[0]} ${parts[parts.length - 1].charAt(0).toUpperCase()}.`;
+};
+
+// @desc    Public reviews for one product, newest first
+// @route   GET /api/reviews/product/:productId
+// @access  Public
+const getProductReviews = async (req, res) => {
+    try {
+        const reviews = await ProductReview.find({ product: req.params.productId })
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .populate('user', 'username')
+            .lean();
+
+        res.status(200).json({
+            success: true,
+            data: reviews.map((review) => ({
+                _id: review._id,
+                rating: review.rating,
+                comment: review.comment || '',
+                name: publicName(review.user?.username),
+                createdAt: review.createdAt,
+            })),
+        });
+    } catch (err) {
+        return sendError(res, err, "We couldn't load the reviews. Please try again.");
+    }
+};
+
 // @desc    Get delivered orders with products still needing review
 // @route   GET /api/reviews/pending
 // @access  Private
@@ -279,6 +314,7 @@ const skipReviewPrompt = async (req, res) => {
 };
 
 module.exports = {
+    getProductReviews,
     getPendingReviews,
     submitReviews,
     snoozeReviewPrompt,

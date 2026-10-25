@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import AboutContent from "@/components/AboutContent";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAboutPage } from "@/hooks/useAboutPage";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 /**
  * Everything on this page — copy, colours, icons, images, section order — is
@@ -9,6 +10,8 @@ import { useAboutPage } from "@/hooks/useAboutPage";
  * which the editor's preview tab renders too.
  */
 export default function About() {
+  useDocumentTitle("About us");
+
   const { content, isLoading, error } = useAboutPage();
 
   if (isLoading) {

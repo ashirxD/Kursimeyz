@@ -1,11 +1,16 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CitySelect from "@/components/CitySelect";
 import { useCart } from "@/hooks/useCart";
 import { useOrder, type OrderPayload } from "@/hooks/useOrder";
 import { findShippingCity, useShippingCities } from "@/hooks/useShippingCities";
-import api from "@/utils/Axios";
+import { usePaymentSettings } from "@/hooks/usePaymentSettings";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useAuthStore } from "@/stores/authStore";
 import { resolveImageUrl } from "@/utils/imageUrl";
+import { formatPrice } from "@/utils/formatPrice";
+import { loadCheckoutPrefs, saveCheckoutPrefs } from "@/utils/checkoutPrefs";
+import { normalizePakistaniMobile, PAKISTANI_MOBILE_HINT } from "@/utils/phone";
 import {
   getCoverImage,
   getEffectivePrice,
@@ -33,29 +38,6 @@ const getOrderErrorMessage = (error: unknown) =>
 type PaymentMethod = "Cash" | "Card" | "Easypaisa" | "JazzCash" | "Bank";
 type WalletMethod = Extract<PaymentMethod, "Easypaisa" | "JazzCash">;
 
-interface PaymentSettings {
-  whatsappNumber: string;
-  easypaisaAccountNumber: string;
-  easypaisaRedirectUrl: string;
-  jazzcashAccountNumber: string;
-  jazzcashRedirectUrl: string;
-  bankAccountNumber: string;
-  bankName: string;
-  bankAccountTitle: string;
-}
-
-const defaultPaymentSettings: PaymentSettings = {
-  whatsappNumber: "+923211411478",
-  easypaisaAccountNumber: "",
-  easypaisaRedirectUrl: "https://easypaisa.onelink.me/cw4d/q9y8ba5v",
-  jazzcashAccountNumber: "",
-  jazzcashRedirectUrl:
-    "https://www.jazzcash.com.pk/jazzcash-app-aur-bhi-behtar/",
-  bankAccountNumber: "",
-  bankName: "",
-  bankAccountTitle: "",
-};
-
 const walletConfig = {
   Easypaisa: {
     icon: "account_balance_wallet",
@@ -72,49 +54,33 @@ const walletConfig = {
 };
 
 export default function CheckoutPage() {
+  useDocumentTitle("Checkout");
+
   const { cart } = useCart();
-  const { createOrder, createOrderAsync, isCreating, createError } = useOrder();
+  const { createOrderAsync, isCreating, createError } = useOrder();
   const { cities } = useShippingCities();
+  const { paymentSettings } = usePaymentSettings();
+  const accountPhone = useAuthStore((state) => state.user?.phone);
   const navigate = useNavigate();
 
-  const [address, setAddress] = useState({
-    street: "",
-    city: "",
-    zipCode: "",
-    phone: "",
+  // Starts from what the shopper used last time (or entered in the cart's
+  // delivery estimate), and from their account phone, so a repeat order is a
+  // confirm rather than a retype.
+  const [address, setAddress] = useState(() => {
+    const saved = loadCheckoutPrefs();
+    return { ...saved, phone: saved.phone || accountPhone || "" };
   });
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Cash");
-  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(
-    defaultPaymentSettings,
-  );
   const [selectedWalletForInstructions, setSelectedWalletForInstructions] =
     useState<WalletMethod | null>(null);
-  const [pendingWalletRedirect, setPendingWalletRedirect] =
-    useState<WalletMethod | null>(null);
-  const [orderCreated, setOrderCreated] = useState(false);
   const [localError, setLocalError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
-  useEffect(() => {
-    const fetchPaymentSettings = async () => {
-      try {
-        const response = await api.get("/user/payment-settings");
-
-        if (response.data.success) {
-          setPaymentSettings({
-            ...defaultPaymentSettings,
-            ...response.data.data,
-          });
-        }
-      } catch (error) {
-        console.error("Failed to fetch payment settings:", error);
-      }
-    };
-
-    fetchPaymentSettings();
-  }, []);
-
-  const cartItems = (cart?.items ?? []) as CartLineItem[];
+  // A product deleted after it was added leaves a line with nothing in it.
+  const cartItems = ((cart?.items ?? []) as CartLineItem[]).filter(
+    (item) => item.product,
+  );
 
   const subtotal =
     cartItems.reduce(
@@ -142,11 +108,6 @@ export default function CheckoutPage() {
       ? paymentSettings.easypaisaAccountNumber
       : paymentSettings.jazzcashAccountNumber;
 
-  const getWalletRedirectUrl = (method: WalletMethod) =>
-    method === "Easypaisa"
-      ? paymentSettings.easypaisaRedirectUrl
-      : paymentSettings.jazzcashRedirectUrl;
-
   const handleWalletSelect = (method: WalletMethod) => {
     if (!getWalletAccountNumber(method)) {
       return;
@@ -172,58 +133,36 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLocalError("");
+    setPhoneError("");
+
+    // The same check sign-up and the account page use, so a mistyped number is
+    // caught here rather than after the order, when nobody can reach the customer.
+    const normalizedPhone = normalizePakistaniMobile(address.phone);
+    if (!normalizedPhone) {
+      setPhoneError(PAKISTANI_MOBILE_HINT);
+      document.getElementById("checkout-phone")?.focus();
+      return;
+    }
 
     const orderPayload = buildOrderPayload();
+    orderPayload.shippingAddress = { ...address, phone: normalizedPhone };
 
-    if (
-      paymentMethod === "Easypaisa" ||
-      paymentMethod === "JazzCash" ||
-      paymentMethod === "Bank"
-    ) {
-      try {
-        await createOrderAsync(orderPayload);
-        setOrderCreated(true);
-        if (paymentMethod === "Easypaisa" || paymentMethod === "JazzCash") {
-          setPendingWalletRedirect(paymentMethod);
-        } else {
-          navigate("/order-success");
-        }
-      } catch (error: unknown) {
-        setLocalError(getOrderErrorMessage(error));
-      }
-      return;
+    try {
+      const order = await createOrderAsync(orderPayload);
+      saveCheckoutPrefs({ ...address, phone: normalizedPhone });
+
+      // Every payment method lands on the confirmation page, which shows the
+      // order number and, for wallet and bank orders, exactly how to pay. The
+      // old wallet flow sent people to another site before they had either.
+      navigate("/order-success", { state: { order }, replace: true });
+    } catch (error: unknown) {
+      setLocalError(getOrderErrorMessage(error));
     }
-
-    createOrder(orderPayload);
-  };
-
-  const redirectToWallet = () => {
-    if (!pendingWalletRedirect) {
-      return;
-    }
-
-    window.location.href = getWalletRedirectUrl(pendingWalletRedirect);
-  };
-
-  const goToOrderSuccess = () => {
-    setPendingWalletRedirect(null);
-    navigate("/order-success");
   };
 
   const hasCartItems = cartItems.length > 0;
 
-  if (pendingWalletRedirect) {
-    return (
-      <WalletRedirectModal
-        method={pendingWalletRedirect}
-        accountNumber={getWalletAccountNumber(pendingWalletRedirect)}
-        onRedirect={redirectToWallet}
-        onLater={goToOrderSuccess}
-      />
-    );
-  }
-
-  if (!hasCartItems && !orderCreated) {
+  if (!hasCartItems) {
     return (
       <div className="pt-32 pb-16 flex flex-col items-center justify-center text-center">
         <span className="material-symbols-outlined text-[80px] text-[#1a2f1a]/10 mb-6">
@@ -260,15 +199,17 @@ export default function CheckoutPage() {
                   01
                 </span>
                 <h2 className="text-2xl font-black text-[#1a2f1a]">
-                  Shipping Sanctuary
+                  Delivery details
                 </h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <CheckoutInput
-                  label="Street Address"
+                  id="checkout-street"
+                  label="Street address"
                   type="text"
-                  placeholder="e.g. 123 Peace Street"
+                  autoComplete="street-address"
+                  placeholder="House / flat, street, area"
                   value={address.street}
                   onChange={(value) =>
                     setAddress({ ...address, street: value })
@@ -282,8 +223,11 @@ export default function CheckoutPage() {
                   onChange={(value) => setAddress({ ...address, city: value })}
                 />
                 <CheckoutInput
-                  label="Zip Code"
+                  id="checkout-zip"
+                  label="Postal code"
                   type="text"
+                  inputMode="numeric"
+                  autoComplete="postal-code"
                   placeholder="54000"
                   value={address.zipCode}
                   onChange={(value) =>
@@ -291,13 +235,19 @@ export default function CheckoutPage() {
                   }
                 />
                 <CheckoutInput
-                  label="Phone Number"
+                  id="checkout-phone"
+                  label="Mobile number"
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   placeholder="+92 300 1234567"
+                  hint="We call this number to arrange delivery."
+                  error={phoneError}
                   value={address.phone}
-                  onChange={(value) =>
-                    setAddress({ ...address, phone: value })
-                  }
+                  onChange={(value) => {
+                    setPhoneError("");
+                    setAddress({ ...address, phone: value });
+                  }}
                 />
               </div>
 
@@ -312,7 +262,7 @@ export default function CheckoutPage() {
                   02
                 </span>
                 <h2 className="text-2xl font-black text-[#1a2f1a]">
-                  Payment Essence
+                  Payment method
                 </h2>
               </div>
 
@@ -424,13 +374,13 @@ export default function CheckoutPage() {
           <div className="w-full lg:w-[420px]">
             <div className="bg-[#f4f5f0] rounded-5xl p-10 sticky top-28">
               <h2 className="text-2xl font-black text-[#1a2f1a] mb-8">
-                Order Harmony
+                Order summary
               </h2>
 
               <div className="space-y-6 mb-10 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 {cartItems.map((item) => (
                   <div
-                    key={item.product?._id}
+                    key={item.product._id}
                     className="flex justify-between items-center gap-4"
                   >
                     <div className="flex items-center gap-4">
@@ -439,6 +389,8 @@ export default function CheckoutPage() {
                           src={resolveImageUrl(getCoverImage(item.product))}
                           className="w-full h-full object-contain"
                           alt={item.product?.name}
+                          loading="lazy"
+                          decoding="async"
                         />
                       </div>
                       <div>
@@ -458,11 +410,11 @@ export default function CheckoutPage() {
                             : "text-[#1a2f1a]"
                         }`}
                       >
-                        Rs. {getEffectivePrice(item.product) * item.quantity}
+                        {formatPrice(getEffectivePrice(item.product) * item.quantity)}
                       </p>
                       {hasDiscount(item.product) && (
                         <p className="text-[11px] font-bold text-[#1a2f1a]/40 line-through">
-                          Rs. {item.product.price * item.quantity}
+                          {formatPrice(item.product.price * item.quantity)}
                         </p>
                       )}
                     </div>
@@ -473,12 +425,12 @@ export default function CheckoutPage() {
               <div className="space-y-4 pt-8 border-t border-[#1a2f1a]/5 mb-10">
                 <div className="flex justify-between text-[#1a2f1a]/60 font-medium">
                   <span>Subtotal</span>
-                  <span>Rs. {subtotal}</span>
+                  <span>{formatPrice(subtotal)}</span>
                 </div>
                 {savings > 0 && (
                   <div className="flex justify-between text-[#ff311b] font-bold">
                     <span>Discount savings</span>
-                    <span>- Rs. {savings}</span>
+                    <span>- {formatPrice(savings)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-[#1a2f1a]/60 font-medium">
@@ -488,14 +440,14 @@ export default function CheckoutPage() {
                       To be confirmed
                     </span>
                   ) : selectedCity ? (
-                    <span>Rs. {shipping}</span>
+                    <span>{formatPrice(shipping)}</span>
                   ) : (
                     <span className="text-[#1a2f1a]/40">Enter your city</span>
                   )}
                 </div>
                 <div className="pt-4 flex justify-between text-2xl font-black text-[#1a2f1a]">
                   <span>Total</span>
-                  <span>Rs. {total}</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
               </div>
 
@@ -511,7 +463,10 @@ export default function CheckoutPage() {
                 className="w-full py-5 bg-[#1a2f1a] text-white rounded-full font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-3 disabled:opacity-50"
               >
                 {isCreating ? (
-                  <div className="size-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  <>
+                    <div className="size-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <span>Placing order...</span>
+                  </>
                 ) : (
                   <>
                     <span>Place Order</span>
@@ -519,8 +474,10 @@ export default function CheckoutPage() {
                   </>
                 )}
               </button>
-              <p className="text-center text-[10px] font-bold text-[#1a2f1a]/30 uppercase tracking-widest mt-6">
-                Secure Checkout - Satisfaction Guaranteed
+              <p className="text-center text-[11px] font-bold text-[#1a2f1a]/50 mt-6 leading-relaxed">
+                {paymentMethod === "Cash"
+                  ? "You pay when your order arrives. Nothing is charged today."
+                  : "Your order is reserved now. We confirm it once your payment is received."}
               </p>
             </div>
           </div>
@@ -581,32 +538,63 @@ const CustomCityNotice = ({ whatsappNumber }: { whatsappNumber: string }) => {
 };
 
 interface CheckoutInputProps {
+  id: string;
   label: string;
   type: string;
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  autoComplete?: string;
+  inputMode?: "text" | "numeric" | "tel";
+  hint?: string;
+  error?: string;
 }
 
 const CheckoutInput = ({
+  id,
   label,
   type,
   placeholder,
   value,
   onChange,
+  autoComplete,
+  inputMode,
+  hint,
+  error,
 }: CheckoutInputProps) => (
   <div className="space-y-2">
-    <label className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40 ml-1">
+    <label
+      htmlFor={id}
+      className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40 ml-1"
+    >
       {label}
     </label>
     <input
+      id={id}
       required
       type={type}
+      inputMode={inputMode}
+      autoComplete={autoComplete}
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full h-14 px-6 rounded-2xl border border-slate-100 bg-[#f4f5f0]/50 focus:bg-white focus:border-[#ff311b] transition-all outline-none font-bold text-[#1a2f1a]"
+      aria-invalid={Boolean(error)}
+      aria-describedby={error || hint ? `${id}-note` : undefined}
+      className={`w-full h-14 px-6 rounded-2xl border bg-[#f4f5f0]/50 focus:bg-white transition-all outline-none font-bold text-[#1a2f1a] ${
+        error
+          ? "border-red-400 focus:border-red-500"
+          : "border-slate-100 focus:border-[#ff311b]"
+      }`}
     />
+    {(error || hint) && (
+      <p
+        id={`${id}-note`}
+        role={error ? "alert" : undefined}
+        className={`text-[12px] font-bold ml-1 ${error ? "text-red-600" : "text-[#1a2f1a]/40"}`}
+      >
+        {error || hint}
+      </p>
+    )}
   </div>
 );
 
@@ -814,104 +802,3 @@ const WalletInstructionsModal = ({
     </div>
   </div>
 );
-
-interface WalletRedirectModalProps {
-  method: WalletMethod;
-  accountNumber: string;
-  onRedirect: () => void;
-  onLater: () => void;
-}
-
-const WalletRedirectModal = ({
-  method,
-  accountNumber,
-  onRedirect,
-  onLater,
-}: WalletRedirectModalProps) => {
-  const [copied, setCopied] = useState(false);
-
-  const copyAccountNumber = async () => {
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(accountNumber);
-      } else {
-        const textarea = document.createElement("textarea");
-        textarea.value = accountNumber;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-      }
-
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch (error) {
-      console.error("Failed to copy wallet account number:", error);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-120 flex items-center justify-center p-4 bg-[#1a2f1a]/40 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-md rounded-4xl shadow-2xl p-7 border border-white text-center">
-        <div className="size-24 bg-[#ff311b]/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-          <span className="material-symbols-outlined text-[48px] text-[#ff311b] font-black">
-            check_circle
-          </span>
-        </div>
-
-        <h3 className="text-[34px] font-black text-[#1a2f1a] tracking-tight leading-[1.05] mb-4">
-          Order Confirmed
-        </h3>
-
-        <p className="text-sm font-bold text-[#1a2f1a]/60 leading-relaxed mb-5">
-          Your order has been placed successfully. Send payment to the {method}
-          number below, then send the payment screenshot on WhatsApp so the admin
-          can confirm your order.
-        </p>
-
-        <div className="bg-[#f4f5f0] rounded-3xl p-4 mb-7 text-left">
-          <p className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]/40 mb-2">
-            {method} number
-          </p>
-          <div className="flex items-center gap-3">
-            <p className="flex-1 text-xl font-black text-[#1a2f1a] tracking-wide break-all">
-              {accountNumber}
-            </p>
-            <button
-              type="button"
-              onClick={copyAccountNumber}
-              className="shrink-0 size-11 rounded-full bg-white text-[#1a2f1a] hover:bg-[#1a2f1a] hover:text-white transition-colors flex items-center justify-center shadow-sm"
-              aria-label={`Copy ${method} number`}
-            >
-              <span className="material-symbols-outlined text-xl">
-                {copied ? "check" : "content_copy"}
-              </span>
-            </button>
-          </div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-[#ff311b] mt-2 min-h-4">
-            {copied ? "Copied" : ""}
-          </p>
-        </div>
-
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={onLater}
-            className="flex-1 py-4 bg-slate-100 text-[#1a2f1a] rounded-full font-black uppercase tracking-widest hover:bg-slate-200 transition-colors"
-          >
-            Later
-          </button>
-          <button
-            type="button"
-            onClick={onRedirect}
-            className="flex-[1.4] py-4 bg-[#1a2f1a] text-white rounded-full font-black uppercase tracking-widest hover:bg-black transition-colors"
-          >
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};

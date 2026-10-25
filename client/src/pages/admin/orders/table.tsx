@@ -76,6 +76,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import PaymentConfirmationModal from "@/components/paymentConfirmationModal";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { getErrorMessage } from "@/utils/apiError";
 
 interface OrdersTableProps {
@@ -101,7 +102,6 @@ const StatusDropdown = ({ currentStatus, orderId, onStatusChange, isLoading }: {
     ];
 
     const handleSelect = (status: string) => {
-        console.log('Dropdown selected:', { orderId, status, currentStatus });
         onStatusChange(orderId, status);
         setIsOpen(false);
     };
@@ -159,7 +159,6 @@ const StatusDropdown = ({ currentStatus, orderId, onStatusChange, isLoading }: {
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Portal button clicked:', status.value);
                         handleSelect(status.value);
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
@@ -335,9 +334,22 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
     const [selectedOrderId, setSelectedOrderId] = useState('');
     const [selectedOrderLabel, setSelectedOrderLabel] = useState('');
 
+    // Cancelling and delivering are the two changes that are awkward to take back
+    // (delivery also marks the order paid and opens it to reviews), so they ask first.
+    const [pendingStatus, setPendingStatus] = useState<{ orderId: string; status: string } | null>(null);
+    const pendingOrder = orders.find((order) => order._id === pendingStatus?.orderId);
+
     const handleStatusChange = (orderId: string, newStatus: string) => {
-        console.log('Table handleStatusChange called:', { orderId, newStatus });
+        if (newStatus === 'Cancelled' || newStatus === 'Delivered') {
+            setPendingStatus({ orderId, status: newStatus });
+            return;
+        }
         updateStatus({ orderId, status: newStatus });
+    };
+
+    const confirmStatusChange = () => {
+        if (pendingStatus) updateStatus(pendingStatus);
+        setPendingStatus(null);
     };
 
     const formatDate = (dateString: string) => {
@@ -481,6 +493,25 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                 onClose={() => setPaymentModalOpen(false)}
                 orderId={selectedOrderId}
                 orderLabel={selectedOrderLabel}
+            />
+
+            <ConfirmDialog
+                open={pendingStatus !== null}
+                destructive={pendingStatus?.status === 'Cancelled'}
+                title={
+                    pendingStatus?.status === 'Cancelled'
+                        ? `Cancel order ${pendingOrder ? orderLabel(pendingOrder) : ''}?`
+                        : `Mark order ${pendingOrder ? orderLabel(pendingOrder) : ''} as delivered?`
+                }
+                message={
+                    pendingStatus?.status === 'Cancelled'
+                        ? 'The order stops here. Payment already received is not refunded automatically.'
+                        : 'This also marks the order as paid and lets the customer rate what they bought.'
+                }
+                confirmLabel={pendingStatus?.status === 'Cancelled' ? 'Cancel order' : 'Mark delivered'}
+                cancelLabel="Go back"
+                onConfirm={confirmStatusChange}
+                onCancel={() => setPendingStatus(null)}
             />
         </div>
     );

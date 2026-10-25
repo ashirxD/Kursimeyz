@@ -2,13 +2,86 @@ import { useOrder } from "@/hooks/useOrder";
 import { Link } from "react-router-dom";
 import { usePendingReviews } from "@/hooks/usePendingReviews";
 import { useReviewPrompt } from "@/components/ReviewPromptProvider";
-import { resolveImageUrl } from "@/utils/imageUrl";
+import { isDisplayableImageUrl, resolveImageUrl } from "@/utils/imageUrl";
+import { formatPrice } from "@/utils/formatPrice";
+import { buildWhatsAppLink } from "@/utils/whatsapp";
+import { getCoverImage } from "@/utils/productPricing";
+import { usePaymentSettings } from "@/hooks/usePaymentSettings";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { orderLabel } from "@/utils/orderNumber";
 import ProductFinishSummary from "@/components/ProductFinishSummary";
 import { resolveFinish } from "@/utils/productFinish";
 
+// The happy path an order walks, in order. Cancelled sits outside it.
+const PROGRESS_STEPS = ["Pending", "Processing", "Shipped", "Delivered"] as const;
+
+function OrderProgress({ status }: { status: string }) {
+  if (status === "Cancelled") {
+    return (
+      <p className="text-sm font-bold text-red-600">
+        This order was cancelled. Message us if that wasn't expected.
+      </p>
+    );
+  }
+
+  const current = Math.max(0, PROGRESS_STEPS.indexOf(status as (typeof PROGRESS_STEPS)[number]));
+
+  return (
+    <ol className="flex items-center" aria-label="Order progress">
+      {PROGRESS_STEPS.map((step, index) => {
+        const done = index <= current;
+        return (
+          <li
+            key={step}
+            aria-current={index === current ? "step" : undefined}
+            className={`flex items-center ${index < PROGRESS_STEPS.length - 1 ? "flex-1" : ""}`}
+          >
+            <span className="flex flex-col items-center gap-1.5">
+              <span
+                className={`size-6 rounded-full flex items-center justify-center text-[11px] font-black ${
+                  done ? "bg-[#1a2f1a] text-white" : "bg-slate-100 text-[#1a2f1a]/30"
+                }`}
+              >
+                {done ? (
+                  <span className="material-symbols-outlined text-[14px]">check</span>
+                ) : (
+                  index + 1
+                )}
+              </span>
+              <span
+                className={`text-[10px] font-black uppercase tracking-wide ${
+                  done ? "text-[#1a2f1a]" : "text-[#1a2f1a]/30"
+                }`}
+              >
+                {step === "Pending" ? "Placed" : step}
+              </span>
+            </span>
+            {index < PROGRESS_STEPS.length - 1 && (
+              <span
+                className={`h-0.5 flex-1 mx-2 mb-5 rounded-full ${
+                  index < current ? "bg-[#1a2f1a]" : "bg-slate-100"
+                }`}
+              />
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 export default function OrderHistory() {
+  useDocumentTitle("My orders");
+
   const { myOrders, ordersLoading, ordersError } = useOrder();
+  const { paymentSettings } = usePaymentSettings();
+
+  // Where a shopper who has paid by wallet or bank sends the screenshot.
+  const paymentLink = (order: { _id: string; orderNumber?: string; totalPrice: number; paymentMethod: string }) =>
+    buildWhatsAppLink(
+      paymentSettings.whatsappNumber,
+      `Hi Kursimeyz, I paid for order ${orderLabel(order, 8)} (${formatPrice(order.totalPrice)}) by ${order.paymentMethod}. Sending the screenshot now.`,
+    );
   const { pendingOrders } = usePendingReviews();
   const { openReviewForOrder } = useReviewPrompt();
 
@@ -33,7 +106,7 @@ export default function OrderHistory() {
     return (
       <div className="pt-32 pb-16 flex items-center justify-center">
         <div className="animate-pulse text-[#1a2f1a]/40 font-bold">
-          Retrieving your order sanctuary...
+          Loading your orders...
         </div>
       </div>
     );
@@ -69,7 +142,7 @@ export default function OrderHistory() {
             Order History
           </h1>
           <p className="text-lg text-[#1a2f1a]/50 font-medium">
-            Track your peace of mind and past sanctuary additions.
+            Track your orders and see what you've bought before.
           </p>
         </div>
         <Link
@@ -129,7 +202,7 @@ export default function OrderHistory() {
                       Total Amount
                     </p>
                     <p className="font-black text-[#1a2f1a]">
-                      Rs. {order.totalPrice}
+                      {formatPrice(order.totalPrice)}
                     </p>
                   </div>
                   <div className="space-y-1">
@@ -170,6 +243,9 @@ export default function OrderHistory() {
               <div className="p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                   <div className="lg:col-span-2 space-y-6">
+                    <div className="pb-6 mb-2 border-b border-slate-50">
+                      <OrderProgress status={order.status} />
+                    </div>
                     <div className="flex items-center gap-2 mb-4">
                       <span className="material-symbols-outlined text-[#1a2f1a]/20">
                         inventory_2
@@ -183,16 +259,26 @@ export default function OrderHistory() {
                         key={idx}
                         className="flex items-center gap-6 pb-6 border-b border-slate-50 last:border-0 last:pb-0"
                       >
-                        <div className="hidden sm:flex size-20 bg-[#f4f5f0] rounded-2xl shrink-0 items-center justify-center p-3">
-                          <img
-                            src={resolveImageUrl(item.product?.image)}
-                            alt={item.product?.name}
-                            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
-                          />
+                        <div className="flex size-16 sm:size-20 bg-[#f4f5f0] rounded-2xl shrink-0 items-center justify-center p-3">
+                          {isDisplayableImageUrl(getCoverImage(item.product)) ? (
+                            <img
+                              src={resolveImageUrl(getCoverImage(item.product))}
+                              alt={item.product?.name ?? ""}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                            />
+                          ) : (
+                            // A removed product shows a quiet placeholder rather
+                            // than a stock photo of somebody else's furniture.
+                            <span className="material-symbols-outlined text-[28px] text-[#1a2f1a]/20">
+                              chair
+                            </span>
+                          )}
                         </div>
                         <div className="flex-1">
                           <h4 className="font-bold text-[#1a2f1a]">
-                            {item.product?.name || "Sanctuary Addition"}
+                            {item.product?.name || "Item no longer sold"}
                           </h4>
                           {/* The order's own snapshot, so this stays what was
                               actually bought even if the product changes later. */}
@@ -208,12 +294,12 @@ export default function OrderHistory() {
                             </p>
                             <span className="size-1 bg-slate-200 rounded-full"></span>
                             <p className="text-xs font-black text-[#1a2f1a]/60">
-                              Rs. {item.price}
+                              {formatPrice(item.price)}
                             </p>
                           </div>
                         </div>
                         <p className="font-black text-[#1a2f1a]">
-                          Rs. {item.price * item.quantity}
+                          {formatPrice(item.price * item.quantity)}
                         </p>
                       </div>
                     ))}
@@ -227,7 +313,7 @@ export default function OrderHistory() {
                           local_shipping
                         </span>
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]">
-                          Shipping Destination
+                          Delivering to
                         </h3>
                       </div>
                       <div className="space-y-1 text-sm">
@@ -262,7 +348,7 @@ export default function OrderHistory() {
                           payments
                         </span>
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-[#1a2f1a]">
-                          Payment Essence
+                          Payment
                         </h3>
                       </div>
                       <div className="flex items-center justify-between">
@@ -272,9 +358,28 @@ export default function OrderHistory() {
                         <p
                           className={`text-xs font-black uppercase tracking-widest ${order.isPaid ? "text-[#ff311b]" : "text-orange-500"}`}
                         >
-                          {order.isPaid ? "Completed" : "Pending"}
+                          {order.isPaid ? "Received" : "Awaiting payment"}
                         </p>
                       </div>
+                      {!order.isPaid &&
+                        order.status !== "Cancelled" &&
+                        order.paymentMethod !== "Cash" &&
+                        paymentLink(order) && (
+                          <a
+                            href={paymentLink(order)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-[#ff311b] hover:underline"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">chat</span>
+                            Send payment screenshot
+                          </a>
+                        )}
+                      {order.paymentMethod === "Cash" && !order.isPaid && (
+                        <p className="mt-2 text-[12px] font-medium text-[#1a2f1a]/50">
+                          Pay {formatPrice(order.totalPrice)} when it arrives.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

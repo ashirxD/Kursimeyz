@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import api from "../utils/Axios";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, type Location } from "react-router-dom";
 import { useAuthStore } from "@/stores";
 import type { CredentialResponse } from "@react-oauth/google";
 import { getErrorMessage } from "@/utils/apiError";
@@ -35,8 +35,27 @@ interface RegisterResponse {
   message: string;
 }
 
+const AUTH_PAGES = ["/login", "/signup", "/verify-otp"];
+
+/** The page a guard sent the shopper away from, if any, so sign-in can return them to it. */
+export const getReturnPath = (location: Location): string | null => {
+  const from = (location.state as { from?: Location } | null)?.from;
+  if (!from?.pathname) return null;
+
+  return `${from.pathname}${from.search ?? ""}${from.hash ?? ""}`;
+};
+
 export const useAuth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // After signing in on a dedicated auth page, go back to where the shopper was
+  // headed (or home). Signing in from the quick-login popup happens on the page
+  // they were already looking at, so they stay on it.
+  const finishSignIn = () => {
+    if (!AUTH_PAGES.includes(location.pathname)) return;
+    navigate(getReturnPath(location) ?? "/dashboard", { replace: true });
+  };
   const { login: storeLogin, setError } = useAuthStore();
 
   const loginMutation = useMutation({
@@ -48,13 +67,14 @@ export const useAuth = () => {
     },
     onSuccess: (data) => {
       storeLogin(data.user, data.token);
-      navigate("/dashboard");
+      finishSignIn();
     },
     onError: (error: any, variables) => {
       if (error.response?.data?.requiresEmailVerification) {
         navigate("/verify-otp", {
           state: {
             email: error.response.data.email || variables.email,
+            from: (location.state as { from?: Location } | null)?.from,
           },
         });
         return;
@@ -77,6 +97,7 @@ export const useAuth = () => {
       navigate("/verify-otp", {
         state: {
           email: data.email || variables.email,
+          from: (location.state as { from?: Location } | null)?.from,
         },
       });
     },
@@ -102,7 +123,7 @@ export const useAuth = () => {
     onSuccess: (data) => {
       // Store user data and token in auth store
       storeLogin(data.user, data.token);
-      navigate("/dashboard");
+      finishSignIn();
     },
     onError: (error: any) => {
       const message = getErrorMessage(error);

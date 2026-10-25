@@ -4,6 +4,7 @@ import api from "@/utils/Axios";
 import { useAuthStore } from "@/stores";
 import BrandLogo from "@/components/BrandLogo";
 import { getErrorMessage } from "@/utils/apiError";
+import { getReturnPath } from "@/hooks/useAuth";
 
 interface VerifyOtpResponse {
   success: boolean;
@@ -61,7 +62,7 @@ const VerifyOtp = () => {
       });
 
       storeLogin(response.data.user, response.data.token);
-      navigate("/dashboard", { replace: true });
+      navigate(getReturnPath(location) ?? "/dashboard", { replace: true });
     } catch (err: any) {
       setError(getErrorMessage(err, "Invalid OTP. Please try again."));
     } finally {
@@ -88,7 +89,7 @@ const VerifyOtp = () => {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row bg-[#fdfcf8] font-sans text-[#101b0e] overflow-hidden">
+    <div className="h-dvh w-full flex flex-col md:flex-row bg-[#fdfcf8] font-sans text-[#101b0e] overflow-hidden">
       <div
         className="hidden md:flex w-full md:w-1/2 relative h-full bg-cover bg-center"
         style={{
@@ -147,6 +148,7 @@ const VerifyOtp = () => {
               <input
                 id="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-11 lg:h-12 px-4 rounded-[18px] border border-slate-200 bg-white text-[#1a2f1a] text-sm lg:text-base font-bold placeholder:text-slate-300 focus:border-[#ff311b] focus:ring-4 focus:ring-[#ff311b]/10 transition-all duration-300 outline-none shadow-sm"
@@ -166,6 +168,7 @@ const VerifyOtp = () => {
                 id="otp"
                 type="text"
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 maxLength={6}
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}

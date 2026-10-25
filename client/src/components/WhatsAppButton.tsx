@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "@/utils/Axios";
+import { buildWhatsAppLink } from "@/utils/whatsapp";
 
 export default function WhatsAppButton() {
   const [phoneNumber, setPhoneNumber] = useState<string>("+923211411478");
@@ -23,7 +24,11 @@ export default function WhatsAppButton() {
     }
   };
 
-  const whatsappUrl = `https://wa.me/${phoneNumber}`;
+  // Digits only: a "+" in a wa.me link makes WhatsApp reject it.
+  const whatsappUrl = buildWhatsAppLink(
+    phoneNumber,
+    "Hi Kursimeyz, I have a question about your furniture.",
+  );
 
   if (loading) {
     return null; // Don't show button while loading
@@ -60,7 +65,8 @@ export default function WhatsAppButton() {
           position: fixed;
           bottom: 32px;
           right: 32px;
-          z-index: 9999;
+          /* Below the dialogs (z-120) so it never sits on top of a modal's buttons. */
+          z-index: 55;
           width: 62px;
           height: 62px;
           background: linear-gradient(135deg, #25D366 0%, #075E54 100%);
@@ -137,6 +143,10 @@ export default function WhatsAppButton() {
           }
           .whatsapp-tooltip {
             display: none;
+          }
+          /* Lifts clear of the product page's sticky Add to Cart bar. */
+          body:has([data-sticky-cta]) .whatsapp-float-btn {
+            bottom: 160px;
           }
         }
       `}</style>

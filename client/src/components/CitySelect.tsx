@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ShippingCity } from "@/hooks/useShippingCities";
+import { formatPrice } from "@/utils/formatPrice";
 
 interface CitySelectProps {
   label: string;
@@ -67,11 +68,17 @@ export default function CitySelect({
           value={value}
           onChange={(e) => {
             onChange(e.target.value);
-            setIsOpen(true);
+            // Once what is typed is a whole city name the list has done its job.
+            // Left open it covers whatever sits below the field (in the cart, the
+            // totals and the Checkout button, where a tap would pick a city).
+            const typed = e.target.value.trim().toLowerCase();
+            setIsOpen(!cities.some((city) => city.name.toLowerCase() === typed));
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={(e) => {
-            if (e.key === "Escape") setIsOpen(false);
+            if (e.key === "Escape" || e.key === "Tab" || e.key === "Enter") {
+              setIsOpen(false);
+            }
           }}
           className="w-full h-14 pl-6 pr-12 rounded-2xl border border-slate-100 bg-[#f4f5f0]/50 focus:bg-white focus:border-[#ff311b] transition-all outline-none font-bold text-[#1a2f1a]"
         />
@@ -110,7 +117,7 @@ export default function CitySelect({
                   {city.name}
                 </span>
                 <span className="ml-auto text-[11px] font-bold text-[#1a2f1a]/40 shrink-0">
-                  Rs. {city.shippingPrice}
+                  {formatPrice(city.shippingPrice)}
                 </span>
               </button>
             </li>

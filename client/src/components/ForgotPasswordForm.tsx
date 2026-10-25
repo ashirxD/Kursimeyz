@@ -145,6 +145,7 @@ export default function ForgotPasswordForm({
             <input
               id="forgot-email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={inputClass}
@@ -164,6 +165,7 @@ export default function ForgotPasswordForm({
           <label className={labelClass}>Email Address</label>
           <input
             type="email"
+            autoComplete="email"
             value={email}
             className={`${inputClass} opacity-70`}
             disabled
@@ -181,6 +183,7 @@ export default function ForgotPasswordForm({
               id="forgot-otp"
               type="text"
               inputMode="numeric"
+              autoComplete="one-time-code"
               maxLength={6}
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
@@ -210,6 +213,7 @@ export default function ForgotPasswordForm({
               <input
                 id="new-password"
                 type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={isPage ? `${inputClass} pr-14` : inputClass}
@@ -239,6 +243,7 @@ export default function ForgotPasswordForm({
             <input
               id="confirm-password"
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className={inputClass}

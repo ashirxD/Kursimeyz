@@ -2,8 +2,13 @@ import { useParams } from "react-router-dom";
 import { useProduct } from "@/hooks/useProduct";
 import { useCart } from "@/hooks/useCart";
 import { useProductTypes } from "@/hooks/useProductTypes";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useProductReviews } from "@/hooks/useProductReviews";
+import { usePaymentSettings } from "@/hooks/usePaymentSettings";
+import { formatPrice } from "@/utils/formatPrice";
+import { buildWhatsAppLink } from "@/utils/whatsapp";
 import ProductRating from "@/components/ProductRating";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import ProductFinishSummary from "@/components/ProductFinishSummary";
@@ -25,6 +30,27 @@ export default function ProductDetail() {
   const { addToCart, isAdding } = useCart();
   const [added, setAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const { reviews } = useProductReviews(id);
+  const { paymentSettings } = usePaymentSettings();
+
+  useDocumentTitle(product?.name);
+
+  // The sticky mobile bar only appears once the real button has scrolled away,
+  // so the two are never on screen together.
+  const addButtonRef = useRef<HTMLDivElement>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+
+  useEffect(() => {
+    const target = addButtonRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [product?._id]);
 
   const handleAddToCart = () => {
     if (product?._id) {
@@ -33,7 +59,7 @@ export default function ProductDetail() {
         {
           onSuccess: () => {
             setAdded(true);
-            setTimeout(() => setAdded(false), 2000);
+            setTimeout(() => setAdded(false), 4000);
           },
         },
       );
@@ -84,9 +110,13 @@ export default function ProductDetail() {
   // Each detail the admin added is its own paragraph; newlines inside one are
   // kept by whitespace-pre-line rather than collapsed into a run-on line.
   const descriptionBlocks = splitDescriptionBlocks(product.description);
+  const askLink = buildWhatsAppLink(
+    paymentSettings.whatsappNumber,
+    `Hi Kursimeyz, I'm interested in "${product.name}" (${window.location.href}). Could you tell me more?`,
+  );
 
   return (
-    <div className="pt-20 pb-12 px-5 md:px-8 max-w-[1200px] mx-auto">
+    <div className="pt-20 pb-28 md:pb-12 px-5 md:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumbs */}
       <div className="flex items-center gap-1.5 mb-6 text-[9px] font-black uppercase tracking-[0.18em] text-[#1a2f1a]/40">
         <Link
@@ -114,7 +144,7 @@ export default function ProductDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-start">
         {/* Left: Product Gallery */}
-        <div className="relative w-full max-w-[460px] mx-auto">
+        <div className="relative w-full max-w-[460px] mx-auto lg:sticky lg:top-24">
           <ProductImageGallery
             key={product._id}
             images={productImages}
@@ -139,9 +169,6 @@ export default function ProductDetail() {
               {product.name}
             </h1>
             <div className="flex flex-wrap items-center gap-3">
-              <span className="bg-[#ff311b]/10 text-[#ff311b] px-3.5 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">
-                In Stock
-              </span>
               {discounted && (
                 <span className="bg-[#ff311b] text-white px-3.5 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">
                   {getDiscountPercent(product)}% Off
@@ -200,17 +227,17 @@ export default function ProductDetail() {
                       discounted ? "text-[#ff311b]" : "text-[#1a2f1a]"
                     }`}
                   >
-                    Rs. {getEffectivePrice(product)}
+                    {formatPrice(getEffectivePrice(product))}
                   </p>
                   {discounted && (
                     <p className="text-base font-bold text-[#1a2f1a]/40 line-through">
-                      Rs. {product.price}
+                      {formatPrice(product.price)}
                     </p>
                   )}
                 </div>
                 {discounted && (
                   <p className="text-[11px] font-bold text-[#ff311b]">
-                    You save Rs. {product.price - getEffectivePrice(product)}
+                    You save {formatPrice(product.price - getEffectivePrice(product))}
                   </p>
                 )}
               </div>
@@ -246,19 +273,27 @@ export default function ProductDetail() {
           </div>
 
           <div className="mt-auto space-y-3">
-            <div className="flex items-center gap-2">
+            <div ref={addButtonRef} className="flex items-center gap-2">
               <div className="bg-[#f4f5f0] p-1.5 rounded-xl flex items-center">
                 <button
+                  type="button"
+                  aria-label="Decrease quantity"
+                  disabled={quantity <= 1}
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="size-10 rounded-lg text-[#1a2f1a] hover:bg-white hover:shadow-sm transition-all flex items-center justify-center"
+                  className="disabled:opacity-30 size-10 rounded-lg text-[#1a2f1a] hover:bg-white hover:shadow-sm transition-all flex items-center justify-center"
                 >
                   <span className="material-symbols-outlined text-[20px]">remove</span>
                 </button>
-                <div className="w-12 text-center text-lg font-black text-[#1a2f1a]">
+                <div
+                  aria-live="polite"
+                  className="w-12 text-center text-lg font-black text-[#1a2f1a]"
+                >
                   {quantity}
                 </div>
                 <button
-                  onClick={() => setQuantity((q) => q + 1)}
+                  type="button"
+                  aria-label="Increase quantity"
+                  onClick={() => setQuantity((q) => Math.min(20, q + 1))}
                   className="size-10 rounded-lg text-[#1a2f1a] hover:bg-white hover:shadow-sm transition-all flex items-center justify-center"
                 >
                   <span className="material-symbols-outlined text-[20px]">add</span>
@@ -268,9 +303,9 @@ export default function ProductDetail() {
               <button
                 onClick={handleAddToCart}
                 disabled={isAdding}
-                className={`flex-1 h-12 rounded-[1.25rem] text-[12px] font-black uppercase tracking-widest transition-all transform active:scale-95 shadow-lg flex items-center justify-center gap-2 ${
+                className={`flex-1 h-12 rounded-[1.25rem] text-[12px] font-black uppercase tracking-widest transition-all transform active:scale-95 shadow-lg flex items-center justify-center gap-2 disabled:opacity-70 ${
                   added
-                    ? "bg-[#ff311b] text-[#1a2f1a]"
+                    ? "bg-[#ff311b] text-white"
                     : "bg-[#1a2f1a] text-white hover:bg-black"
                 }`}
               >
@@ -282,9 +317,116 @@ export default function ProductDetail() {
                 </span>
               </button>
             </div>
+
+            {added && (
+              <Link
+                to="/cart"
+                className="inline-flex items-center gap-1.5 text-[12px] font-black uppercase tracking-widest text-[#ff311b] hover:underline"
+              >
+                View cart
+                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              </Link>
+            )}
+
+            <ul className="pt-3 space-y-2 text-[13px] font-bold text-[#1a2f1a]/60">
+              {askLink && (
+                <li>
+                  <a
+                    href={askLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2.5 text-[#1a2f1a] hover:text-[#25a244] transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">chat</span>
+                    Ask us about this piece on WhatsApp
+                  </a>
+                </li>
+              )}
+            </ul>
           </div>
         </div>
       </div>
+
+      {/* What buyers said */}
+      <section aria-labelledby="reviews-heading" className="mt-16 pt-10 border-t border-slate-100 max-w-[760px]">
+        <h2
+          id="reviews-heading"
+          className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1a2f1a]/40 mb-6"
+        >
+          Customer reviews
+        </h2>
+        {reviews.length === 0 ? (
+          <p className="text-sm font-bold text-[#1a2f1a]/40">
+            No reviews yet. Buyers can rate this piece once it has been delivered.
+          </p>
+        ) : (
+          <ul className="space-y-6">
+            {reviews.map((review) => (
+              <li key={review._id} className="pb-6 border-b border-slate-50 last:border-0">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-1.5">
+                  <span
+                    className="flex text-[#f5a623]"
+                    role="img"
+                    aria-label={`${review.rating} out of 5 stars`}
+                  >
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span
+                        key={star}
+                        aria-hidden="true"
+                        className="material-symbols-outlined text-[18px]"
+                        style={{ fontVariationSettings: `'FILL' ${star <= review.rating ? 1 : 0}` }}
+                      >
+                        star
+                      </span>
+                    ))}
+                  </span>
+                  <span className="text-[13px] font-black text-[#1a2f1a]">{review.name}</span>
+                  <span className="text-[12px] font-bold text-[#1a2f1a]/30">
+                    {new Date(review.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+                {review.comment && (
+                  <p className="text-[15px] font-medium text-[#1a2f1a]/70 leading-relaxed whitespace-pre-line">
+                    {review.comment}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Mobile: keeps the way to buy in reach once the real button has scrolled
+          away. data-sticky-cta lifts the floating WhatsApp button clear of it. */}
+      {showStickyBar && (
+        <div
+          data-sticky-cta
+          className="md:hidden fixed inset-x-0 bottom-16 z-[55] bg-white/95 backdrop-blur-md border-t border-slate-100 px-4 py-3 flex items-center gap-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]"
+        >
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold text-[#1a2f1a]/50 truncate">{product.name}</p>
+            <p className={`text-lg font-black leading-tight ${discounted ? "text-[#ff311b]" : "text-[#1a2f1a]"}`}>
+              {formatPrice(getEffectivePrice(product))}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            className={`ml-auto h-12 px-6 rounded-2xl text-[12px] font-black uppercase tracking-widest text-white flex items-center gap-2 active:scale-95 transition-all disabled:opacity-70 ${
+              added ? "bg-[#ff311b]" : "bg-[#1a2f1a]"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">
+              {added ? "check_circle" : "shopping_bag"}
+            </span>
+            {added ? "Added!" : isAdding ? "Adding..." : "Add to Cart"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

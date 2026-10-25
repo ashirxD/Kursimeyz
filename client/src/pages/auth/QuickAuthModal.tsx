@@ -190,6 +190,7 @@ export default function QuickAuthModal() {
                                         <input
                                             required
                                             type="email"
+                                            autoComplete="email"
                                             className="w-full bg-white px-5 py-3.5 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
                                             placeholder="your@email.com"
                                             value={email}
@@ -209,6 +210,7 @@ export default function QuickAuthModal() {
                                                     disabled={isLoading || isOtpSent || isOtpVerified}
                                                     type="tel"
                                                     inputMode="tel"
+                                                    autoComplete="tel"
                                                     className="w-full bg-white pl-5 pr-12 py-3.5 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
                                                     placeholder="+923001234567"
                                                     value={phone}
@@ -238,6 +240,7 @@ export default function QuickAuthModal() {
                                         <input
                                             required
                                             type="password"
+                                            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                                             className="w-full bg-white px-5 py-3.5 rounded-full border border-forest-moss/10 focus:outline-none focus:ring-2 focus:ring-clay/50 transition-all font-bold text-sm"
                                             placeholder="••••••••"
                                             value={password}
@@ -252,6 +255,8 @@ export default function QuickAuthModal() {
                                                 <input
                                                     disabled={!isOtpSent || isOtpVerified}
                                                     type="text"
+                                                    inputMode="numeric"
+                                                    autoComplete="one-time-code"
                                                     maxLength={6}
                                                     className={`w-full bg-white pl-5 pr-[100px] py-3.5 rounded-full border transition-all font-bold text-sm tracking-[0.5em] text-left ${isOtpVerified ? 'border-green-500 bg-green-50 text-green-600' : 'border-forest-moss/10 focus:ring-2 focus:ring-clay/50'}`}
                                                     placeholder="000000"

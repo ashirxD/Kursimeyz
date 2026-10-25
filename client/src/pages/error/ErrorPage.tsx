@@ -1,8 +1,31 @@
+import { useEffect } from "react";
 import { useRouteError, isRouteErrorResponse, Link } from "react-router-dom";
+
+// What browsers say when a page's code file is gone, which is what an open tab
+// meets after the site is updated: its old file names no longer exist.
+const STALE_BUNDLE_PATTERN =
+  /dynamically imported module|importing a module script failed|error loading dynamically imported module/i;
+const RELOAD_FLAG = "kursimeyz-stale-reload";
 
 export default function ErrorPage() {
   const error = useRouteError();
   console.error(error);
+
+  const isStaleBundle = error instanceof Error && STALE_BUNDLE_PATTERN.test(error.message);
+
+  // Reload once to pick up the new version. The flag stops a genuinely broken
+  // deploy from putting the browser in a reload loop.
+  useEffect(() => {
+    if (!isStaleBundle) return;
+
+    try {
+      if (window.sessionStorage.getItem(RELOAD_FLAG)) return;
+      window.sessionStorage.setItem(RELOAD_FLAG, "1");
+    } catch {
+      return;
+    }
+    window.location.reload();
+  }, [isStaleBundle]);
 
   let errorMessage = "Something unexpected happened while loading this page.";
   let errorStatus = 500;

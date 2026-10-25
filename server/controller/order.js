@@ -197,7 +197,9 @@ const createOrder = async (req, res) => {
 // @access  Private
 const getMyOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ user: req.user.id || req.user._id }).sort('-createdAt');
+        const orders = await Order.find({ user: req.user.id || req.user._id })
+            .populate('items.product', 'name image images')
+            .sort('-createdAt');
         res.status(200).json({
             success: true,
             data: orders,

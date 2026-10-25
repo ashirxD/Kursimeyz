@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import ProductCarousel from "@/components/ProductCarousel";
 import { useProductTypes } from "@/hooks/useProductTypes";
 import { useTopPicks } from "@/hooks/useTopPicks";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import TopPickCard from "./card";
 
 interface TopPicksProps {
@@ -20,6 +21,9 @@ interface TopPicksProps {
  * widens what a shopper can browse instead of pushing the rest of the page down.
  */
 export default function TopPicks({ isDashboard = false }: TopPicksProps) {
+  // On the home page this is only a section, and the page keeps its own title.
+  useDocumentTitle(isDashboard ? null : "Top picks");
+
   const { topPicks, isTopPicksLoading } = useTopPicks();
   const { productTypes } = useProductTypes();
 

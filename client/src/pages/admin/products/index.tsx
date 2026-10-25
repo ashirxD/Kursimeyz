@@ -4,6 +4,8 @@ import Header from "@/pages/admin/layout/Header";
 import CategoryTabs from "@/components/CategoryTabs";
 import ProductFormModal from "@/components/ProductFormModal";
 import ProductTypeFormModal from "@/components/ProductTypeFormModal";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { toast } from "@/stores/toastStore";
 import AdminProductCard from "./card";
 import { useCategories } from "@/hooks/useCategories";
 import { useProducts } from "@/hooks/useProducts";
@@ -37,11 +39,23 @@ export default function AdminProductsPage() {
     subCategory: activeCategory ?? undefined,
   });
 
-  const handleDelete = async (id: string) => {
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const pendingDelete = products.find((product) => product.id === pendingDeleteId);
+
+  const handleDelete = async () => {
+    if (!pendingDeleteId) return;
+
+    setIsDeleting(true);
     try {
-      await deleteProduct(id);
+      await deleteProduct(pendingDeleteId);
+      toast.success(`${pendingDelete?.name ?? "Product"} was deleted.`);
+      setPendingDeleteId(null);
     } catch (error) {
+      // The shared handler has already told the admin what went wrong.
       console.error("Failed to delete product:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -140,10 +154,21 @@ export default function AdminProductsPage() {
               key={product.id}
               product={product}
               productType={productType}
-              onDelete={handleDelete}
+              onDelete={setPendingDeleteId}
             />
           ))}
         </div>
+
+        <ConfirmDialog
+          open={pendingDeleteId !== null}
+          destructive
+          isWorking={isDeleting}
+          title={`Delete ${pendingDelete?.name ?? "this product"}?`}
+          message="It is removed from the shop for good. Past orders keep their price and finish, but will no longer show this product's name or photo."
+          confirmLabel="Delete product"
+          onConfirm={handleDelete}
+          onCancel={() => setPendingDeleteId(null)}
+        />
 
         {products.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center py-20 bg-white/50 rounded-4xl border-2 border-dashed border-forest-moss/10 mx-4 md:mx-2">

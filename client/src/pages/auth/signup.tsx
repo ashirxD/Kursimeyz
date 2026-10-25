@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import BrandLogo from "@/components/BrandLogo";
 import { GoogleLoginButton } from "@/components/GoogleLoginButton";
@@ -26,6 +26,7 @@ const Signup = () => {
     isGoogleAuthing,
     googleAuthError,
   } = useAuth();
+  const { state: routeState } = useLocation();
 
   // Type guard or casting for error message
   const errorMessage = localError
@@ -76,7 +77,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row bg-[#fdfcf8] font-sans text-[#101b0e] overflow-hidden">
+    <div className="h-dvh w-full flex flex-col md:flex-row bg-[#fdfcf8] font-sans text-[#101b0e] overflow-hidden">
       {/* Left Side: Visual Hero */}
       <div
         className="hidden md:flex w-full md:w-1/2 relative h-full bg-cover bg-center transition-all duration-700 hover:scale-[1.01]"
@@ -120,7 +121,7 @@ const Signup = () => {
         <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-[#ff311b]/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#1a2f1a]/5 rounded-full translate-x-1/4 translate-y-1/4 blur-[100px] pointer-events-none" />
 
-        <div className="w-full max-w-[400px] z-10 flex flex-col gap-4 lg:gap-6 relative overflow-y-auto lg:overflow-visible max-h-full py-4 px-2 custom-scrollbar">
+        <div className="w-full max-w-[400px] z-10 flex flex-col gap-4 lg:gap-6 relative overflow-y-auto max-h-full py-4 px-2 custom-scrollbar">
           {/* Mobile Logo */}
           <div className="flex md:hidden mb-2">
             <BrandLogo imageClassName="h-11 w-auto max-w-[190px]" />
@@ -159,6 +160,7 @@ const Signup = () => {
               <div className="relative">
                 <input
                   type="text"
+                  autoComplete="name"
                   id="name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -183,6 +185,7 @@ const Signup = () => {
               <div className="relative">
                 <input
                   type="email"
+                  autoComplete="email"
                   id="email"
                   value={email}
                   onChange={(e) => {
@@ -210,6 +213,7 @@ const Signup = () => {
               <div className="relative">
                 <input
                   type="tel"
+                  autoComplete="tel"
                   inputMode="tel"
                   required
                   id="phone"
@@ -239,6 +243,7 @@ const Signup = () => {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -299,6 +304,7 @@ const Signup = () => {
               Already have an account?{" "}
               <Link
                 to="/login"
+                state={routeState}
                 className="text-[#ff311b] font-black hover:underline underline-offset-4"
               >
                 Log In

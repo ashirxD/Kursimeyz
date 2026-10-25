@@ -1,6 +1,5 @@
 import { lazy, Suspense } from "react";
 import LoadingSpinner from "../components/LoadingSpinner";
-import UserLayout from "../pages/layout";
 import AuthGuard from "../components/AuthGuard";
 
 // Lazy load components
@@ -8,51 +7,25 @@ const CartPage = lazy(() => import("../pages/cart"));
 const CheckoutPage = lazy(() => import("../pages/checkout"));
 const OrderSuccessPage = lazy(() => import("@/pages/checkout/Success"));
 const OrderHistoryPage = lazy(() => import("../pages/OrderHistory"));
+const AccountPage = lazy(() => import("../pages/account"));
 
+const page = (element: React.ReactNode) => (
+  <Suspense fallback={<LoadingSpinner />}>{element}</Suspense>
+);
 
-export const protectedRoutes = [
+// Pages that need a signed-in shopper. They are mounted inside the storefront
+// layout in publicRoutes.tsx, not given a layout of their own: two layouts at
+// the same path would remount the header and footer on every move between a
+// public page and a protected one (shop -> cart), losing their state.
+export const protectedPageRoutes = [
   {
-    path: "/",
     element: <AuthGuard />,
     children: [
-      {
-        path: "/",
-        element: <UserLayout />,
-        children: [
-          {
-            path: "cart",
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <CartPage />
-              </Suspense>
-            ),
-          },
-          {
-            path: "checkout",
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <CheckoutPage />
-              </Suspense>
-            ),
-          },
-          {
-            path: "order-success",
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <OrderSuccessPage />
-              </Suspense>
-            ),
-          },
-          {
-            path: "orders",
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <OrderHistoryPage />
-              </Suspense>
-            ),
-          },
-        ],
-      },
+      { path: "cart", element: page(<CartPage />) },
+      { path: "checkout", element: page(<CheckoutPage />) },
+      { path: "order-success", element: page(<OrderSuccessPage />) },
+      { path: "orders", element: page(<OrderHistoryPage />) },
+      { path: "account", element: page(<AccountPage />) },
     ],
   },
 ];

@@ -55,7 +55,8 @@ export const useOrder = () => {
   return {
     createOrder: (orderData: OrderPayload) =>
       createOrderMutation.mutate(orderData, {
-        onSuccess: () => navigate("/order-success"),
+        onSuccess: (order) =>
+          navigate("/order-success", { state: { order }, replace: true }),
       }),
     createOrderAsync: createOrderMutation.mutateAsync,
     isCreating: createOrderMutation.isPending,
